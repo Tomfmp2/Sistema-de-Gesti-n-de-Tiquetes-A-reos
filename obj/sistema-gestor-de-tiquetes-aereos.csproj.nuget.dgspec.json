@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/tomdev_/TomDev/Campus/C#/sistema-gestor-de-tiquetes-aereos/sistema-gestor-de-tiquetes-aereos.csproj": {}
+    "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj": {}
   },
   "projects": {
-    "/home/tomdev_/TomDev/Campus/C#/sistema-gestor-de-tiquetes-aereos/sistema-gestor-de-tiquetes-aereos.csproj": {
+    "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/tomdev_/TomDev/Campus/C#/sistema-gestor-de-tiquetes-aereos/sistema-gestor-de-tiquetes-aereos.csproj",
+        "projectUniqueName": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj",
         "projectName": "sistema-gestor-de-tiquetes-aereos",
-        "projectPath": "/home/tomdev_/TomDev/Campus/C#/sistema-gestor-de-tiquetes-aereos/sistema-gestor-de-tiquetes-aereos.csproj",
-        "packagesPath": "/home/tomdev_/.nuget/packages/",
-        "outputPath": "/home/tomdev_/TomDev/Campus/C#/sistema-gestor-de-tiquetes-aereos/obj/",
+        "projectPath": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj",
+        "packagesPath": "C:\\Users\\jhona\\.nuget\\packages\\",
+        "outputPath": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/tomdev_/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\jhona\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -59,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
