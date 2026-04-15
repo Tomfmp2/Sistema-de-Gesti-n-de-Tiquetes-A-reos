@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 
-public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
+/* public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
 {
     public void Configure(EntityTypeBuilder<FlightEntity> builder)
     {
@@ -89,3 +89,4 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
             .IsRequired();
     }
 }
+ */
