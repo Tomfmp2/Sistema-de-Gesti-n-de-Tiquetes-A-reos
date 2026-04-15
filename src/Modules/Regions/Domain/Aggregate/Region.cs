@@ -9,7 +9,12 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Domain.Aggregate
         public RegionType Type { get; private set; }
         public RegionCuntryId CountryId { get; private set; }
 
-        private Region(RegionId id, RegionName name, RegionType type, RegionCuntryId countryId)
+        private Region(
+            RegionId id, 
+            RegionName name, 
+            RegionType type, 
+            RegionCuntryId countryId
+            )
         {
             Id = id;
             Name = name;
@@ -24,7 +29,12 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Domain.Aggregate
             RegionCuntryId countryId
         )
         {
-            return new Region(id, name, type, countryId);
+            return new Region(
+                id, 
+                name, 
+                type, 
+                countryId
+            );
         }
     }
 }

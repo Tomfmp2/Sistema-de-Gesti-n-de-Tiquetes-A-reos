@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj": {}
+    "C:\\Users\\Jeiso\\OneDrive\\Escritorio\\ProyectoC#\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj": {}
   },
   "projects": {
-    "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj": {
+    "C:\\Users\\Jeiso\\OneDrive\\Escritorio\\ProyectoC#\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj",
+        "projectUniqueName": "C:\\Users\\Jeiso\\OneDrive\\Escritorio\\ProyectoC#\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj",
         "projectName": "sistema-gestor-de-tiquetes-aereos",
-        "projectPath": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj",
-        "packagesPath": "C:\\Users\\jhona\\.nuget\\packages\\",
-        "outputPath": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\obj\\",
+        "projectPath": "C:\\Users\\Jeiso\\OneDrive\\Escritorio\\ProyectoC#\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj",
+        "packagesPath": "C:\\Users\\Jeiso\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Jeiso\\OneDrive\\Escritorio\\ProyectoC#\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\jhona\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Jeiso\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -60,9 +60,13 @@
               "target": "Package",
               "version": "[9.0.0, )"
             },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
             "Microsoft.Extensions.Configuration.EnvironmentVariables": {
               "target": "Package",
-              "version": "[10.0.6, )"
+              "version": "[9.0.0, )"
             },
             "Microsoft.Extensions.Configuration.FileExtensions": {
               "target": "Package",
@@ -70,7 +74,7 @@
             },
             "Microsoft.Extensions.Configuration.Json": {
               "target": "Package",
-              "version": "[10.0.6, )"
+              "version": "[9.0.0, )"
             },
             "Pomelo.EntityFrameworkCore.MySql": {
               "target": "Package",
