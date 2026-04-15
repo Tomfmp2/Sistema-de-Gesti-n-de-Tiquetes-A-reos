@@ -10,4 +10,6 @@ public class PersonEntity
     public DateTime? BirthDate { get; set; }
     public char? Gender { get; set; }
     public int? DirectionId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

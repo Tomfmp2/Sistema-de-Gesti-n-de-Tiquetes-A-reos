@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StreetsTypes.Infrastructure.Entity;
@@ -9,7 +9,7 @@ public sealed class DirectionEntityConfiguration : IEntityTypeConfiguration<Dire
 {
     public void Configure(EntityTypeBuilder<DirectionEntity> builder)
     {
-        builder.ToTable("direcciones");
+        builder.ToTable("directions");
 
         builder.HasKey(x => x.Id);
         builder
@@ -20,38 +20,38 @@ public sealed class DirectionEntityConfiguration : IEntityTypeConfiguration<Dire
             .IsRequired();
 
         builder
-            .Property(x => x.CityId)
-            .HasColumnName("ciudad_id")
-            .HasColumnType("int")
-            .IsRequired();
-
-        builder
             .Property(x => x.StreetTypeId)
-            .HasColumnName("tipo_via_id")
+            .HasColumnName("street_type_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.StreetName)
-            .HasColumnName("nombre_via")
-            .HasColumnType("varchar(150)")
+            .HasColumnName("street_name")
+            .HasColumnType("varchar(100)")
             .IsRequired();
 
         builder
             .Property(x => x.StreetNumber)
-            .HasColumnName("numero")
+            .HasColumnName("street_number")
             .HasColumnType("varchar(20)")
-            .IsRequired();
+            .IsRequired(false);
 
         builder
             .Property(x => x.Complement)
-            .HasColumnName("complemento")
+            .HasColumnName("complement")
             .HasColumnType("varchar(100)")
             .IsRequired(false);
 
         builder
+            .Property(x => x.CityId)
+            .HasColumnName("city_id")
+            .HasColumnType("int")
+            .IsRequired();
+
+        builder
             .Property(x => x.PostalCode)
-            .HasColumnName("codigo_postal")
+            .HasColumnName("postal_code")
             .HasColumnType("varchar(20)")
             .IsRequired(false);
 
@@ -66,5 +66,8 @@ public sealed class DirectionEntityConfiguration : IEntityTypeConfiguration<Dire
             .WithMany()
             .HasForeignKey(x => x.StreetTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.CityId);
+        builder.HasIndex(x => x.StreetTypeId);
     }
 }

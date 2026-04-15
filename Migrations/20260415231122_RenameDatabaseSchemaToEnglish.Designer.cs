@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -11,9 +12,11 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 namespace sistema_gestor_de_tiquetes_aereos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260415231122_RenameDatabaseSchemaToEnglish")]
+    partial class RenameDatabaseSchemaToEnglish
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +25,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Entity.PermissionEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.PermissionEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,52 +33,42 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("varchar(64)")
+                        .HasColumnName("code");
 
                     b.Property<string>("Description")
                         .HasColumnType("varchar(200)")
                         .HasColumnName("description");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("name");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("Code")
                         .IsUnique();
 
                     b.ToTable("permissions", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Entity.RolePermissionEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.RolePermissionEntity", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("RoleId")
                         .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnName("role_id");
 
                     b.Property<int>("PermissionId")
                         .HasColumnType("int")
                         .HasColumnName("permission_id");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int")
-                        .HasColumnName("role_id");
-
-                    b.HasKey("Id");
+                    b.HasKey("RoleId", "PermissionId");
 
                     b.HasIndex("PermissionId");
-
-                    b.HasIndex("RoleId", "PermissionId")
-                        .IsUnique();
 
                     b.ToTable("role_permissions", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Sessions.Infrastructure.Entity.SessionEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.SessionEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -84,21 +77,21 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("ClosedAt")
+                    b.Property<DateTime>("ExpiresAtUtc")
                         .HasColumnType("datetime(6)")
-                        .HasColumnName("closed_at");
+                        .HasColumnName("expires_at_utc");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsRevoked")
                         .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_active");
+                        .HasColumnName("is_revoked");
 
-                    b.Property<string>("OriginIp")
-                        .HasColumnType("varchar(45)")
-                        .HasColumnName("origin_ip");
-
-                    b.Property<DateTime>("StartedAt")
+                    b.Property<DateTime>("IssuedAtUtc")
                         .HasColumnType("datetime(6)")
-                        .HasColumnName("started_at");
+                        .HasColumnName("emitida_en_utc");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("refresh_token");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int")
@@ -111,7 +104,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.ToTable("sessions", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity.SystemRoleEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.SystemRoleEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -120,24 +113,17 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Description")
-                        .HasColumnType("varchar(150)")
-                        .HasColumnName("description");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("varchar(80)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("system_roles", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity.UserEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.UserEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -146,17 +132,9 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("is_active");
-
-                    b.Property<DateTime?>("LastAccessAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("last_access_at");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -169,15 +147,11 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<int>("SystemRoleId")
                         .HasColumnType("int")
-                        .HasColumnName("system_role_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
+                        .HasColumnName("rol_id");
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("varchar(64)")
                         .HasColumnName("username");
 
                     b.HasKey("Id");
@@ -234,9 +208,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("continents", (string)null);
 
                     b.HasData(
@@ -276,26 +247,26 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CodeIso")
+                    b.Property<string>("codeIso")
                         .IsRequired()
                         .HasColumnType("varchar(3)")
                         .HasColumnName("code_iso");
 
-                    b.Property<int>("ContinentId")
+                    b.Property<int>("continentId")
                         .HasColumnType("int")
                         .HasColumnName("continent_id");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("name")
                         .IsRequired()
                         .HasColumnType("varchar(100)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CodeIso")
+                    b.HasIndex("codeIso")
                         .IsUnique();
 
-                    b.HasIndex("ContinentId");
+                    b.HasIndex("continentId");
 
                     b.ToTable("countries", (string)null);
                 });
@@ -311,11 +282,11 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<int>("CityId")
                         .HasColumnType("int")
-                        .HasColumnName("city_id");
+                        .HasColumnName("ciudad_id");
 
                     b.Property<string>("Complement")
                         .HasColumnType("varchar(100)")
-                        .HasColumnName("complement");
+                        .HasColumnName("complemento");
 
                     b.Property<string>("PostalCode")
                         .HasColumnType("varchar(20)")
@@ -323,10 +294,11 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<string>("StreetName")
                         .IsRequired()
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("street_name");
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("nombre_via");
 
                     b.Property<string>("StreetNumber")
+                        .IsRequired()
                         .HasColumnType("varchar(20)")
                         .HasColumnName("street_number");
 
@@ -343,7 +315,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.ToTable("directions", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Clients.Infrastructure.Entity.ClientEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.ClientEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -351,10 +323,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("int")
@@ -368,7 +336,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.ToTable("clients", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Entity.DocumentTypeEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.DocumentTypeEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -377,25 +345,17 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("varchar(10)")
-                        .HasColumnName("code");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("varchar(80)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
-                        .IsUnique();
-
                     b.ToTable("document_types", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Entity.EmailDomainEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.EmailDomainEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -406,7 +366,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<string>("Domain")
                         .IsRequired()
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("varchar(255)")
                         .HasColumnName("domain");
 
                     b.HasKey("Id");
@@ -417,7 +377,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.ToTable("email_domains", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Infrastructure.Entity.PassengerEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PassengerEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -444,7 +404,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.ToTable("passengers", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.PassengerTypes.Infrastructure.Entity.PassengerTypeEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PassengerTypeEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -453,28 +413,17 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("MaxAge")
-                        .HasColumnType("int")
-                        .HasColumnName("max_age");
-
-                    b.Property<int?>("MinAge")
-                        .HasColumnType("int")
-                        .HasColumnName("min_age");
-
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("varchar(80)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("passenger_types", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.PersonEmails.Infrastructure.Entity.PersonEmailEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonEmailEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -483,18 +432,14 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("EmailDomainId")
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("varchar(320)")
+                        .HasColumnName("email");
+
+                    b.Property<int?>("EmailDomainId")
                         .HasColumnType("int")
                         .HasColumnName("email_domain_id");
-
-                    b.Property<string>("EmailLocalPart")
-                        .IsRequired()
-                        .HasColumnType("varchar(100)")
-                        .HasColumnName("email_local_part");
-
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_primary");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("int")
@@ -502,12 +447,12 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.HasIndex("EmailDomainId");
 
                     b.HasIndex("PersonId");
-
-                    b.HasIndex("PersonId", "EmailLocalPart", "EmailDomainId")
-                        .IsUnique();
 
                     b.ToTable("person_emails", (string)null);
                 });
@@ -523,11 +468,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("date")
-                        .HasColumnName("birth_date");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
+                        .HasColumnName("fecha_nacimiento");
 
                     b.Property<int?>("DirectionId")
                         .HasColumnType("int")
@@ -535,8 +476,8 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<string>("DocumentNumber")
                         .IsRequired()
-                        .HasColumnType("varchar(30)")
-                        .HasColumnName("document_number");
+                        .HasColumnType("varchar(32)")
+                        .HasColumnName("numero_documento");
 
                     b.Property<int>("DocumentTypeId")
                         .HasColumnType("int")
@@ -556,10 +497,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .HasColumnType("varchar(100)")
                         .HasColumnName("last_name");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("updated_at");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DirectionId");
@@ -570,7 +507,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.ToTable("persons", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.PersonPhones.Infrastructure.Entity.PersonPhoneEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonPhoneEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -586,7 +523,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<string>("Number")
                         .IsRequired()
                         .HasColumnType("varchar(20)")
-                        .HasColumnName("phone_number");
+                        .HasColumnName("number");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("int")
@@ -606,7 +543,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.ToTable("person_phones", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.PhoneCodes.Infrastructure.Entity.PhoneCodeEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PhoneCodeEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -615,19 +552,18 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CountryDialCode")
+                    b.Property<string>("DialCode")
                         .IsRequired()
-                        .HasColumnType("varchar(5)")
-                        .HasColumnName("country_dial_code");
+                        .HasColumnType("varchar(10)")
+                        .HasColumnName("dial_code");
 
-                    b.Property<string>("CountryName")
-                        .IsRequired()
+                    b.Property<string>("Name")
                         .HasColumnType("varchar(100)")
-                        .HasColumnName("country_name");
+                        .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CountryDialCode")
+                    b.HasIndex("DialCode")
                         .IsUnique();
 
                     b.ToTable("phone_codes", (string)null);
@@ -674,7 +610,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("varchar(80)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
@@ -682,38 +618,38 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.ToTable("street_types", (string)null);
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Entity.RolePermissionEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.RolePermissionEntity", b =>
                 {
-                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Entity.PermissionEntity", null)
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.PermissionEntity", null)
                         .WithMany()
                         .HasForeignKey("PermissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity.SystemRoleEntity", null)
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.SystemRoleEntity", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Sessions.Infrastructure.Entity.SessionEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.SessionEntity", b =>
                 {
-                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity.UserEntity", null)
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.UserEntity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity.UserEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.UserEntity", b =>
                 {
                     b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonEntity", null)
                         .WithMany()
                         .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity.SystemRoleEntity", null)
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Auth.Infrastructure.Entity.SystemRoleEntity", null)
                         .WithMany()
                         .HasForeignKey("SystemRoleId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -733,7 +669,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                 {
                     b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Infrastructure.Entity.ContinentEntity", null)
                         .WithMany()
-                        .HasForeignKey("ContinentId")
+                        .HasForeignKey("continentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -753,7 +689,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Clients.Infrastructure.Entity.ClientEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.ClientEntity", b =>
                 {
                     b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonEntity", null)
                         .WithMany()
@@ -762,9 +698,9 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Infrastructure.Entity.PassengerEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PassengerEntity", b =>
                 {
-                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.PassengerTypes.Infrastructure.Entity.PassengerTypeEntity", null)
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PassengerTypeEntity", null)
                         .WithMany()
                         .HasForeignKey("PassengerTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -777,13 +713,12 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.PersonEmails.Infrastructure.Entity.PersonEmailEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonEmailEntity", b =>
                 {
-                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Entity.EmailDomainEntity", null)
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.EmailDomainEntity", null)
                         .WithMany()
                         .HasForeignKey("EmailDomainId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonEntity", null)
                         .WithMany()
@@ -799,14 +734,14 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .HasForeignKey("DirectionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Entity.DocumentTypeEntity", null)
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.DocumentTypeEntity", null)
                         .WithMany()
                         .HasForeignKey("DocumentTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.PersonPhones.Infrastructure.Entity.PersonPhoneEntity", b =>
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonPhoneEntity", b =>
                 {
                     b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonEntity", null)
                         .WithMany()
@@ -814,7 +749,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.PhoneCodes.Infrastructure.Entity.PhoneCodeEntity", null)
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PhoneCodeEntity", null)
                         .WithMany()
                         .HasForeignKey("PhoneCodeId")
                         .OnDelete(DeleteBehavior.Restrict)

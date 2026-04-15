@@ -7,7 +7,7 @@ public sealed class StreetTypeEntityConfiguration : IEntityTypeConfiguration<Str
 {
     public void Configure(EntityTypeBuilder<StreetTypeEntity> builder)
     {
-        builder.ToTable("tipos_via");
+        builder.ToTable("street_types");
 
         builder.HasKey(x => x.Id);
         builder
@@ -19,8 +19,8 @@ public sealed class StreetTypeEntityConfiguration : IEntityTypeConfiguration<Str
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("nombre")
-            .HasColumnType("varchar(80)")
+            .HasColumnName("name")
+            .HasColumnType("varchar(50)")
             .IsRequired();
     }
 }

@@ -19,26 +19,30 @@ public class CountryEntityConfiguration : IEntityTypeConfiguration<CountryEntity
             .IsRequired();
 
         builder
-            .Property(x => x.name)
+            .Property(x => x.Name)
             .HasColumnName("name")
             .HasColumnType("varchar(100)")
             .IsRequired();
 
         builder
-            .Property(x => x.codeIso)
+            .Property(x => x.CodeIso)
             .HasColumnName("code_iso")
             .HasColumnType("varchar(3)")
             .IsRequired();
 
         builder
-            .Property(x => x.continentId)
+            .Property(x => x.ContinentId)
             .HasColumnName("continent_id")
             .HasColumnType("int")
             .IsRequired();
+
         builder
             .HasOne<ContinentEntity>()
             .WithMany()
-            .HasForeignKey(x => x.continentId)
+            .HasForeignKey(x => x.ContinentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.CodeIso).IsUnique();
+        builder.HasIndex(x => x.ContinentId);
     }
 }

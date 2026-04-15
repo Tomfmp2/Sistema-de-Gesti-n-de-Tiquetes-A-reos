@@ -32,13 +32,16 @@ public class RegionEntityConfiguration : IEntityTypeConfiguration<RegionEntity>
 
         builder
             .Property(x => x.CountryId)
-            .HasColumnName("Country_id")
+            .HasColumnName("country_id")
             .HasColumnType("int")
             .IsRequired();
+
         builder
             .HasOne<CountryEntity>()
             .WithMany()
             .HasForeignKey(x => x.CountryId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.CountryId);
     }
 }

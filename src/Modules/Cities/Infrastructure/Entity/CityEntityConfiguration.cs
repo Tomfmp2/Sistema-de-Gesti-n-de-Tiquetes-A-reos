@@ -34,5 +34,7 @@ public sealed class CityEntityConfiguration : IEntityTypeConfiguration<CityEntit
             .WithMany()
             .HasForeignKey(x => x.RegionId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(x => x.RegionId);
     }
 }

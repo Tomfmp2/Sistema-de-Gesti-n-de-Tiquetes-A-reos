@@ -24,6 +24,8 @@ public sealed class ContinentEntityConfiguration : IEntityTypeConfiguration<Cont
             .HasColumnType("varchar(50)")
             .IsRequired();
 
+        builder.HasIndex(x => x.Name).IsUnique();
+
         builder.HasData(
             new ContinentEntity { Id = 1, Name = "América" },
             new ContinentEntity { Id = 2, Name = "Europa" },
