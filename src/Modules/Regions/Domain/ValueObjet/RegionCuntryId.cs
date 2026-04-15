@@ -1,19 +1,16 @@
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Domain.ValueObjet;
 
-public class RegionCuntryId
+public sealed class RegionCuntryId
 {
-    public string Value { get; }
+    public int Value { get; }
 
-    public RegionCuntryId(string value)
-    {
-        Value = value;
-    }
+    public RegionCuntryId(int value) => Value = value;
 
-    public static RegionCuntryId Create(string value)
+    public static RegionCuntryId Create(int value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (value < 1)
         {
-            throw new ArgumentException("El valor no puede ser nulo ni vacío");
+            throw new ArgumentException("El país (región) debe ser un id válido.");
         }
 
         return new RegionCuntryId(value);

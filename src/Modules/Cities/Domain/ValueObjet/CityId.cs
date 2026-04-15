@@ -1,22 +1,20 @@
-namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Domain.ValueObjet
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Domain.ValueObjet;
+
+public sealed class CityId
 {
-    public sealed record CityId
+    public int Value { get; }
+
+    public CityId(int value) => Value = value;
+
+    public static CityId Unpersisted => new(0);
+
+    public static CityId Create(int value)
     {
-        public int Value { get; }
-
-        public CityId(int value)
+        if (value < 1)
         {
-            Value = value;
+            throw new ArgumentOutOfRangeException(nameof(value), "CityId debe ser mayor que 0.");
         }
 
-        public static CityId Create(int value)
-        {
-            if (value <= 0)
-            {
-                throw new ArgumentException("El valor no puede ser menor a 1");
-            }
-
-            return new CityId(value);
-        }
+        return new CityId(value);
     }
 }

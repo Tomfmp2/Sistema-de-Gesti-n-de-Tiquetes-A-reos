@@ -1,18 +1,19 @@
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Domain.ValueObjet;
 
-public class RegionId
+public sealed class RegionId
 {
     public int Value { get; }
 
-    public RegionId(int value)
-    {
-        Value = value;
-    }
+    public RegionId(int value) => Value = value;
+
+    public static RegionId Unpersisted => new(0);
 
     public static RegionId Create(int value)
     {
-        if (value <= 0)
-            throw new ArgumentException("El valor no puede ser menor a 1");
+        if (value < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(value), "RegionId debe ser mayor que 0.");
+        }
 
         return new RegionId(value);
     }
