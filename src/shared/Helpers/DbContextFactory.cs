@@ -4,37 +4,36 @@ using Microsoft.Extensions.Configuration;
 using MyInventory2026.src.shared.helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
-namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers
+namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
+
+public class DbContextFactory
 {
-    public class DbContextFactory
+    public static AppDbContext Create()
     {
-        public static AppDbContext Create()
+        var config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddEnvironmentVariables()
+            .Build();
+
+        string? ConnectionString =
+            Environment.GetEnvironmentVariable("MYSQL_CONNECTION")
+            ?? config.GetConnectionString("MySqlDB");
+
+        if (string.IsNullOrWhiteSpace(ConnectionString))
         {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddEnvironmentVariables()
-                .Build();
-
-            string? ConnectionString =
-                Environment.GetEnvironmentVariable("MYSQL_CONNECTION")
-                ?? config.GetConnectionString("MySqlDB");
-
-            if (string.IsNullOrWhiteSpace(ConnectionString))
-            {
-                throw new InvalidOperationException("No connection string found");
-            }
-
-            var detectedVersion = MySqlVersionResolver.DetectVersion(ConnectionString);
-            var minVersion = new Version(8, 0, 0);
-            if (detectedVersion < minVersion)
-                throw new NotSupportedException(
-                    $"Versión de MySQL no soportada: {detectedVersion}. Requiere {minVersion} o superior."
-                );
-
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseMySql(ConnectionString, new MySqlServerVersion(detectedVersion))
-                .Options;
-            return new AppDbContext(options);
+            throw new InvalidOperationException("No connection string found");
         }
+
+        var detectedVersion = MySqlVersionResolver.DetectVersion(ConnectionString);
+        var minVersion = new Version(8, 0, 0);
+        if (detectedVersion < minVersion)
+            throw new NotSupportedException(
+                $"Versión de MySQL no soportada: {detectedVersion}. Requiere {minVersion} o superior."
+            );
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySql(ConnectionString, new MySqlServerVersion(detectedVersion))
+            .Options;
+        return new AppDbContext(options);
     }
 }
