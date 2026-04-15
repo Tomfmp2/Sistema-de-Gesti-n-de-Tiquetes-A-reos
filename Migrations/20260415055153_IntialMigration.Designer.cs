@@ -11,8 +11,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 namespace sistema_gestor_de_tiquetes_aereos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260415033336_CreateContinents")]
-    partial class CreateContinents
+    [Migration("20260415055153_IntialMigration")]
+    partial class IntialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,20 +23,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Domain.Aggregate.Continent", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Continents");
-                });
 
             modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Infrastructure.Entity.ContinentEntity", b =>
                 {
@@ -82,6 +68,45 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                             Id = 5,
                             Name = "Oceanía"
                         });
+                });
+
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity.CountryEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("codeIso")
+                        .IsRequired()
+                        .HasColumnType("varchar(3)")
+                        .HasColumnName("code_iso");
+
+                    b.Property<int>("continentId")
+                        .HasColumnType("int")
+                        .HasColumnName("continent_id");
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("continentId");
+
+                    b.ToTable("countries", (string)null);
+                });
+
+            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity.CountryEntity", b =>
+                {
+                    b.HasOne("sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Infrastructure.Entity.ContinentEntity", null)
+                        .WithMany()
+                        .HasForeignKey("continentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

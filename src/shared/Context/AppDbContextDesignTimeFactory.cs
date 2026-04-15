@@ -1,10 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using MyInventory2026.src.shared.helpers;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
-namespace MyInventory2026.src.shared.context;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
 public sealed class AppDbContextDesignTimeFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
@@ -27,7 +25,7 @@ public sealed class AppDbContextDesignTimeFactory : IDesignTimeDbContextFactory<
             throw new InvalidOperationException("No se encontró una cadena de conexión válida.");
         }
 
-        var detectedVersion = MySqlVersionResolver.DetectVersion(connectionString);
+        var detectedVersion = new Version(8, 0, 0);
         var minVersion = new Version(8, 0, 0);
 
         if (detectedVersion < minVersion)
