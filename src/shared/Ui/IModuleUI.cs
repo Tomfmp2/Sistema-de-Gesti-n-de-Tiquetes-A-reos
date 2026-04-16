@@ -2,5 +2,5 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 public interface IModuleUI
 {
-    void Run();
+    Task RunAsync();
 }

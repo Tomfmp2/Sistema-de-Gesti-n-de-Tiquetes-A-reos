@@ -20,7 +20,7 @@ public class AirportAirlineConsoleUI : IModuleUI
         _deleteUseCase = delete;
     }
 
-    public void Run()
+    public async Task RunAsync()
     {
         while (true)
         {
