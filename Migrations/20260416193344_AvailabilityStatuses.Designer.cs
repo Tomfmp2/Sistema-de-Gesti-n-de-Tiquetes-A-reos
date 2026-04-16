@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -11,9 +12,11 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 namespace sistema_gestor_de_tiquetes_aereos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416193344_AvailabilityStatuses")]
+    partial class AvailabilityStatuses
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -265,40 +268,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .IsUnique();
 
                     b.ToTable("staff");
-                });
-
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity.StaffAvailabilityEntity", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("varchar(36)")
-                        .HasColumnName("id");
-
-                    b.Property<string>("AvailabilityStatusId")
-                        .IsRequired()
-                        .HasColumnType("varchar(36)")
-                        .HasColumnName("availability_status_id");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime")
-                        .HasColumnName("end_date");
-
-                    b.Property<string>("Observation")
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("observation");
-
-                    b.Property<string>("StaffId")
-                        .IsRequired()
-                        .HasColumnType("varchar(36)")
-                        .HasColumnName("staff_id");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime")
-                        .HasColumnName("start_date");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("staff_availability");
                 });
 
             modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Entity.StaffPositionEntity", b =>
