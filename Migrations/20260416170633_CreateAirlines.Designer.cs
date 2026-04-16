@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -11,9 +12,11 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 namespace sistema_gestor_de_tiquetes_aereos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416170633_CreateAirlines")]
+    partial class CreateAirlines
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -63,44 +66,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .IsUnique();
 
                     b.ToTable("airlines", (string)null);
-                });
-
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity.AirportEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CityId")
-                        .HasColumnType("int")
-                        .HasColumnName("city_id");
-
-                    b.Property<string>("IataCode")
-                        .IsRequired()
-                        .HasColumnType("varchar(3)")
-                        .HasColumnName("iata_code");
-
-                    b.Property<string>("IcaoCode")
-                        .HasColumnType("varchar(4)")
-                        .HasColumnName("icao_code");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(150)")
-                        .HasColumnName("name");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IataCode")
-                        .IsUnique();
-
-                    b.HasIndex("IcaoCode")
-                        .IsUnique();
-
-                    b.ToTable("airports", (string)null);
                 });
 
             modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Domain.Aggregate.Continent", b =>

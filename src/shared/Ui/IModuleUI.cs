@@ -1,8 +1,6 @@
-namespace MyInventory2026.src.shared.ui;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 public interface IModuleUI
 {
-    string Key { get; }
-    string Title { get; }
-    Task RunAsync(CancellationToken cancellationToken = default);
+    void Run();
 }

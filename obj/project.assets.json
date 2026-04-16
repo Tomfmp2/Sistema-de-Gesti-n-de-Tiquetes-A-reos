@@ -2855,7 +2855,9 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "Microsoft.EntityFrameworkCore >= 9.0.0",
+      "Microsoft.EntityFrameworkCore.Design >= 9.0.0",
       "Microsoft.EntityFrameworkCore.Tools >= 9.0.0",
+      "Microsoft.Extensions.Configuration >= 10.0.6",
       "Microsoft.Extensions.Configuration.EnvironmentVariables >= 10.0.6",
       "Microsoft.Extensions.Configuration.FileExtensions >= 10.0.6",
       "Microsoft.Extensions.Configuration.Json >= 10.0.6",
@@ -2863,19 +2865,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jhona\\.nuget\\packages\\": {}
+    "/home/tomdev_/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj",
+      "projectUniqueName": "/home/tomdev_/TomDev/Campus/C#/Sistema-de-Gesti-n-de-Tiquetes-A-reos/sistema-gestor-de-tiquetes-aereos.csproj",
       "projectName": "sistema-gestor-de-tiquetes-aereos",
-      "projectPath": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\sistema-gestor-de-tiquetes-aereos.csproj",
-      "packagesPath": "C:\\Users\\jhona\\.nuget\\packages\\",
-      "outputPath": "D:\\CAMPUS\\Programacion\\C#\\codigo\\Sistema-de-Gesti-n-de-Tiquetes-A-reos\\obj\\",
+      "projectPath": "/home/tomdev_/TomDev/Campus/C#/Sistema-de-Gesti-n-de-Tiquetes-A-reos/sistema-gestor-de-tiquetes-aereos.csproj",
+      "packagesPath": "/home/tomdev_/.nuget/packages/",
+      "outputPath": "/home/tomdev_/TomDev/Campus/C#/Sistema-de-Gesti-n-de-Tiquetes-A-reos/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\jhona\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/home/tomdev_/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -2909,11 +2911,21 @@
             "target": "Package",
             "version": "[9.0.0, )"
           },
+          "Microsoft.EntityFrameworkCore.Design": {
+            "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+            "suppressParent": "All",
+            "target": "Package",
+            "version": "[9.0.0, )"
+          },
           "Microsoft.EntityFrameworkCore.Tools": {
             "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
             "suppressParent": "All",
             "target": "Package",
             "version": "[9.0.0, )"
+          },
+          "Microsoft.Extensions.Configuration": {
+            "target": "Package",
+            "version": "[10.0.6, )"
           },
           "Microsoft.Extensions.Configuration.EnvironmentVariables": {
             "target": "Package",
@@ -2948,7 +2960,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.201/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
