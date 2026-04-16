@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -11,9 +12,11 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 namespace sistema_gestor_de_tiquetes_aereos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260416210330_CreateCabinConfiguration")]
+    partial class CreateCabinConfiguration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -398,39 +401,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                             Id = 5,
                             Name = "Oceanía"
                         });
-                });
-
-            modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity.RouteEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DestinationAirportId")
-                        .HasColumnType("int")
-                        .HasColumnName("destination_airport_id");
-
-                    b.Property<int?>("DistanceKm")
-                        .HasColumnType("int")
-                        .HasColumnName("distance_km");
-
-                    b.Property<int?>("EstimatedDurationMin")
-                        .HasColumnType("int")
-                        .HasColumnName("estimated_duration_min");
-
-                    b.Property<int>("OriginAirportId")
-                        .HasColumnType("int")
-                        .HasColumnName("origin_airport_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OriginAirportId", "DestinationAirportId")
-                        .IsUnique();
-
-                    b.ToTable("routes", (string)null);
                 });
 
             modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity.StaffEntity", b =>

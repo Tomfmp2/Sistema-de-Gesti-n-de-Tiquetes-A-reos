@@ -11,6 +11,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infras
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -28,6 +30,8 @@ public class AppDbContext : DbContext
     public DbSet<AircraftModelEntity> AircraftModels { get; set; }
     public DbSet<AircraftEntity> Aircraft { get; set; }
     public DbSet<CabinTypeEntity> CabinTypes { get; set; }
+    public DbSet<CabinConfigurationEntity> CabinConfiguration { get; set; }
+    public DbSet<RouteEntity> Routes { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
