@@ -9,6 +9,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Infrast
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -24,6 +26,8 @@ public class AppDbContext : DbContext
     public DbSet<StaffAvailabilityEntity> StaffAvailabilities { get; set; }
     public DbSet<AircraftManufacturerEntity> AircraftManufacturers { get; set; }
     public DbSet<AircraftModelEntity> AircraftModels { get; set; }
+    public DbSet<AircraftEntity> Aircraft { get; set; }
+    public DbSet<CabinTypeEntity> CabinTypes { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
