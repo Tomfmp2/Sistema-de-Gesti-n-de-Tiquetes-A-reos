@@ -14,6 +14,9 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.En
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -34,6 +37,9 @@ public class AppDbContext : DbContext
     public DbSet<CabinConfigurationEntity> CabinConfiguration { get; set; }
     public DbSet<RouteEntity> Routes { get; set; }
     public DbSet<RouteLayoverEntity> RouteLayovers { get; set; }
+    public DbSet<SeasonEntity> Seasons { get; set; }
+    public DbSet<SeatLocationTypeEntity> SeatLocationTypes { get; set; }
+    public DbSet<FlightStatusEntity> FlightStatuses { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
