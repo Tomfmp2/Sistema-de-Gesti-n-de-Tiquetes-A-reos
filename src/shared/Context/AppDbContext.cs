@@ -4,6 +4,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Enti
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -14,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<AirportEntity> Airports { get; set; }
     public DbSet<AirportAirlineEntity> AirportAirlines { get; set; }
     public DbSet<StaffPositionEntity> StaffPositions { get; set; }
+    public DbSet<StaffEntity> Staff { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
