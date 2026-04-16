@@ -9,6 +9,9 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Ent
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.TicketStatuses.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CheckinStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -25,6 +28,9 @@ public class AppDbContext : DbContext
     public DbSet<ReservationStatusTransitionEntity> ReservationStatusTransitions { get; set; }
     public DbSet<ReservationEntity> Reservations { get; set; }
     public DbSet<TicketStatusEntity> TicketStatuses { get; set; }
+    public DbSet<CheckinStatusEntity> CheckinStatuses { get; set; }
+    public DbSet<CheckinEntity> Checkins { get; set; }
+    public DbSet<TicketEntity> Tickets { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
