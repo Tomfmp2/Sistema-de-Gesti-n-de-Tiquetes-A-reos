@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 
@@ -87,5 +88,13 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
             .HasColumnName("updated_at")
             .HasColumnType("datetime")
             .IsRequired();
+
+        builder.HasIndex(x => x.FlightCode).IsUnique();
+
+        builder
+            .HasOne<FlightStatusEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.FlightStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
