@@ -1,4 +1,5 @@
 ﻿using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 try
 {
@@ -7,6 +8,9 @@ try
     if (context.Database.CanConnect())
     {
         Console.WriteLine("Conexion exitosa");
+        // Aplicar migraciones automáticamente para asegurar que la BD esté actualizada
+        context.Database.Migrate();
+        Console.WriteLine("Migraciones aplicadas correctamente");
     }
     else
     {

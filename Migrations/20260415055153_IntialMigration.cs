@@ -15,79 +15,39 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
         {
             migrationBuilder.AlterDatabase().Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder
-                .CreateTable(
-                    name: "continents",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        name = table
-                            .Column<string>(type: "varchar(50)", nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_continents", x => x.id);
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
+            // Crear tablas de forma idempotente para evitar errores si ya existen
+            migrationBuilder.Sql("""
+                CREATE TABLE IF NOT EXISTS `continents` (
+                    `id` int NOT NULL AUTO_INCREMENT,
+                    `name` varchar(50) CHARACTER SET utf8mb4 NOT NULL,
+                    CONSTRAINT `PK_continents` PRIMARY KEY (`id`)
+                ) CHARACTER SET=utf8mb4;
+                """);
 
-            migrationBuilder
-                .CreateTable(
-                    name: "countries",
-                    columns: table => new
-                    {
-                        id = table
-                            .Column<int>(type: "int", nullable: false)
-                            .Annotation(
-                                "MySql:ValueGenerationStrategy",
-                                MySqlValueGenerationStrategy.IdentityColumn
-                            ),
-                        name = table
-                            .Column<string>(type: "varchar(100)", nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        code_iso = table
-                            .Column<string>(type: "varchar(3)", nullable: false)
-                            .Annotation("MySql:CharSet", "utf8mb4"),
-                        continent_id = table.Column<int>(type: "int", nullable: false),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_countries", x => x.id);
-                        table.ForeignKey(
-                            name: "FK_countries_continents_continent_id",
-                            column: x => x.continent_id,
-                            principalTable: "continents",
-                            principalColumn: "id",
-                            onDelete: ReferentialAction.Restrict
-                        );
-                    }
-                )
-                .Annotation("MySql:CharSet", "utf8mb4");
+            migrationBuilder.Sql("""
+                CREATE TABLE IF NOT EXISTS `countries` (
+                    `id` int NOT NULL AUTO_INCREMENT,
+                    `name` varchar(100) CHARACTER SET utf8mb4 NOT NULL,
+                    `code_iso` varchar(3) CHARACTER SET utf8mb4 NOT NULL,
+                    `continent_id` int NOT NULL,
+                    CONSTRAINT `PK_countries` PRIMARY KEY (`id`),
+                    CONSTRAINT `FK_countries_continents_continent_id` FOREIGN KEY (`continent_id`) REFERENCES `continents` (`id`) ON DELETE RESTRICT
+                ) CHARACTER SET=utf8mb4;
+                """);
 
-            migrationBuilder.InsertData(
-                table: "continents",
-                columns: new[] { "id", "name" },
-                values: new object[,]
-                {
-                    { 1, "América" },
-                    { 2, "Europa" },
-                    { 3, "Asia" },
-                    { 4, "África" },
-                    { 5, "Oceanía" },
-                }
-            );
+            // Insertar datos solo si no existen (usando INSERT IGNORE para evitar duplicados)
+            migrationBuilder.Sql("""
+                INSERT IGNORE INTO `continents` (`id`, `name`) VALUES
+                (1, 'América'),
+                (2, 'Europa'),
+                (3, 'Asia'),
+                (4, 'África'),
+                (5, 'Oceanía');
+                """);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_countries_continent_id",
-                table: "countries",
-                column: "continent_id"
-            );
+            migrationBuilder.Sql("""
+                CREATE INDEX IF NOT EXISTS `IX_countries_continent_id` ON `countries` (`continent_id`);
+                """);
         }
 
         /// <inheritdoc />
