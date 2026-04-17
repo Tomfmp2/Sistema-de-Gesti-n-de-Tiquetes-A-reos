@@ -25,6 +25,24 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatusTransitions
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.TicketStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -56,6 +74,43 @@ public class AppDbContext : DbContext
     public DbSet<CardIssuerEntity> CardIssuers { get; set; }
     public DbSet<PaymentMethodEntity> PaymentMethods { get; set; }
     public DbSet<PaymentEntity> Payments { get; set; }
+    public DbSet<AirlineEntity> Airlines { get; set; }
+    public DbSet<AirportEntity> Airports { get; set; }
+    public DbSet<AirportAirlineEntity> AirportAirlines { get; set; }
+    public DbSet<StaffPositionEntity> StaffPositions { get; set; }
+    public DbSet<StaffEntity> Staff { get; set; }
+    public DbSet<AvailabilityStatusEntity> AvailabilityStatuses { get; set; }
+    public DbSet<StaffAvailabilityEntity> StaffAvailabilities { get; set; }
+    public DbSet<AircraftManufacturerEntity> AircraftManufacturers { get; set; }
+    public DbSet<AircraftModelEntity> AircraftModels { get; set; }
+    public DbSet<AircraftEntity> Aircraft { get; set; }
+    public DbSet<CabinTypeEntity> CabinTypes { get; set; }
+    public DbSet<CabinConfigurationEntity> CabinConfiguration { get; set; }
+    public DbSet<RouteEntity> Routes { get; set; }
+    public DbSet<RouteLayoverEntity> RouteLayovers { get; set; }
+    public DbSet<SeasonEntity> Seasons { get; set; }
+    public DbSet<SeatLocationTypeEntity> SeatLocationTypes { get; set; }
+    public DbSet<FlightAssignmentEntity> FlightAssignments { get; set; }
+    public DbSet<FlightSeatEntity> FlightSeats { get; set; }
+    public DbSet<AirportEntity> Airports { get; set; }
+    public DbSet<AirportAirlineEntity> AirportAirlines { get; set; }
+    public DbSet<StaffPositionEntity> StaffPositions { get; set; }
+    public DbSet<StaffEntity> Staff { get; set; }
+    public DbSet<AvailabilityStatusEntity> AvailabilityStatuses { get; set; }
+    public DbSet<StaffAvailabilityEntity> StaffAvailabilities { get; set; }
+    public DbSet<AircraftManufacturerEntity> AircraftManufacturers { get; set; }
+    public DbSet<AircraftModelEntity> AircraftModels { get; set; }
+    public DbSet<AircraftEntity> Aircraft { get; set; }
+    public DbSet<CabinTypeEntity> CabinTypes { get; set; }
+    public DbSet<CabinConfigurationEntity> CabinConfiguration { get; set; }
+    public DbSet<RouteEntity> Routes { get; set; }
+    public DbSet<RouteLayoverEntity> RouteLayovers { get; set; }
+    public DbSet<SeasonEntity> Seasons { get; set; }
+    public DbSet<SeatLocationTypeEntity> SeatLocationTypes { get; set; }
+    public DbSet<FlightStatusEntity> FlightStatuses { get; set; }
+    public DbSet<FlightAssignmentEntity> FlightAssignments { get; set; }
+    public DbSet<FlightSeatEntity> FlightSeats { get; set; }
+>>>>>>> f1e8e94c3aa37eef67568b2e7dff7bf91ef41f3a
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

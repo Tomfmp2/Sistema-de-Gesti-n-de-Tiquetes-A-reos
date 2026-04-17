@@ -1,21 +1,20 @@
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Domain.ValueObjet;
 
-public sealed record CountryId
+public sealed class CountryId
 {
-    public string Value { get; }
+    public int Value { get; }
 
-    public CountryId(string value)
-    {
-        Value = value;
-    }
+    public CountryId(int value) => Value = value;
 
-    public static CountryId Create(string value)
+    public static CountryId Unpersisted => new(0);
+
+    public static CountryId Create(int value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (value < 1)
         {
-            throw new ArgumentException("El valor no puede ser nulo ni vacío");
+            throw new ArgumentOutOfRangeException(nameof(value), "CountryId debe ser mayor que 0.");
         }
 
-        return new CountryId(value.Trim());
+        return new CountryId(value);
     }
 }
