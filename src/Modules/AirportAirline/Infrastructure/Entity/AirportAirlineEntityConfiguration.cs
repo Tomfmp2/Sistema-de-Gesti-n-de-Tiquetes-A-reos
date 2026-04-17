@@ -57,12 +57,16 @@ public sealed class AirportAirlineEntityConfiguration : IEntityTypeConfiguration
             .HasColumnType("tinyint(1)")
             .IsRequired();
 
-        // builder.HasOne<AirportEntity>()
-        //     .WithMany()
-        //     .HasForeignKey(x => x.AirportId);
+        builder
+            .HasOne(x => x.Airport)
+            .WithMany(x => x.AirportAirlines)
+            .HasForeignKey(x => x.AirportId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        // builder.HasOne<AirlineEntity>()
-        //     .WithMany()
-        //     .HasForeignKey(x => x.AirlineId);
+        builder
+            .HasOne(x => x.Airline)
+            .WithMany()
+            .HasForeignKey(x => x.AirlineId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-// using sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 
@@ -56,8 +57,9 @@ public sealed class AirlineEntityConfiguration : IEntityTypeConfiguration<Airlin
             .HasColumnType("datetime")
             .IsRequired();
 
-        // builder.HasOne<CountryEntity>()
-        //     .WithMany()
-        //     .HasForeignKey(x => x.OriginCountryId);
+        builder.HasOne<CountryEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.OriginCountryId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

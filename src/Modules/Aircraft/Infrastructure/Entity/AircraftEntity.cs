@@ -1,5 +1,9 @@
 using Aggregate = sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Domain.ValueObject;
+using System.Collections.Generic;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
 
@@ -12,9 +16,10 @@ public class AircraftEntity
     public DateOnly? ManufacturingDate { get; set; }
     public bool IsActive { get; set; }
 
-    // Foreign key navigation properties (commented until related entities exist)
-    // public AircraftModelEntity? Model { get; set; }
-    // public AirlineEntity? Airline { get; set; }
+    // Navigation properties
+    public AircraftModelEntity? Model { get; set; }
+    public AirlineEntity? Airline { get; set; }
+    public ICollection<FlightEntity> Flights { get; set; } = new List<FlightEntity>();
 
     public static AircraftEntity FromDomain(Aggregate.Aircraft aircraft)
     {

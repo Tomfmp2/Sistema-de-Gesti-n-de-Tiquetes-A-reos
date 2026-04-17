@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 
@@ -12,4 +15,8 @@ public class AirlineEntity
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+
+    // Navigation properties
+    public CountryEntity? OriginCountry { get; set; }
+    public ICollection<AirportAirlineEntity> AirportAirlines { get; set; } = new List<AirportAirlineEntity>();
 }
