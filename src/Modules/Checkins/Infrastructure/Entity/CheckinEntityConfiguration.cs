@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CheckinStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Infrastructure.Entity;
@@ -80,6 +82,18 @@ public class CheckinEntityConfiguration : IEntityTypeConfiguration<CheckinEntity
             .HasOne<CheckinStatusEntity>()
             .WithMany()
             .HasForeignKey(x => x.CheckinStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<StaffEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.StaffId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<FlightSeatEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.FlightSeatId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

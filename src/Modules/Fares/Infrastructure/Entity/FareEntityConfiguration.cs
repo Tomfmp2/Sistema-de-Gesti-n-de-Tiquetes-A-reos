@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.PassengerTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Infrastructure.Entity;
 
@@ -56,5 +60,29 @@ public class FareEntityConfiguration : IEntityTypeConfiguration<FareEntity>
             .Property(x => x.ValidTo)
             .HasColumnName("valid_to")
             .HasColumnType("date");
+
+        builder
+            .HasOne<RouteEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.RouteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<CabinTypeEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.CabinTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<PassengerTypeEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.PassengerTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<SeasonEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.SeasonId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
