@@ -37,8 +37,8 @@ public class CountryEntityConfiguration : IEntityTypeConfiguration<CountryEntity
             .IsRequired();
 
         builder
-            .HasOne<ContinentEntity>()
-            .WithMany()
+            .HasOne(x => x.Continent)
+            .WithMany(x => x.Countries)
             .HasForeignKey(x => x.ContinentId)
             .OnDelete(DeleteBehavior.Restrict);
 
