@@ -1,0 +1,15 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructure.Entity;
+
+[Table("airport_airline")]
+public class AirportAirlineEntity
+{
+    public int Id { get; set; }
+    public int AirportId { get; set; }
+    public int AirlineId { get; set; }
+    public string? Terminal { get; set; }
+    public DateOnly StartDate { get; set; }
+    public DateOnly? EndDate { get; set; }
+    public bool IsActive { get; set; }
+}

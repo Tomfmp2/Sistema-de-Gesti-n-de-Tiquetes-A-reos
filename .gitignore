@@ -48,6 +48,13 @@ artifacts/
 *.deps.json
 *.runtimeconfig.json
 *.runtimeconfig.dev.json
+
+# === IDE y configuraciones locales ===
+.vscode/
+
+# === Archivos específicos del proyecto ===
+prompt.txt
+cantidad_de_tablas.txt
 *.dll.config
 *.exe.config
 
@@ -108,8 +115,9 @@ CodeCoverage/
 local.settings.json
 
 # === Config de app (buenas prácticas) ===
-# Versionar appsettings.json y appsettings.{Env}.json, pero NO variantes locales:
-appsettings.*.local.json
+# No versionar archivos de configuración locales o sensibles:
+appsettings.json
+appsettings.*.json
 
 # === Certificados / claves locales ===
 *.pfx
