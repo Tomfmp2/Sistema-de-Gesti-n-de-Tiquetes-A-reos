@@ -62,19 +62,19 @@ public class InvoiceItemEntityConfiguration : IEntityTypeConfiguration<InvoiceIt
             .HasColumnType("int");
 
         builder
-            .HasOne<InvoiceEntity>()
-            .WithMany()
+            .HasOne(x => x.Invoice)
+            .WithMany(i => i.InvoiceItems)
             .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<InvoiceItemTypeEntity>()
+            .HasOne(x => x.InvoiceItemType)
             .WithMany()
             .HasForeignKey(x => x.InvoiceItemTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<ReservationPassengerEntity>()
+            .HasOne(x => x.ReservationPassenger)
             .WithMany()
             .HasForeignKey(x => x.ReservationPassengerId)
             .OnDelete(DeleteBehavior.Restrict);
