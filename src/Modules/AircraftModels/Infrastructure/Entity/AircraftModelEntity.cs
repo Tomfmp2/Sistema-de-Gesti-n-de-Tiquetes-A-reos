@@ -1,5 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Entity;
 
@@ -30,4 +33,8 @@ public class AircraftModelEntity
 
     [Column("cruising_altitude_ft")]
     public int? CruisingAltitudeFt { get; set; }
+
+    // Navigation properties
+    public AircraftManufacturerEntity? Manufacturer { get; set; }
+    public ICollection<AircraftEntity> Aircrafts { get; set; } = new List<AircraftEntity>();
 }
