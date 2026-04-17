@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Invoices.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.InvoiceItems.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Invoices.Infrastructure.Entity;
 
@@ -26,9 +28,8 @@ public class InvoiceEntityConfiguration : IEntityTypeConfiguration<InvoiceEntity
 
         builder
             .Property(x => x.Number)
-            .HasColumnName("invoice_number")
-            .HasColumnType("varchar(30)")
-            .IsRequired();
+            .HasColumnName("number")
+            .HasColumnType("varchar(50)");
 
         builder
             .Property(x => x.IssueDate)
@@ -60,13 +61,20 @@ public class InvoiceEntityConfiguration : IEntityTypeConfiguration<InvoiceEntity
             .HasColumnType("datetime")
             .IsRequired();
 
-        builder.HasIndex(x => x.ReservationId).IsUnique();
-        builder.HasIndex(x => x.Number).IsUnique();
-
+        // Relationships
         builder
-            .HasOne<ReservationEntity>()
+            .HasOne(x => x.Reservation)
             .WithMany()
             .HasForeignKey(x => x.ReservationId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasMany(x => x.InvoiceItems)
+            .WithOne(ii => ii.Invoice)
+            .HasForeignKey("invoice_id")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(x => x.ReservationId);
+        builder.HasIndex(x => x.Number).IsUnique();
     }
 }
