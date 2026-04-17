@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("sistema-gestor-de-tiquetes-aereos")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+91757efa03a693ceea5f5d0f6d1476eae44c9e51")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cff59f1794c931d15ec2d4e86b3ae6530a99aa19")]
 [assembly: System.Reflection.AssemblyProductAttribute("sistema-gestor-de-tiquetes-aereos")]
 [assembly: System.Reflection.AssemblyTitleAttribute("sistema-gestor-de-tiquetes-aereos")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
