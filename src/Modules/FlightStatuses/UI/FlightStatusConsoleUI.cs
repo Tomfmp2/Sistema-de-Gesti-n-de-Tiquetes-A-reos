@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.UseCases;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObject;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.UI;
@@ -62,7 +62,7 @@ public class FlightStatusConsoleUI : IModuleUI
     {
         Console.Write("Name: ");
         var name = Console.ReadLine();
-        await _createUseCase.ExecuteAsync(FlightStatusName.Create(name));
+        await _createUseCase.ExecuteAsync(new CreateFlightStatusRequest(name));
         Console.WriteLine("Flight Status created");
     }
 
@@ -70,7 +70,7 @@ public class FlightStatusConsoleUI : IModuleUI
     {
         Console.Write("ID: ");
         var id = int.Parse(Console.ReadLine());
-        var flightStatus = await _getByIdUseCase.ExecuteAsync(FlightStatusId.Create(id));
+        var flightStatus = await _getByIdUseCase.ExecuteAsync(id);
         if (flightStatus != null)
         {
             Console.WriteLine($"ID: {flightStatus.Id.Value}, Name: {flightStatus.Name.Value}");
@@ -96,7 +96,7 @@ public class FlightStatusConsoleUI : IModuleUI
         var id = int.Parse(Console.ReadLine());
         Console.Write("Name: ");
         var name = Console.ReadLine();
-        await _updateUseCase.ExecuteAsync(FlightStatusId.Create(id), FlightStatusName.Create(name));
+        await _updateUseCase.ExecuteAsync(new UpdateFlightStatusRequest(id, name));
         Console.WriteLine("Flight Status updated");
     }
 
@@ -104,7 +104,7 @@ public class FlightStatusConsoleUI : IModuleUI
     {
         Console.Write("ID: ");
         var id = int.Parse(Console.ReadLine());
-        await _deleteUseCase.ExecuteAsync(FlightStatusId.Create(id));
+        await _deleteUseCase.ExecuteAsync(id);
         Console.WriteLine("Flight Status deleted");
     }
 }

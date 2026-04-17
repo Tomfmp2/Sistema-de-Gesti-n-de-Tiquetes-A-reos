@@ -92,25 +92,6 @@ public class AppDbContext : DbContext
     public DbSet<SeatLocationTypeEntity> SeatLocationTypes { get; set; }
     public DbSet<FlightAssignmentEntity> FlightAssignments { get; set; }
     public DbSet<FlightSeatEntity> FlightSeats { get; set; }
-    public DbSet<AirportEntity> Airports { get; set; }
-    public DbSet<AirportAirlineEntity> AirportAirlines { get; set; }
-    public DbSet<StaffPositionEntity> StaffPositions { get; set; }
-    public DbSet<StaffEntity> Staff { get; set; }
-    public DbSet<AvailabilityStatusEntity> AvailabilityStatuses { get; set; }
-    public DbSet<StaffAvailabilityEntity> StaffAvailabilities { get; set; }
-    public DbSet<AircraftManufacturerEntity> AircraftManufacturers { get; set; }
-    public DbSet<AircraftModelEntity> AircraftModels { get; set; }
-    public DbSet<AircraftEntity> Aircraft { get; set; }
-    public DbSet<CabinTypeEntity> CabinTypes { get; set; }
-    public DbSet<CabinConfigurationEntity> CabinConfiguration { get; set; }
-    public DbSet<RouteEntity> Routes { get; set; }
-    public DbSet<RouteLayoverEntity> RouteLayovers { get; set; }
-    public DbSet<SeasonEntity> Seasons { get; set; }
-    public DbSet<SeatLocationTypeEntity> SeatLocationTypes { get; set; }
-    public DbSet<FlightStatusEntity> FlightStatuses { get; set; }
-    public DbSet<FlightAssignmentEntity> FlightAssignments { get; set; }
-    public DbSet<FlightSeatEntity> FlightSeats { get; set; }
->>>>>>> f1e8e94c3aa37eef67568b2e7dff7bf91ef41f3a
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
