@@ -11,10 +11,10 @@ public class StaffAvailabilityEntity
     public Guid Id { get; set; }
 
     [Column("staff_id")]
-    public Guid StaffId { get; set; }
+    public int StaffId { get; set; }
 
     [Column("availability_status_id")]
-    public Guid AvailabilityStatusId { get; set; }
+    public int AvailabilityStatusId { get; set; }
 
     [Column("start_date")]
     public DateTime StartDate { get; set; }

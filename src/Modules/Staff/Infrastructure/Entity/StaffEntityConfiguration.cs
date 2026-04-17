@@ -1,6 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 
@@ -20,10 +25,35 @@ public class StaffEntityConfiguration : IEntityTypeConfiguration<StaffEntity>
         builder.Property(e => e.UpdatedAt).IsRequired();
         builder.HasIndex(e => e.PersonId).IsUnique();
 
-        // Foreign keys commented out until related modules are created
-        // builder.HasOne(/* related entity */).WithMany().HasForeignKey(e => e.PersonId);
-        // builder.HasOne(/* related entity */).WithMany().HasForeignKey(e => e.PositionId);
-        // builder.HasOne(/* related entity */).WithMany().HasForeignKey(e => e.AirlineId);
-        // builder.HasOne(/* related entity */).WithMany().HasForeignKey(e => e.AirportId);
+        // Relationships
+        builder
+            .HasOne(e => e.Person)
+            .WithMany()
+            .HasForeignKey(e => e.PersonId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne(e => e.Position)
+            .WithMany()
+            .HasForeignKey(e => e.PositionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne(e => e.Airline)
+            .WithMany()
+            .HasForeignKey(e => e.AirlineId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder
+            .HasOne(e => e.Airport)
+            .WithMany()
+            .HasForeignKey(e => e.AirportId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder
+            .HasMany(e => e.FlightAssignments)
+            .WithOne(fa => fa.Staff)
+            .HasForeignKey("staff_id")
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

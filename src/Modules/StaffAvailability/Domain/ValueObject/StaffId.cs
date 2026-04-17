@@ -4,19 +4,19 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Domain
 
 public sealed class StaffId
 {
-    public Guid Value { get; }
+    public int Value { get; }
 
-    private StaffId(Guid value)
+    private StaffId(int value)
     {
         Value = value;
     }
 
-    public static StaffId Create(Guid value)
+    public static StaffId Create(int value)
     {
         return new StaffId(value);
     }
 
-    public static StaffId Reconstitute(Guid value)
+    public static StaffId Reconstitute(int value)
     {
         return new StaffId(value);
     }

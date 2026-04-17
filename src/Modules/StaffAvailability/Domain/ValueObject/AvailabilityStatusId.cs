@@ -4,19 +4,19 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Domain
 
 public sealed class AvailabilityStatusId
 {
-    public Guid Value { get; }
+    public int Value { get; }
 
-    private AvailabilityStatusId(Guid value)
+    private AvailabilityStatusId(int value)
     {
         Value = value;
     }
 
-    public static AvailabilityStatusId Create(Guid value)
+    public static AvailabilityStatusId Create(int value)
     {
         return new AvailabilityStatusId(value);
     }
 
-    public static AvailabilityStatusId Reconstitute(Guid value)
+    public static AvailabilityStatusId Reconstitute(int value)
     {
         return new AvailabilityStatusId(value);
     }

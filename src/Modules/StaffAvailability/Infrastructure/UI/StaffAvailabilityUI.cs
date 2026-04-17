@@ -75,12 +75,12 @@ public class StaffAvailabilityUI : IModuleUI
             var id = Guid.Parse(Console.ReadLine()!);
             var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
-            Console.Write("Enter Staff ID (GUID): ");
-            var staffIdValue = Guid.Parse(Console.ReadLine()!);
+            Console.Write("Enter Staff ID (int): ");
+            var staffIdValue = int.Parse(Console.ReadLine()!);
             var staffId = StaffId.Create(staffIdValue);
 
-            Console.Write("Enter Availability Status ID (GUID): ");
-            var availabilityStatusIdValue = Guid.Parse(Console.ReadLine()!);
+            Console.Write("Enter Availability Status ID (int): ");
+            var availabilityStatusIdValue = int.Parse(Console.ReadLine()!);
             var availabilityStatusId = AvailabilityStatusId.Create(availabilityStatusIdValue);
 
             Console.Write("Enter Start Date (yyyy-MM-dd): ");
@@ -142,12 +142,12 @@ public class StaffAvailabilityUI : IModuleUI
             var id = Guid.Parse(Console.ReadLine()!);
             var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
-            Console.Write("Enter new Staff ID (GUID): ");
-            var staffIdValue = Guid.Parse(Console.ReadLine()!);
+            Console.Write("Enter new Staff ID (int): ");
+            var staffIdValue = int.Parse(Console.ReadLine()!);
             var staffId = StaffId.Create(staffIdValue);
 
-            Console.Write("Enter new Availability Status ID (GUID): ");
-            var availabilityStatusIdValue = Guid.Parse(Console.ReadLine()!);
+            Console.Write("Enter new Availability Status ID (int): ");
+            var availabilityStatusIdValue = int.Parse(Console.ReadLine()!);
             var availabilityStatusId = AvailabilityStatusId.Create(availabilityStatusIdValue);
 
             Console.Write("Enter new Start Date (yyyy-MM-dd): ");

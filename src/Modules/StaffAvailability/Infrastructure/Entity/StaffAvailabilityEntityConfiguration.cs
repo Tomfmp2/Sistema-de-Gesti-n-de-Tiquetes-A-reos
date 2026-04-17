@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity;
@@ -40,15 +42,14 @@ public class StaffAvailabilityEntityConfiguration : IEntityTypeConfiguration<Sta
             .HasColumnType("varchar(255)")
             .IsRequired(false);
 
-        // Foreign key constraints (commented out until related entities are created)
-        // builder.HasOne<StaffEntity>()
-        //     .WithMany()
-        //     .HasForeignKey(sa => sa.StaffId)
-        //     .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<StaffEntity>()
+            .WithMany()
+            .HasForeignKey(sa => sa.StaffId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        // builder.HasOne<AvailabilityStatusEntity>()
-        //     .WithMany()
-        //     .HasForeignKey(sa => sa.AvailabilityStatusId)
-        //     .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<AvailabilityStatusEntity>()
+            .WithMany()
+            .HasForeignKey(sa => sa.AvailabilityStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
