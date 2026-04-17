@@ -1,3 +1,12 @@
+using System.Collections.Generic;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Infrastructure.Entity;
+
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 
 public class FlightEntity
@@ -15,4 +24,13 @@ public class FlightEntity
     public DateTime? RescheduledAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+
+    // Navigation properties
+    public AirlineEntity? Airline { get; set; }
+    public RouteEntity? Route { get; set; }
+    public AircraftEntity? Aircraft { get; set; }
+    public FlightStatusEntity? FlightStatus { get; set; }
+    public ICollection<FlightAssignmentEntity> FlightAssignments { get; set; } = new List<FlightAssignmentEntity>();
+    public ICollection<FlightSeatEntity> FlightSeats { get; set; } = new List<FlightSeatEntity>();
+    public ICollection<ReservationFlightEntity> ReservationFlights { get; set; } = new List<ReservationFlightEntity>();
 }

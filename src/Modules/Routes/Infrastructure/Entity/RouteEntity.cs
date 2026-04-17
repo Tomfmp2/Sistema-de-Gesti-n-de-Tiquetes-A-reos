@@ -1,5 +1,8 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject;
+using System.Collections.Generic;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
 
@@ -10,6 +13,11 @@ public class RouteEntity
     public int DestinationAirportId { get; set; }
     public int? DistanceKm { get; set; }
     public int? EstimatedDurationMin { get; set; }
+
+    // Navigation properties
+    public AirportEntity? OriginAirport { get; set; }
+    public AirportEntity? DestinationAirport { get; set; }
+    public ICollection<FlightEntity> Flights { get; set; } = new List<FlightEntity>();
 
     public static RouteEntity FromDomain(Route route)
     {

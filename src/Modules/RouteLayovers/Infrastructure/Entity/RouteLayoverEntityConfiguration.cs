@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Entity;
@@ -16,5 +18,17 @@ public class RouteLayoverEntityConfiguration : IEntityTypeConfiguration<RouteLay
         builder.Property(rl => rl.SequenceOrder).HasColumnName("sequence_order").IsRequired();
         builder.Property(rl => rl.LayoverDurationMin).HasColumnName("layover_duration_min").IsRequired().HasDefaultValue(0);
         builder.HasIndex(rl => new { rl.RouteId, rl.SequenceOrder }).IsUnique();
+
+        builder
+            .HasOne<RouteEntity>()
+            .WithMany()
+            .HasForeignKey(rl => rl.RouteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<AirportEntity>()
+            .WithMany()
+            .HasForeignKey(rl => rl.LayoverAirportId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

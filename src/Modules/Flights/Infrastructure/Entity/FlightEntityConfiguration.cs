@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 
@@ -90,6 +93,24 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
             .IsRequired();
 
         builder.HasIndex(x => x.FlightCode).IsUnique();
+
+        builder
+            .HasOne<AirlineEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.AirlineId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<RouteEntity>()
+            .WithMany(x => x.Flights)
+            .HasForeignKey(x => x.RouteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<AircraftEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.AircraftId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder
             .HasOne<FlightStatusEntity>()
