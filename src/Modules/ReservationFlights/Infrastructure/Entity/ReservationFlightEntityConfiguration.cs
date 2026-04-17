@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Infrastructure.Entity;
@@ -42,6 +43,12 @@ public class ReservationFlightEntityConfiguration : IEntityTypeConfiguration<Res
             .HasOne<ReservationEntity>()
             .WithMany()
             .HasForeignKey(x => x.ReservationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<FlightEntity>()
+            .WithMany()
+            .HasForeignKey(x => x.FlightId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

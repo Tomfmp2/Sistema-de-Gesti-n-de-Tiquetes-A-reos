@@ -63,19 +63,19 @@ public class PaymentEntityConfiguration : IEntityTypeConfiguration<PaymentEntity
             .IsRequired();
 
         builder
-            .HasOne<ReservationEntity>()
+            .HasOne(x => x.Reservation)
             .WithMany()
             .HasForeignKey(x => x.ReservationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<PaymentStatusEntity>()
+            .HasOne(x => x.PaymentStatus)
             .WithMany()
             .HasForeignKey(x => x.PaymentStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<PaymentMethodEntity>()
+            .HasOne(x => x.PaymentMethod)
             .WithMany()
             .HasForeignKey(x => x.PaymentMethodId)
             .OnDelete(DeleteBehavior.Restrict);
