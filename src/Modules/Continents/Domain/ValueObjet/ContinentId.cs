@@ -1,23 +1,20 @@
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Domain.ValueObjet;
 
-public sealed record ContinentsId
+public sealed class ContinentId
 {
-    public string Value { get; }
+    public int Value { get; }
 
-    public ContinentsId(string value)
-    {
-        Value = value;
-    }
+    public ContinentId(int value) => Value = value;
 
-    public static ContinentsId Create(string value)
+    public static ContinentId Unpersisted => new(0);
+
+    public static ContinentId Create(int value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (value < 1)
         {
-            throw new ArgumentException("El valor no puede estar vacío.");
+            throw new ArgumentOutOfRangeException(nameof(value), "ContinentId debe ser mayor que 0.");
         }
 
-        return new ContinentsId(value.Trim());
+        return new ContinentId(value);
     }
-
-    public override string ToString() => Value;
 }

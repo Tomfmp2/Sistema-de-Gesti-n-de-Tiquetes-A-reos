@@ -1,0 +1,34 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.PhoneCodes.Infrastructure.Entity;
+
+public sealed class PhoneCodeEntityConfiguration : IEntityTypeConfiguration<PhoneCodeEntity>
+{
+    public void Configure(EntityTypeBuilder<PhoneCodeEntity> builder)
+    {
+        builder.ToTable("phone_codes");
+
+        builder.HasKey(x => x.Id);
+        builder
+            .Property(x => x.Id)
+            .HasColumnName("id")
+            .HasColumnType("int")
+            .ValueGeneratedOnAdd()
+            .IsRequired();
+
+        builder
+            .Property(x => x.CountryDialCode)
+            .HasColumnName("country_dial_code")
+            .HasColumnType("varchar(5)")
+            .IsRequired();
+
+        builder
+            .Property(x => x.CountryName)
+            .HasColumnName("country_name")
+            .HasColumnType("varchar(100)")
+            .IsRequired();
+
+        builder.HasIndex(x => x.CountryDialCode).IsUnique();
+    }
+}

@@ -1,15 +1,15 @@
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Domain.ValueObjet;
 
-public sealed record ContinentsName
+public sealed record ContinentName
 {
     public string Value { get; }
 
-    public ContinentsName(string value)
+    public ContinentName(string value)
     {
         Value = value;
     }
 
-    public static ContinentsName Create(string value)
+    public static ContinentName Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
@@ -23,7 +23,7 @@ public sealed record ContinentsName
             );
         }
 
-        return new ContinentsName(value.Trim());
+        return new ContinentName(value.Trim());
     }
 
     public override string ToString() => Value;
