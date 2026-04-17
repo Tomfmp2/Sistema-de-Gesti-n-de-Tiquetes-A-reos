@@ -1,7 +1,7 @@
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Application.Interfaces;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.Interfaces;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Domain.ValueObject;
 
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Application.UseCases;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.UseCases;
 
 public sealed class DeleteFlightSeatUseCase
 {

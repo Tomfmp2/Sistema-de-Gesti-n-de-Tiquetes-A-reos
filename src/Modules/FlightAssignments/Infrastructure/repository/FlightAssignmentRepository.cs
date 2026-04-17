@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Domain.Aggregate;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Domain.Repositories;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Domain.ValueObject;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.Aggregate;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.Repositories;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
 
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Infrastructure.repository;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.repository;
 
 public sealed class FlightAssignmentRepository : IFlightAssignmentRepository
 {

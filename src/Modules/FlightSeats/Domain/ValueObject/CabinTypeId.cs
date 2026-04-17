@@ -1,4 +1,4 @@
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Domain.ValueObject;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Domain.ValueObject;
 
 public sealed class CabinTypeId
 {

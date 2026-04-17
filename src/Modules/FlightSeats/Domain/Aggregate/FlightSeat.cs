@@ -1,6 +1,6 @@
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Domain.ValueObject;
 
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Domain.Aggregate;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Domain.Aggregate;
 
 public sealed class FlightSeat
 {

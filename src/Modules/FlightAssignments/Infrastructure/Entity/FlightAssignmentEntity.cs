@@ -1,4 +1,4 @@
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Infrastructure.Entity;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
 
 public sealed class FlightAssignmentEntity
 {

@@ -1,4 +1,4 @@
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Infrastructure.Entity;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
 
 public sealed class FlightSeatEntity
 {

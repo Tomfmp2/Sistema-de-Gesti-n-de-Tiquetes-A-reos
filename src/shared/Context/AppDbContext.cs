@@ -17,8 +17,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 

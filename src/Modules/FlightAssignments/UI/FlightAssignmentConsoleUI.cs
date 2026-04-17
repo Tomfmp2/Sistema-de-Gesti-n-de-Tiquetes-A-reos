@@ -1,7 +1,7 @@
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Application.Interfaces;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Application.Interfaces;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Application.UseCases;
 
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.UI;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.UI;
 
 public sealed class FlightAssignmentConsoleUI
 {

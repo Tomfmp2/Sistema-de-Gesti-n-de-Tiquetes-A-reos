@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Domain.Aggregate;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Domain.Repositories;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Domain.ValueObject;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Domain.Aggregate;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Domain.Repositories;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
 
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Infrastructure.repository;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.repository;
 
 public sealed class FlightSeatRepository : IFlightSeatRepository
 {

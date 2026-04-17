@@ -1,7 +1,7 @@
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Application.Interfaces;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.Interfaces;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.UseCases;
 
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightSeats.UI;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.UI;
 
 public sealed class FlightSeatConsoleUI
 {

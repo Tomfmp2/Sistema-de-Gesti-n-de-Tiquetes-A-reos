@@ -1,7 +1,7 @@
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Domain.Aggregate;
-using sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.Aggregate;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.ValueObject;
 
-namespace sistema_gestor_de_tiquetes_aereos.src.Modules.FlightAssignments.Domain.Repositories;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.Repositories;
 
 public interface IFlightAssignmentRepository
 {
