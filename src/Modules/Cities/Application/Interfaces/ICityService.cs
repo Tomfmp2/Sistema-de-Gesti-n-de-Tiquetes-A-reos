@@ -14,10 +14,7 @@ public interface ICityService
 
     Task<IReadOnlyList<City>> GetAllAsync(CancellationToken cancellationToken = default);
 
-    Task UpdateAsync(
-        UpdateCityRequest request,
-        CancellationToken cancellationToken = default
-    );
+    Task UpdateAsync(UpdateCityRequest request, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 }
