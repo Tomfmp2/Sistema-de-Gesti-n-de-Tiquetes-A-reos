@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
 
@@ -9,8 +8,21 @@ public class FlightStatusEntityConfiguration : IEntityTypeConfiguration<FlightSt
     public void Configure(EntityTypeBuilder<FlightStatusEntity> builder)
     {
         builder.ToTable("flight_statuses");
-        builder.HasKey(fs => fs.Id);
-        builder.Property(fs => fs.Id).HasColumnName("id").ValueGeneratedOnAdd();
-        builder.Property(fs => fs.Name).HasColumnName("name").IsRequired().HasMaxLength(50);
+
+        builder.HasKey(x => x.Id);
+        builder
+            .Property(x => x.Id)
+            .HasColumnName("id")
+            .HasColumnType("int")
+            .ValueGeneratedOnAdd()
+            .IsRequired();
+
+        builder
+            .Property(x => x.Name)
+            .HasColumnName("name")
+            .HasColumnType("varchar(50)")
+            .IsRequired();
+
+        builder.HasIndex(x => x.Name).IsUnique();
     }
 }

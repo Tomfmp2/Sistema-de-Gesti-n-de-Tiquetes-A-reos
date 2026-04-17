@@ -1,16 +1,13 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Aggregate;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Repositories;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObjet;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.repository;
 
-public class FlightStatusRepository : IFlightStatusRepository
+public sealed class FlightStatusRepository : IFlightStatusRepository
 {
     private readonly AppDbContext _context;
 
@@ -19,39 +16,87 @@ public class FlightStatusRepository : IFlightStatusRepository
         _context = context;
     }
 
-    public async Task<FlightStatus> GetByIdAsync(FlightStatusId id)
+    public async Task<FlightStatus?> GetByIdAsync(FlightStatusId id, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.FlightStatuses.FindAsync(id.Value);
-        return entity?.ToDomain();
-    }
-
-    public async Task<IEnumerable<FlightStatus>> GetAllAsync()
-    {
-        var entities = await _context.FlightStatuses.ToListAsync();
-        return entities.Select(e => e.ToDomain());
-    }
-
-    public async Task AddAsync(FlightStatus flightStatus)
-    {
-        var entity = FlightStatusEntity.FromDomain(flightStatus);
-        _context.FlightStatuses.Add(entity);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateAsync(FlightStatus flightStatus)
-    {
-        var entity = FlightStatusEntity.FromDomain(flightStatus);
-        _context.FlightStatuses.Update(entity);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(FlightStatusId id)
-    {
-        var entity = await _context.FlightStatuses.FindAsync(id.Value);
-        if (entity != null)
+        if (id.Value < 1)
         {
-            _context.FlightStatuses.Remove(entity);
-            await _context.SaveChangesAsync();
+            return null;
         }
+
+        var e = await _context.Set<FlightStatusEntity>().AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id.Value, cancellationToken);
+        return e is null ? null : ToDomain(e);
+    }
+
+    public async Task<IReadOnlyList<FlightStatus>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var list = await _context.Set<FlightStatusEntity>().AsNoTracking().ToListAsync(cancellationToken);
+        return list.Select(ToDomain).ToList();
+    }
+
+    public async Task<FlightStatus> AddAsync(FlightStatus entity, CancellationToken cancellationToken = default)
+    {
+        if (entity.Id.Value != 0)
+        {
+            throw new InvalidOperationException("Use Id en 0 para insertar.");
+        }
+
+        var e = new FlightStatusEntity
+        {
+            Name = entity.Name.Value,
+        };
+        _context.Set<FlightStatusEntity>().Add(e);
+        await _context.SaveChangesAsync(cancellationToken);
+        return ToDomain(e);
+    }
+
+    public async Task UpdateAsync(FlightStatus entity, CancellationToken cancellationToken = default)
+    {
+        if (entity.Id.Value < 1)
+        {
+            throw new InvalidOperationException("Id inválido.");
+        }
+
+        var e = await _context.Set<FlightStatusEntity>().FirstOrDefaultAsync(
+            x => x.Id == entity.Id.Value,
+            cancellationToken
+        );
+
+        if (e is null)
+        {
+            throw new InvalidOperationException($"No existe flightstatus {entity.Id.Value}.");
+        }
+
+        e.Name = entity.Name.Value;
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteAsync(FlightStatusId id, CancellationToken cancellationToken = default)
+    {
+        if (id.Value < 1)
+        {
+            return;
+        }
+
+        var e = await _context.Set<FlightStatusEntity>().FirstOrDefaultAsync(
+            x => x.Id == id.Value,
+            cancellationToken
+        );
+
+        if (e is null)
+        {
+            return;
+        }
+
+        _context.Set<FlightStatusEntity>().Remove(e);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static FlightStatus ToDomain(FlightStatusEntity e)
+    {
+        return FlightStatus.Create(
+            FlightStatusId.Create(e.Id),
+    FlightStatusName.Create(e.Name)
+        );
     }
 }

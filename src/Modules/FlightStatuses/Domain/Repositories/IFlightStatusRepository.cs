@@ -1,15 +1,13 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Aggregate;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObjet;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Repositories;
 
 public interface IFlightStatusRepository
 {
-    Task<FlightStatus> GetByIdAsync(FlightStatusId id);
-    Task<IEnumerable<FlightStatus>> GetAllAsync();
-    Task AddAsync(FlightStatus flightStatus);
-    Task UpdateAsync(FlightStatus flightStatus);
-    Task DeleteAsync(FlightStatusId id);
+    Task<FlightStatus?> GetByIdAsync(FlightStatusId id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FlightStatus>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<FlightStatus> AddAsync(FlightStatus entity, CancellationToken cancellationToken = default);
+    Task UpdateAsync(FlightStatus entity, CancellationToken cancellationToken = default);
+    Task DeleteAsync(FlightStatusId id, CancellationToken cancellationToken = default);
 }

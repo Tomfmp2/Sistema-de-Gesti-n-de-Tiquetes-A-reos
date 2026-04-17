@@ -1,10 +1,14 @@
-using System.Collections.Generic;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.Interfaces;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Aggregate;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Repositories;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.UseCases;
 
-public class GetAllFlightStatusesUseCase
+public interface IGetAllFlightStatusesUseCase
+{
+    Task<IReadOnlyList<FlightStatus>> ExecuteAsync(CancellationToken cancellationToken = default);
+}
+
+public sealed class GetAllFlightStatusesUseCase : IGetAllFlightStatusesUseCase
 {
     private readonly IFlightStatusRepository _repository;
 
@@ -13,8 +17,7 @@ public class GetAllFlightStatusesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<FlightStatus>> ExecuteAsync()
-    {
-        return await _repository.GetAllAsync();
-    }
+    public Task<IReadOnlyList<FlightStatus>> ExecuteAsync(
+        CancellationToken cancellationToken = default
+    ) => _repository.GetAllAsync(cancellationToken);
 }

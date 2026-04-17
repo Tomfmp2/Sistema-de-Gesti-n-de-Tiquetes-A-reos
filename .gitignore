@@ -153,3 +153,5 @@ Thumbs.db
 # .next/
 # .nuxt/
 # *.map
+# Archivos AppSettings
+AppSettings.json

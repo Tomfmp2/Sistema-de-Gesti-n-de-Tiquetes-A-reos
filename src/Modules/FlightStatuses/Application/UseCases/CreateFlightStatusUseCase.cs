@@ -1,10 +1,19 @@
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.Interfaces;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Aggregate;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Repositories;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObjet;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.UseCases;
 
-public class CreateFlightStatusUseCase
+public interface ICreateFlightStatusUseCase
+{
+    Task<FlightStatus> ExecuteAsync(
+        CreateFlightStatusRequest request,
+        CancellationToken cancellationToken = default
+    );
+}
+
+public sealed class CreateFlightStatusUseCase : ICreateFlightStatusUseCase
 {
     private readonly IFlightStatusRepository _repository;
 
@@ -13,9 +22,12 @@ public class CreateFlightStatusUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(FlightStatusName name)
+    public Task<FlightStatus> ExecuteAsync(
+        CreateFlightStatusRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
-        var flightStatus = FlightStatus.Create(name);
-        await _repository.AddAsync(flightStatus);
+        var x = FlightStatus.Create(new FlightStatusId(0), FlightStatusName.Create(request.Name));
+        return _repository.AddAsync(x, cancellationToken);
     }
 }

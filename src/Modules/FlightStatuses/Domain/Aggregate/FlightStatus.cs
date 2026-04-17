@@ -1,25 +1,29 @@
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.ValueObjet;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Domain.Aggregate;
 
-public sealed class FlightStatus
+public class FlightStatus
 {
-    public FlightStatusId Id { get; }
-    public FlightStatusName Name { get; }
+    public FlightStatusId Id { get; private set; }
+    public FlightStatusName Name { get; private set; }
 
-    private FlightStatus(FlightStatusId id, FlightStatusName name)
+    private FlightStatus(
+        FlightStatusId id,
+        FlightStatusName name
+    )
     {
         Id = id;
         Name = name;
     }
 
-    public static FlightStatus Create(FlightStatusName name)
+    public static FlightStatus Create(
+        FlightStatusId id,
+        FlightStatusName name
+    )
     {
-        return new FlightStatus(null, name);
-    }
-
-    public static FlightStatus Reconstitute(FlightStatusId id, FlightStatusName name)
-    {
-        return new FlightStatus(id, name);
+        return new FlightStatus(
+            id,
+            name
+        );
     }
 }
