@@ -1,15 +1,27 @@
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Application.Interfaces;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Application.UseCases;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.UI;
 
 public sealed class FlightAssignmentConsoleUI
 {
-    private readonly IFlightAssignmentRepository _repository;
+    private readonly CreateFlightAssignmentUseCase _createUseCase;
+    private readonly GetFlightAssignmentByIdUseCase _getByIdUseCase;
+    private readonly GetAllFlightAssignmentsUseCase _getAllUseCase;
+    private readonly UpdateFlightAssignmentUseCase _updateUseCase;
+    private readonly DeleteFlightAssignmentUseCase _deleteUseCase;
 
-    public FlightAssignmentConsoleUI(IFlightAssignmentRepository repository)
+    public FlightAssignmentConsoleUI(
+        CreateFlightAssignmentUseCase createUseCase,
+        GetFlightAssignmentByIdUseCase getByIdUseCase,
+        GetAllFlightAssignmentsUseCase getAllUseCase,
+        UpdateFlightAssignmentUseCase updateUseCase,
+        DeleteFlightAssignmentUseCase deleteUseCase)
     {
-        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _createUseCase = createUseCase ?? throw new ArgumentNullException(nameof(createUseCase));
+        _getByIdUseCase = getByIdUseCase ?? throw new ArgumentNullException(nameof(getByIdUseCase));
+        _getAllUseCase = getAllUseCase ?? throw new ArgumentNullException(nameof(getAllUseCase));
+        _updateUseCase = updateUseCase ?? throw new ArgumentNullException(nameof(updateUseCase));
+        _deleteUseCase = deleteUseCase ?? throw new ArgumentNullException(nameof(deleteUseCase));
     }
 
     public async Task RunAsync()
@@ -78,9 +90,8 @@ public sealed class FlightAssignmentConsoleUI
 
         try
         {
-            var useCase = new CreateFlightAssignmentUseCase(_repository);
-            var flightAssignment = await useCase.ExecuteAsync(flightId, staffId, flightRoleId);
-            Console.WriteLine($"Flight Assignment created successfully with ID: {flightAssignment.Id}");
+            var flightAssignment = await _createUseCase.ExecuteAsync(flightId, staffId, flightRoleId);
+            Console.WriteLine($"Flight Assignment created successfully with ID: {flightAssignment.Id.Value}");
         }
         catch (Exception ex)
         {
@@ -99,8 +110,7 @@ public sealed class FlightAssignmentConsoleUI
 
         try
         {
-            var useCase = new GetFlightAssignmentByIdUseCase(_repository);
-            var flightAssignment = await useCase.ExecuteAsync(id);
+            var flightAssignment = await _getByIdUseCase.ExecuteAsync(id);
             
             if (flightAssignment == null)
             {
@@ -108,10 +118,10 @@ public sealed class FlightAssignmentConsoleUI
                 return;
             }
 
-            Console.WriteLine($"\nID: {flightAssignment.Id}");
-            Console.WriteLine($"Flight ID: {flightAssignment.FlightId}");
-            Console.WriteLine($"Staff ID: {flightAssignment.StaffId}");
-            Console.WriteLine($"Flight Role ID: {flightAssignment.FlightRoleId}");
+            Console.WriteLine($"\nID: {flightAssignment.Id.Value}");
+            Console.WriteLine($"Flight ID: {flightAssignment.FlightId.Value}");
+            Console.WriteLine($"Staff ID: {flightAssignment.StaffId.Value}");
+            Console.WriteLine($"Flight Role ID: {flightAssignment.FlightRoleId.Value}");
         }
         catch (Exception ex)
         {
@@ -123,8 +133,7 @@ public sealed class FlightAssignmentConsoleUI
     {
         try
         {
-            var useCase = new GetAllFlightAssignmentsUseCase(_repository);
-            var flightAssignments = await useCase.ExecuteAsync();
+            var flightAssignments = await _getAllUseCase.ExecuteAsync();
             
             var list = flightAssignments.ToList();
             if (!list.Any())
@@ -136,7 +145,7 @@ public sealed class FlightAssignmentConsoleUI
             Console.WriteLine("\n=== Flight Assignments ===");
             foreach (var fa in list)
             {
-                Console.WriteLine($"ID: {fa.Id} | Flight: {fa.FlightId} | Staff: {fa.StaffId} | Role: {fa.FlightRoleId}");
+                Console.WriteLine($"ID: {fa.Id.Value} | Flight: {fa.FlightId.Value} | Staff: {fa.StaffId.Value} | Role: {fa.FlightRoleId.Value}");
             }
         }
         catch (Exception ex)
@@ -174,8 +183,7 @@ public sealed class FlightAssignmentConsoleUI
 
         try
         {
-            var useCase = new UpdateFlightAssignmentUseCase(_repository);
-            var flightAssignment = await useCase.ExecuteAsync(id, newFlightId, newStaffId, newFlightRoleId);
+            var flightAssignment = await _updateUseCase.ExecuteAsync(id, newFlightId, newStaffId, newFlightRoleId);
             
             if (flightAssignment == null)
             {
@@ -202,8 +210,7 @@ public sealed class FlightAssignmentConsoleUI
 
         try
         {
-            var useCase = new DeleteFlightAssignmentUseCase(_repository);
-            bool deleted = await useCase.ExecuteAsync(id);
+            bool deleted = await _deleteUseCase.ExecuteAsync(id);
             
             if (!deleted)
             {
