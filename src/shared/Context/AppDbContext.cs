@@ -31,6 +31,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructur
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Baggage.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Entity;
@@ -143,6 +144,7 @@ public class AppDbContext : DbContext
     public DbSet<CheckinEntity> Checkins { get; set; }
 
     // Baggage
+    public DbSet<BaggageEntity> Baggages { get; set; }
     public DbSet<BaggageTypeEntity> BaggageTypes { get; set; }
 
     // Invoices
