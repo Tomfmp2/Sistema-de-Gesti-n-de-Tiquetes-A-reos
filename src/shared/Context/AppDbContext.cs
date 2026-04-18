@@ -60,6 +60,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.E
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Sessions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -140,6 +141,9 @@ public class AppDbContext : DbContext
     public DbSet<TicketEntity> Tickets { get; set; }
     public DbSet<CheckinStatusEntity> CheckinStatuses { get; set; }
     public DbSet<CheckinEntity> Checkins { get; set; }
+
+    // Baggage
+    public DbSet<BaggageTypeEntity> BaggageTypes { get; set; }
 
     // Invoices
     public DbSet<InvoiceItemTypeEntity> InvoiceItemTypes { get; set; }
