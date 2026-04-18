@@ -28,17 +28,17 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                 {
                     table.PrimaryKey("PK_baggage", x => x.id);
                     table.ForeignKey(
-                        name: "FK_baggage_check_ins_checkin_id",
+                        name: "FK_baggage_checkins_checkin_id",
                         column: x => x.checkin_id,
-                        principalTable: "check_ins",
+                        principalTable: "checkins",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_baggage_baggage_types_baggage_type_id",
                         column: x => x.baggage_type_id,
                         principalTable: "baggage_types",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
