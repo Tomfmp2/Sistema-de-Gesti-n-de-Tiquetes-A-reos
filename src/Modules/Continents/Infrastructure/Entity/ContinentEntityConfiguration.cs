@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -25,13 +24,5 @@ public sealed class ContinentEntityConfiguration : IEntityTypeConfiguration<Cont
             .IsRequired();
 
         builder.HasIndex(x => x.Name).IsUnique();
-
-        builder.HasData(
-            new ContinentEntity { Id = 1, Name = "América" },
-            new ContinentEntity { Id = 2, Name = "Europa" },
-            new ContinentEntity { Id = 3, Name = "Asia" },
-            new ContinentEntity { Id = 4, Name = "África" },
-            new ContinentEntity { Id = 5, Name = "Oceanía" }
-        );
     }
 }
