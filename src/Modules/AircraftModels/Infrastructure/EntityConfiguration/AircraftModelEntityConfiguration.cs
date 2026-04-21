@@ -15,14 +15,14 @@ public class AircraftModelEntityConfiguration : IEntityTypeConfiguration<Aircraf
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.ManufacturerId)
-            .HasColumnName("manufacturer_id")
+            .HasColumnName("ManufacturerId")
             .HasColumnType("int")
             .IsRequired();
 

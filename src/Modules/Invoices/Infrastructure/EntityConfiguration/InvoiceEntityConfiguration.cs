@@ -15,14 +15,14 @@ public class InvoiceEntityConfiguration : IEntityTypeConfiguration<InvoiceEntity
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.ReservationId)
-            .HasColumnName("reservation_id")
+            .HasColumnName("ReservationId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -57,7 +57,7 @@ public class InvoiceEntityConfiguration : IEntityTypeConfiguration<InvoiceEntity
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("created_at")
+            .HasColumnName("CreatedAt")
             .HasColumnType("datetime")
             .IsRequired();
 
