@@ -2,18 +2,18 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastruct
 
 using System.ComponentModel.DataAnnotations.Schema;
 
-[Table("baggage_types")]
+[Table("BaggageTypes")]
 public class BaggageTypeEntity
 {
-    [Column("id")]
+    [Column("Id")]
     public int Id { get; set; }
 
-    [Column("name")]
+    [Column("Name")]
     public string Name { get; set; } = null!;
 
-    [Column("max_weight_kg")]
+    [Column("MaxWeightKg")]
     public decimal MaxWeightKg { get; set; }
 
-    [Column("base_price")]
+    [Column("BasePrice")]
     public decimal BasePrice { get; set; }
 }

@@ -7,12 +7,12 @@ public sealed class PhoneCodeEntityConfiguration : IEntityTypeConfiguration<Phon
 {
     public void Configure(EntityTypeBuilder<PhoneCodeEntity> builder)
     {
-        builder.ToTable("phone_codes");
+        builder.ToTable("PhoneCodes");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();

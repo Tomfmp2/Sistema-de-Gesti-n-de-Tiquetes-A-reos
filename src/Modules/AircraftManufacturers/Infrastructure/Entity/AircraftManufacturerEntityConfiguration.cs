@@ -11,17 +11,17 @@ public class AircraftManufacturerEntityConfiguration : IEntityTypeConfiguration<
         builder.HasKey(am => am.Id);
 
         builder.Property(am => am.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder.Property(am => am.Name)
-            .HasColumnName("name")
+            .HasColumnName("Name")
             .HasMaxLength(100)
             .IsRequired();
 
         builder.Property(am => am.Country)
-            .HasColumnName("country")
+            .HasColumnName("Country")
             .HasMaxLength(100)
             .IsRequired();
     }

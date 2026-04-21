@@ -9,25 +9,25 @@ public sealed class PersonPhoneEntityConfiguration : IEntityTypeConfiguration<Pe
 {
     public void Configure(EntityTypeBuilder<PersonPhoneEntity> builder)
     {
-        builder.ToTable("person_phones");
+        builder.ToTable("PersonPhones");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.PersonId)
-            .HasColumnName("person_id")
+            .HasColumnName("PersonId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.PhoneCodeId)
-            .HasColumnName("phone_code_id")
+            .HasColumnName("PhonecodeId")
             .HasColumnType("int")
             .IsRequired();
 

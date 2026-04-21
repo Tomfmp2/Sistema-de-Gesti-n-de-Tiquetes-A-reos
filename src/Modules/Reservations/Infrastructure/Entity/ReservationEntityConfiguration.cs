@@ -14,14 +14,14 @@ public class ReservationEntityConfiguration : IEntityTypeConfiguration<Reservati
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.ClientId)
-            .HasColumnName("client_id")
+            .HasColumnName("ClientId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -33,7 +33,7 @@ public class ReservationEntityConfiguration : IEntityTypeConfiguration<Reservati
 
         builder
             .Property(x => x.ReservationStatusId)
-            .HasColumnName("reservation_status_id")
+            .HasColumnName("ReservationstatusId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -50,13 +50,13 @@ public class ReservationEntityConfiguration : IEntityTypeConfiguration<Reservati
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("created_at")
+            .HasColumnName("CreatedAt")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("updated_at")
+            .HasColumnName("UpdatedAt")
             .HasColumnType("datetime")
             .IsRequired();
 

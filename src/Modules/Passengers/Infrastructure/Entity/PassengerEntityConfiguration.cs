@@ -14,20 +14,20 @@ public sealed class PassengerEntityConfiguration : IEntityTypeConfiguration<Pass
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.PersonId)
-            .HasColumnName("person_id")
+            .HasColumnName("PersonId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.PassengerTypeId)
-            .HasColumnName("passenger_type_id")
+            .HasColumnName("PassengerTypeId")
             .HasColumnType("int")
             .IsRequired();
 

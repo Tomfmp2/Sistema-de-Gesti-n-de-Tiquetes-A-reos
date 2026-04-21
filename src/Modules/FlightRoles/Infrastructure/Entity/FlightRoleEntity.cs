@@ -5,14 +5,14 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastruc
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Entity;
 
-[Table("flight_roles")]
+[Table("FlightRoles")]
 public class FlightRoleEntity
 {
     [Key]
-    [Column("id")]
+    [Column("Id")]
     public int Id { get; set; }
 
-    [Column("name")]
+    [Column("Name")]
     public string Name { get; set; } = string.Empty;
 
     public ICollection<FlightAssignmentEntity> FlightAssignments { get; set; } = new List<FlightAssignmentEntity>();

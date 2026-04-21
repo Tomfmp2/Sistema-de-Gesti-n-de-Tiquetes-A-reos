@@ -9,25 +9,25 @@ public class ReservationFlightEntityConfiguration : IEntityTypeConfiguration<Res
 {
     public void Configure(EntityTypeBuilder<ReservationFlightEntity> builder)
     {
-        builder.ToTable("reservation_flights");
+        builder.ToTable("ReservationFlights");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.ReservationId)
-            .HasColumnName("reservation_id")
+            .HasColumnName("ReservationId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.FlightId)
-            .HasColumnName("flight_id")
+            .HasColumnName("FlightId")
             .HasColumnType("int")
             .IsRequired();
 

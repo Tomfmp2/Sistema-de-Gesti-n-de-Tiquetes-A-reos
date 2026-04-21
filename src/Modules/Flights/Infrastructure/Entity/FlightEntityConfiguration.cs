@@ -16,7 +16,7 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
@@ -29,19 +29,19 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
 
         builder
             .Property(x => x.AirlineId)
-            .HasColumnName("airline_id")
+            .HasColumnName("AirlineId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.RouteId)
-            .HasColumnName("route_id")
+            .HasColumnName("RouteId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.AircraftId)
-            .HasColumnName("aircraft_id")
+            .HasColumnName("AircraftId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -71,7 +71,7 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
 
         builder
             .Property(x => x.FlightStatusId)
-            .HasColumnName("flight_status_id")
+            .HasColumnName("FlightstatusId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -82,13 +82,13 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("created_at")
+            .HasColumnName("CreatedAt")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("updated_at")
+            .HasColumnName("UpdatedAt")
             .HasColumnType("datetime")
             .IsRequired();
 

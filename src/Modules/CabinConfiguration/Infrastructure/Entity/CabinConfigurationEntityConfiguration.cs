@@ -10,20 +10,20 @@ public class CabinConfigurationEntityConfiguration : IEntityTypeConfiguration<Ca
 {
     public void Configure(EntityTypeBuilder<CabinConfigurationEntity> builder)
     {
-        builder.ToTable("cabin_configuration");
+        builder.ToTable("CabinConfiguration");
 
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .ValueGeneratedOnAdd();
 
         builder.Property(x => x.AircraftId)
-            .HasColumnName("aircraft_id")
+            .HasColumnName("AircraftId")
             .IsRequired();
 
         builder.Property(x => x.CabinTypeId)
-            .HasColumnName("cabin_type_id")
+            .HasColumnName("CabinTypeId")
             .IsRequired();
 
         builder.Property(x => x.StartRow)

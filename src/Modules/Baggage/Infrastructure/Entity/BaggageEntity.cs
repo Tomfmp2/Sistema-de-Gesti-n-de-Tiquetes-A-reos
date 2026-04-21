@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Baggage.Infrastructure.Entity;
 
-[Table("baggage")]
+[Table("Baggage")]
 public class BaggageEntity
 {
     public int Id { get; set; }

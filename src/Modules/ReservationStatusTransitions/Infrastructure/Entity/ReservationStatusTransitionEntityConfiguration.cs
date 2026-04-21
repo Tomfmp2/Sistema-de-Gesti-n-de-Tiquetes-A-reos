@@ -9,25 +9,25 @@ public class ReservationStatusTransitionEntityConfiguration
 {
     public void Configure(EntityTypeBuilder<ReservationStatusTransitionEntity> builder)
     {
-        builder.ToTable("reservation_status_transitions");
+        builder.ToTable("ReservationStatusTransitions");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.OriginStatusId)
-            .HasColumnName("origin_status_id")
+            .HasColumnName("Origin_statusId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.DestinationStatusId)
-            .HasColumnName("destination_status_id")
+            .HasColumnName("Destination_statusId")
             .HasColumnType("int")
             .IsRequired();
 

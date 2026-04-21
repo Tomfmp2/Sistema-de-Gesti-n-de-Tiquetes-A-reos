@@ -7,19 +7,19 @@ public sealed class PassengerTypeEntityConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<PassengerTypeEntity> builder)
     {
-        builder.ToTable("passenger_types");
+        builder.ToTable("PassengerTypes");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("name")
+            .HasColumnName("Name")
             .HasColumnType("varchar(50)")
             .IsRequired();
 

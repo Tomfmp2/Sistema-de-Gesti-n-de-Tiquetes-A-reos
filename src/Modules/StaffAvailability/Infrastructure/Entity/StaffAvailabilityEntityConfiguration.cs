@@ -13,32 +13,30 @@ public class StaffAvailabilityEntityConfiguration : IEntityTypeConfiguration<Sta
         builder.HasKey(sa => sa.Id);
 
         builder.Property(sa => sa.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("varchar(36)")
             .IsRequired();
 
         builder.Property(sa => sa.StaffId)
-            .HasColumnName("staff_id")
-            .HasColumnType("varchar(36)")
+            .HasColumnName("StaffId")
             .IsRequired();
 
         builder.Property(sa => sa.AvailabilityStatusId)
-            .HasColumnName("availability_status_id")
-            .HasColumnType("varchar(36)")
+            .HasColumnName("AvailabilityStatusId")
             .IsRequired();
 
         builder.Property(sa => sa.StartDate)
-            .HasColumnName("start_date")
+            .HasColumnName("StartDate")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder.Property(sa => sa.EndDate)
-            .HasColumnName("end_date")
+            .HasColumnName("EndDate")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder.Property(sa => sa.Observation)
-            .HasColumnName("observation")
+            .HasColumnName("Observation")
             .HasColumnType("varchar(255)")
             .IsRequired(false);
 

@@ -13,26 +13,26 @@ public class CountryEntityConfiguration : IEntityTypeConfiguration<CountryEntity
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("name")
+            .HasColumnName("Name")
             .HasColumnType("varchar(100)")
             .IsRequired();
 
         builder
             .Property(x => x.CodeIso)
-            .HasColumnName("code_iso")
+            .HasColumnName("CodeIso")
             .HasColumnType("varchar(3)")
             .IsRequired();
 
         builder
             .Property(x => x.ContinentId)
-            .HasColumnName("continent_id")
+            .HasColumnName("ContinentId")
             .HasColumnType("int")
             .IsRequired();
 

@@ -9,8 +9,8 @@ public class StaffPositionEntityConfiguration : IEntityTypeConfiguration<StaffPo
     public void Configure(EntityTypeBuilder<StaffPositionEntity> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
-        builder.Property(e => e.Name).HasMaxLength(100).IsRequired();
+        builder.Property(e => e.Id).HasColumnName("Id").ValueGeneratedOnAdd();
+        builder.Property(e => e.Name).HasColumnName("Name").HasMaxLength(100).IsRequired();
         builder.HasIndex(e => e.Name).IsUnique();
     }
 }

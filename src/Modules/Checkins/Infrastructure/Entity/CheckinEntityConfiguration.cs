@@ -16,26 +16,26 @@ public class CheckinEntityConfiguration : IEntityTypeConfiguration<CheckinEntity
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.TicketId)
-            .HasColumnName("ticket_id")
+            .HasColumnName("TicketId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.StaffId)
-            .HasColumnName("staff_id")
+            .HasColumnName("StaffId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.FlightSeatId)
-            .HasColumnName("flight_seat_id")
+            .HasColumnName("Flight_seatId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -47,7 +47,7 @@ public class CheckinEntityConfiguration : IEntityTypeConfiguration<CheckinEntity
 
         builder
             .Property(x => x.CheckinStatusId)
-            .HasColumnName("checkin_status_id")
+            .HasColumnName("CheckinstatusId")
             .HasColumnType("int")
             .IsRequired();
 

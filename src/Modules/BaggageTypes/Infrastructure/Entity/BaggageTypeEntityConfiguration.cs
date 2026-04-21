@@ -7,9 +7,10 @@ public class BaggageTypeEntityConfiguration : IEntityTypeConfiguration<BaggageTy
 {
     public void Configure(EntityTypeBuilder<BaggageTypeEntity> builder)
     {
-        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasColumnName("Id");
 
         builder.Property(x => x.Name)
+            .HasColumnName("Name")
             .IsRequired()
             .HasMaxLength(50);
 
@@ -17,10 +18,12 @@ public class BaggageTypeEntityConfiguration : IEntityTypeConfiguration<BaggageTy
             .IsUnique();
 
         builder.Property(x => x.MaxWeightKg)
+            .HasColumnName("MaxWeightKg")
             .IsRequired()
             .HasPrecision(5, 2);
 
         builder.Property(x => x.BasePrice)
+            .HasColumnName("BasePrice")
             .IsRequired()
             .HasPrecision(18, 2)
             .HasDefaultValue(0);

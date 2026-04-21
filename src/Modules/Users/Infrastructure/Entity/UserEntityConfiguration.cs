@@ -14,7 +14,7 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
@@ -33,13 +33,13 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
 
         builder
             .Property(x => x.PersonId)
-            .HasColumnName("person_id")
+            .HasColumnName("PersonId")
             .HasColumnType("int")
             .IsRequired(false);
 
         builder
             .Property(x => x.SystemRoleId)
-            .HasColumnName("system_role_id")
+            .HasColumnName("System_roleId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -57,13 +57,13 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("created_at")
+            .HasColumnName("CreatedAt")
             .HasColumnType("datetime(6)")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("updated_at")
+            .HasColumnName("UpdatedAt")
             .HasColumnType("datetime(6)")
             .IsRequired();
 

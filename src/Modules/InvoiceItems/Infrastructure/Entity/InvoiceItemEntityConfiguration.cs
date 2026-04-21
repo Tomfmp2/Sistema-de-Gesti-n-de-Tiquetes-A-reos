@@ -10,25 +10,25 @@ public class InvoiceItemEntityConfiguration : IEntityTypeConfiguration<InvoiceIt
 {
     public void Configure(EntityTypeBuilder<InvoiceItemEntity> builder)
     {
-        builder.ToTable("invoice_items");
+        builder.ToTable("InvoiceItems");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.InvoiceId)
-            .HasColumnName("invoice_id")
+            .HasColumnName("InvoiceId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.InvoiceItemTypeId)
-            .HasColumnName("invoice_item_type_id")
+            .HasColumnName("InvoiceitemtypeId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -58,7 +58,7 @@ public class InvoiceItemEntityConfiguration : IEntityTypeConfiguration<InvoiceIt
 
         builder
             .Property(x => x.ReservationPassengerId)
-            .HasColumnName("reservation_passenger_id")
+            .HasColumnName("ReservationpassengerId")
             .HasColumnType("int");
 
         builder

@@ -9,7 +9,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastruc
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 
-[Table("staff")]
+[Table("Staff")]
 public class StaffEntity
 {
     public int Id { get; set; }

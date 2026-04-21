@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Entity;
 
-[Table("aircraft_manufacturers")]
+[Table("AircraftManufacturers")]
 public class AircraftManufacturerEntity
 {
     [Key]
-    [Column("id")]
+    [Column("Id")]
     public int Id { get; set; }
 
-    [Column("name")]
+    [Column("Name")]
     public string Name { get; set; }
 
-    [Column("country")]
+    [Column("Country")]
     public string Country { get; set; }
 }

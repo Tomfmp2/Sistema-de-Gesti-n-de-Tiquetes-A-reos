@@ -14,20 +14,20 @@ public sealed class AirportAirlineEntityConfiguration : IEntityTypeConfiguration
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.AirportId)
-            .HasColumnName("airport_id")
+            .HasColumnName("AirportId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.AirlineId)
-            .HasColumnName("airline_id")
+            .HasColumnName("AirlineId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -41,13 +41,13 @@ public sealed class AirportAirlineEntityConfiguration : IEntityTypeConfiguration
 
         builder
             .Property(x => x.StartDate)
-            .HasColumnName("start_date")
+            .HasColumnName("StartDate")
             .HasColumnType("date")
             .IsRequired();
 
         builder
             .Property(x => x.EndDate)
-            .HasColumnName("end_date")
+            .HasColumnName("EndDate")
             .HasColumnType("date")
             .IsRequired(false);
 

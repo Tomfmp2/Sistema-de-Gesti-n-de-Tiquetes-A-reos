@@ -7,19 +7,19 @@ public sealed class ContinentEntityConfiguration : IEntityTypeConfiguration<Cont
 {
     public void Configure(EntityTypeBuilder<ContinentEntity> builder)
     {
-        builder.ToTable("continents");
+        builder.ToTable("Continents");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("name")
+            .HasColumnName("Name")
             .HasColumnType("varchar(50)")
             .IsRequired();
 

@@ -14,14 +14,14 @@ public sealed class DirectionEntityConfiguration : IEntityTypeConfiguration<Dire
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.StreetTypeId)
-            .HasColumnName("street_type_id")
+            .HasColumnName("Street_typeId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -45,7 +45,7 @@ public sealed class DirectionEntityConfiguration : IEntityTypeConfiguration<Dire
 
         builder
             .Property(x => x.CityId)
-            .HasColumnName("city_id")
+            .HasColumnName("CityId")
             .HasColumnType("int")
             .IsRequired();
 

@@ -15,50 +15,50 @@ public class PaymentEntityConfiguration : IEntityTypeConfiguration<PaymentEntity
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.ReservationId)
-            .HasColumnName("reservation_id")
+            .HasColumnName("ReservationId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.Amount)
-            .HasColumnName("amount")
+            .HasColumnName("Amount")
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
         builder
             .Property(x => x.PaymentDate)
-            .HasColumnName("payment_date")
+            .HasColumnName("PaymentDate")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.PaymentStatusId)
-            .HasColumnName("payment_status_id")
+            .HasColumnName("PaymentstatusId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.PaymentMethodId)
-            .HasColumnName("payment_method_id")
+            .HasColumnName("Payment_methodId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("created_at")
+            .HasColumnName("CreatedAt")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("updated_at")
+            .HasColumnName("UpdatedAt")
             .HasColumnType("datetime")
             .IsRequired();
 

@@ -3,25 +3,25 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity;
 
-[Table("staff_availability")]
+[Table("StaffAvailability")]
 public class StaffAvailabilityEntity
 {
     [Key]
-    [Column("id")]
+    [Column("Id")]
     public Guid Id { get; set; }
 
-    [Column("staff_id")]
+    [Column("StaffId")]
     public int StaffId { get; set; }
 
-    [Column("availability_status_id")]
+    [Column("AvailabilityStatusId")]
     public int AvailabilityStatusId { get; set; }
 
-    [Column("start_date")]
+    [Column("StartDate")]
     public DateTime StartDate { get; set; }
 
-    [Column("end_date")]
+    [Column("EndDate")]
     public DateTime EndDate { get; set; }
 
-    [Column("observation")]
+    [Column("Observation")]
     public string? Observation { get; set; }
 }

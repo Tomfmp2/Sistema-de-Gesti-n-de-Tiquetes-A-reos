@@ -8,42 +8,42 @@ public class BaggageEntityConfiguration : IEntityTypeConfiguration<BaggageEntity
 {
     public void Configure(EntityTypeBuilder<BaggageEntity> builder)
     {
-        builder.HasKey(e => e.Id).HasName("PK_baggage");
+        builder.HasKey(e => e.Id).HasName("PK_Baggage");
 
         builder.Property(e => e.Id)
             .IsRequired()
-            .HasColumnName("id");
+            .HasColumnName("Id");
 
         builder.Property(e => e.CheckinId)
             .IsRequired()
-            .HasColumnName("checkin_id");
+            .HasColumnName("CheckinId");
 
         builder.Property(e => e.BaggageTypeId)
             .IsRequired()
-            .HasColumnName("baggage_type_id");
+            .HasColumnName("BaggageTypeId");
 
         builder.Property(e => e.WeightKg)
             .IsRequired()
             .HasColumnType("decimal(5,2)")
-            .HasColumnName("weight_kg")
+            .HasColumnName("WeightKg")
             .HasPrecision(5, 2);
 
         builder.Property(e => e.ChargedPrice)
             .IsRequired()
             .HasColumnType("decimal(18,2)")
-            .HasColumnName("charged_price")
+            .HasColumnName("ChargedPrice")
             .HasPrecision(18, 2)
             .HasDefaultValue(0m);
 
         builder.Property(e => e.CreatedAt)
             .IsRequired()
-            .HasColumnName("created_at");
+            .HasColumnName("CreatedAt");
 
         builder.Property(e => e.UpdatedAt)
             .IsRequired()
-            .HasColumnName("updated_at");
+            .HasColumnName("UpdatedAt");
 
-        builder.HasIndex(e => e.CheckinId).HasName("IX_baggage_checkin_id");
-        builder.HasIndex(e => e.BaggageTypeId).HasName("IX_baggage_baggage_type_id");
+        builder.HasIndex(e => e.CheckinId).HasName("IX_Baggage_CheckinId");
+        builder.HasIndex(e => e.BaggageTypeId).HasName("IX_Baggage_BaggageTypeId");
     }
 }

@@ -5,7 +5,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructur
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
 
-[Table("airports")]
+[Table("Airports")]
 public class AirportEntity
 {
     public int Id { get; set; }

@@ -14,15 +14,15 @@ public class StaffEntityConfiguration : IEntityTypeConfiguration<StaffEntity>
     public void Configure(EntityTypeBuilder<StaffEntity> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
-        builder.Property(e => e.PersonId).IsRequired();
-        builder.Property(e => e.PositionId).IsRequired();
-        builder.Property(e => e.AirlineId).IsRequired(false);
-        builder.Property(e => e.AirportId).IsRequired(false);
-        builder.Property(e => e.HireDate).IsRequired();
-        builder.Property(e => e.IsActive).IsRequired().HasDefaultValue(true);
-        builder.Property(e => e.CreatedAt).IsRequired();
-        builder.Property(e => e.UpdatedAt).IsRequired();
+        builder.Property(e => e.Id).HasColumnName("Id").ValueGeneratedOnAdd();
+        builder.Property(e => e.PersonId).HasColumnName("PersonId").IsRequired();
+        builder.Property(e => e.PositionId).HasColumnName("PositionId").IsRequired();
+        builder.Property(e => e.AirlineId).HasColumnName("AirlineId").IsRequired(false);
+        builder.Property(e => e.AirportId).HasColumnName("AirportId").IsRequired(false);
+        builder.Property(e => e.HireDate).HasColumnName("HireDate").IsRequired();
+        builder.Property(e => e.IsActive).HasColumnName("IsActive").IsRequired().HasDefaultValue(true);
+        builder.Property(e => e.CreatedAt).HasColumnName("CreatedAt").IsRequired();
+        builder.Property(e => e.UpdatedAt).HasColumnName("UpdatedAt").IsRequired();
         builder.HasIndex(e => e.PersonId).IsUnique();
 
         // Relationships

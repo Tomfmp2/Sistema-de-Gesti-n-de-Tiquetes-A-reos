@@ -14,14 +14,14 @@ public sealed class PersonEntityConfiguration : IEntityTypeConfiguration<PersonE
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.DocumentTypeId)
-            .HasColumnName("document_type_id")
+            .HasColumnName("DocumenttypeId")
             .HasColumnType("int")
             .IsRequired();
 
@@ -57,19 +57,19 @@ public sealed class PersonEntityConfiguration : IEntityTypeConfiguration<PersonE
 
         builder
             .Property(x => x.DirectionId)
-            .HasColumnName("direction_id")
+            .HasColumnName("DirectionId")
             .HasColumnType("int")
             .IsRequired(false);
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("created_at")
+            .HasColumnName("CreatedAt")
             .HasColumnType("datetime(6)")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("updated_at")
+            .HasColumnName("UpdatedAt")
             .HasColumnType("datetime(6)")
             .IsRequired();
 

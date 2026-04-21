@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Entity;
 
-[Table("staff_positions")]
+[Table("StaffPositions")]
 public class StaffPositionEntity
 {
     public int Id { get; set; }

@@ -34,7 +34,7 @@ public class FlightAssignmentEntityConfiguration : IEntityTypeConfiguration<Flig
 
         builder
             .Property(x => x.FlightRoleId)
-            .HasColumnName("FlightRoleId")
+            .HasColumnName("FlightroleId")
             .HasColumnType("int")
             .IsRequired();
 

@@ -7,19 +7,19 @@ public class CardIssuerEntityConfiguration : IEntityTypeConfiguration<CardIssuer
 {
     public void Configure(EntityTypeBuilder<CardIssuerEntity> builder)
     {
-        builder.ToTable("card_issuers");
+        builder.ToTable("CardIssuers");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("name")
+            .HasColumnName("Name")
             .HasColumnType("varchar(50)")
             .IsRequired();
 

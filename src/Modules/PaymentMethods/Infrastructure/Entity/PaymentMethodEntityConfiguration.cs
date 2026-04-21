@@ -10,30 +10,30 @@ public class PaymentMethodEntityConfiguration : IEntityTypeConfiguration<Payment
 {
     public void Configure(EntityTypeBuilder<PaymentMethodEntity> builder)
     {
-        builder.ToTable("payment_methods");
+        builder.ToTable("PaymentMethods");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("id")
+            .HasColumnName("Id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.PaymentMethodTypeId)
-            .HasColumnName("payment_method_type_id")
+            .HasColumnName("Payment_method_typeId")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.CardTypeId)
-            .HasColumnName("card_type_id")
+            .HasColumnName("Card_typeId")
             .HasColumnType("int");
 
         builder
             .Property(x => x.CardIssuerId)
-            .HasColumnName("card_issuer_id")
+            .HasColumnName("Card_issuerId")
             .HasColumnType("int");
 
         builder
