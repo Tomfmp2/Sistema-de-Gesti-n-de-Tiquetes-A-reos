@@ -50,7 +50,8 @@ artifacts/
 *.runtimeconfig.dev.json
 
 # === IDE y configuraciones locales ===
-.vscode/
+# Nota: si quieren compartir configuración del editor (p.ej. Cursor/VS Code),
+# no ignores `.vscode/`. Ajusta a archivos puntuales si lo prefieres.
 
 # === Archivos específicos del proyecto ===
 prompt.txt
