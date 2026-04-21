@@ -1,4 +1,5 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.UI;
@@ -22,36 +23,22 @@ public class AirlineConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.WriteLine("Airline Management");
-            Console.WriteLine("1. Create Airline");
-            Console.WriteLine("2. Get Airline by ID");
-            Console.WriteLine("3. Get All Airlines");
-            Console.WriteLine("4. Update Airline");
-            Console.WriteLine("5. Delete Airline");
-            Console.WriteLine("0. Back");
-            var choice = Console.ReadLine();
-            switch (choice)
+            SpectreUi.ModuleHeader("Aerolíneas", "Gestión de aerolíneas");
+
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    CreateAirline();
-                    break;
-                case "2":
-                    GetAirlineById();
-                    break;
-                case "3":
-                    GetAllAirlines();
-                    break;
-                case "4":
-                    UpdateAirline();
-                    break;
-                case "5":
-                    DeleteAirline();
-                    break;
-                case "0":
-                    return;
-            }
+                ("Crear aerolínea", CreateAirline),
+                ("Consultar por ID", GetAirlineById),
+                ("Listar todas", GetAllAirlines),
+                ("Actualizar", UpdateAirline),
+                ("Eliminar", DeleteAirline),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 

@@ -1,4 +1,5 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.UI;
@@ -22,36 +23,22 @@ public class AirportAirlineConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.WriteLine("Airport-Airline Management");
-            Console.WriteLine("1. Create Airport-Airline");
-            Console.WriteLine("2. Get Airport-Airline by ID");
-            Console.WriteLine("3. Get All Airport-Airlines");
-            Console.WriteLine("4. Update Airport-Airline");
-            Console.WriteLine("5. Delete Airport-Airline");
-            Console.WriteLine("0. Back");
-            var choice = Console.ReadLine();
-            switch (choice)
+            SpectreUi.ModuleHeader("Aeropuerto ↔ Aerolínea", "Operación por terminal y fechas");
+
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    CreateAirportAirline();
-                    break;
-                case "2":
-                    GetAirportAirlineById();
-                    break;
-                case "3":
-                    GetAllAirportAirlines();
-                    break;
-                case "4":
-                    UpdateAirportAirline();
-                    break;
-                case "5":
-                    DeleteAirportAirline();
-                    break;
-                case "0":
-                    return;
-            }
+                ("Crear relación", CreateAirportAirline),
+                ("Consultar por ID", GetAirportAirlineById),
+                ("Listar todas", GetAllAirportAirlines),
+                ("Actualizar", UpdateAirportAirline),
+                ("Eliminar", DeleteAirportAirline),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 

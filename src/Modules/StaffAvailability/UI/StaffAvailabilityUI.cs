@@ -1,9 +1,9 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Application.UseCases;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
-namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.UI;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.UI;
 
 public class StaffAvailabilityUI : IModuleUI
 {
@@ -29,69 +29,51 @@ public class StaffAvailabilityUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.WriteLine("\n=== Staff Availability Management ===");
-            Console.WriteLine("1. Create Staff Availability");
-            Console.WriteLine("2. View All Staff Availabilities");
-            Console.WriteLine("3. View Staff Availability by ID");
-            Console.WriteLine("4. Update Staff Availability");
-            Console.WriteLine("5. Delete Staff Availability");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Choose an option: ");
+            SpectreUi.ModuleHeader("Disponibilidad de personal", "Bloques de tiempo por empleado");
 
-            var choice = Console.ReadLine();
-            switch (choice)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateStaffAvailabilityAsync();
-                    break;
-                case "2":
-                    await ViewAllStaffAvailabilitiesAsync();
-                    break;
-                case "3":
-                    await ViewStaffAvailabilityByIdAsync();
-                    break;
-                case "4":
-                    await UpdateStaffAvailabilityAsync();
-                    break;
-                case "5":
-                    await DeleteStaffAvailabilityAsync();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Please try again.");
-                    break;
-            }
+                ("Registrar disponibilidad", () => CreateStaffAvailabilityAsync().GetAwaiter().GetResult()),
+                ("Listar todas", () => ViewAllStaffAvailabilitiesAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => ViewStaffAvailabilityByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateStaffAvailabilityAsync().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteStaffAvailabilityAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateStaffAvailabilityAsync()
     {
+        SpectreUi.ModuleHeader("Registrar disponibilidad", null);
         try
         {
-            Console.Write("Enter Staff Availability ID (GUID): ");
+            Console.Write("ID del registro (GUID): ");
             var id = Guid.Parse(Console.ReadLine()!);
             var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
-            Console.Write("Enter Staff ID (int): ");
+            Console.Write("ID del empleado (staff): ");
             var staffIdValue = int.Parse(Console.ReadLine()!);
             var staffId = StaffId.Create(staffIdValue);
 
-            Console.Write("Enter Availability Status ID (int): ");
+            Console.Write("ID del estado de disponibilidad: ");
             var availabilityStatusIdValue = int.Parse(Console.ReadLine()!);
             var availabilityStatusId = AvailabilityStatusId.Create(availabilityStatusIdValue);
 
-            Console.Write("Enter Start Date (yyyy-MM-dd): ");
+            Console.Write("Fecha/hora inicio: ");
             var startDateValue = DateTime.Parse(Console.ReadLine()!);
             var startDate = StartDate.Create(startDateValue);
 
-            Console.Write("Enter End Date (yyyy-MM-dd): ");
+            Console.Write("Fecha/hora fin: ");
             var endDateValue = DateTime.Parse(Console.ReadLine()!);
             var endDate = EndDate.Create(endDateValue);
 
-            Console.Write("Enter Observation (optional): ");
+            Console.Write("Observación (opcional): ");
             var observationInput = Console.ReadLine();
             Observation? observation = null;
             if (!string.IsNullOrWhiteSpace(observationInput))
@@ -100,65 +82,74 @@ public class StaffAvailabilityUI : IModuleUI
             }
 
             await _createUseCase.ExecuteAsync(staffAvailabilityId, staffId, availabilityStatusId, startDate, endDate, observation);
-            Console.WriteLine("Staff availability created successfully.");
+            Console.WriteLine("Disponibilidad registrada.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task ViewAllStaffAvailabilitiesAsync()
     {
+        SpectreUi.ModuleHeader("Disponibilidades", null);
         var staffAvailabilities = await _getAllUseCase.ExecuteAsync();
         foreach (var sa in staffAvailabilities)
         {
-            Console.WriteLine($"ID: {sa.Id.Value}, Staff ID: {sa.StaffId.Value}, Status ID: {sa.AvailabilityStatusId.Value}, Start: {sa.StartDate.Value}, End: {sa.EndDate.Value}, Observation: {sa.Observation?.Value ?? "None"}");
+            Console.WriteLine($"ID: {sa.Id.Value}, Staff: {sa.StaffId.Value}, Estado: {sa.AvailabilityStatusId.Value}, Inicio: {sa.StartDate.Value}, Fin: {sa.EndDate.Value}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task ViewStaffAvailabilityByIdAsync()
     {
-        Console.Write("Enter Staff Availability ID (GUID): ");
+        SpectreUi.ModuleHeader("Consultar disponibilidad", null);
+        Console.Write("ID (GUID): ");
         var id = Guid.Parse(Console.ReadLine()!);
         var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
         var staffAvailability = await _getByIdUseCase.ExecuteAsync(staffAvailabilityId);
         if (staffAvailability != null)
         {
-            Console.WriteLine($"ID: {staffAvailability.Id.Value}, Staff ID: {staffAvailability.StaffId.Value}, Status ID: {staffAvailability.AvailabilityStatusId.Value}, Start: {staffAvailability.StartDate.Value}, End: {staffAvailability.EndDate.Value}, Observation: {staffAvailability.Observation?.Value ?? "None"}");
+            Console.WriteLine($"ID: {staffAvailability.Id.Value}, Staff: {staffAvailability.StaffId.Value}, Estado: {staffAvailability.AvailabilityStatusId.Value}, Inicio: {staffAvailability.StartDate.Value}, Fin: {staffAvailability.EndDate.Value}");
         }
         else
         {
-            Console.WriteLine("Staff availability not found.");
+            Console.WriteLine("No encontrado.");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task UpdateStaffAvailabilityAsync()
     {
+        SpectreUi.ModuleHeader("Actualizar disponibilidad", null);
         try
         {
-            Console.Write("Enter Staff Availability ID (GUID): ");
+            Console.Write("ID (GUID): ");
             var id = Guid.Parse(Console.ReadLine()!);
             var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
-            Console.Write("Enter new Staff ID (int): ");
+            Console.Write("Nuevo ID de empleado: ");
             var staffIdValue = int.Parse(Console.ReadLine()!);
             var staffId = StaffId.Create(staffIdValue);
 
-            Console.Write("Enter new Availability Status ID (int): ");
+            Console.Write("Nuevo ID de estado: ");
             var availabilityStatusIdValue = int.Parse(Console.ReadLine()!);
             var availabilityStatusId = AvailabilityStatusId.Create(availabilityStatusIdValue);
 
-            Console.Write("Enter new Start Date (yyyy-MM-dd): ");
+            Console.Write("Nueva fecha/hora inicio: ");
             var startDateValue = DateTime.Parse(Console.ReadLine()!);
             var startDate = StartDate.Create(startDateValue);
 
-            Console.Write("Enter new End Date (yyyy-MM-dd): ");
+            Console.Write("Nueva fecha/hora fin: ");
             var endDateValue = DateTime.Parse(Console.ReadLine()!);
             var endDate = EndDate.Create(endDateValue);
 
-            Console.Write("Enter new Observation (optional): ");
+            Console.Write("Observación (opcional): ");
             var observationInput = Console.ReadLine();
             Observation? observation = null;
             if (!string.IsNullOrWhiteSpace(observationInput))
@@ -167,21 +158,25 @@ public class StaffAvailabilityUI : IModuleUI
             }
 
             await _updateUseCase.ExecuteAsync(staffAvailabilityId, staffId, availabilityStatusId, startDate, endDate, observation);
-            Console.WriteLine("Staff availability updated successfully.");
+            Console.WriteLine("Actualizado.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task DeleteStaffAvailabilityAsync()
     {
-        Console.Write("Enter Staff Availability ID (GUID): ");
+        SpectreUi.ModuleHeader("Eliminar disponibilidad", null);
+        Console.Write("ID (GUID): ");
         var id = Guid.Parse(Console.ReadLine()!);
         var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
         await _deleteUseCase.ExecuteAsync(staffAvailabilityId);
-        Console.WriteLine("Staff availability deleted successfully.");
+        Console.WriteLine("Eliminado.");
+        SpectreUi.Pause();
     }
 }

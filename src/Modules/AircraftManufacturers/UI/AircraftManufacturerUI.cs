@@ -1,9 +1,9 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Application.UseCases;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
-namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.UI;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.UI;
 
 public class AircraftManufacturerUI : IModuleUI
 {
@@ -29,127 +29,122 @@ public class AircraftManufacturerUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.WriteLine("\n=== Aircraft Manufacturers Management ===");
-            Console.WriteLine("1. Create Aircraft Manufacturer");
-            Console.WriteLine("2. View All Aircraft Manufacturers");
-            Console.WriteLine("3. View Aircraft Manufacturer by ID");
-            Console.WriteLine("4. Update Aircraft Manufacturer");
-            Console.WriteLine("5. Delete Aircraft Manufacturer");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Choose an option: ");
+            SpectreUi.ModuleHeader("Fabricantes de aeronaves", "Catálogo de fabricantes");
 
-            var choice = Console.ReadLine();
-            switch (choice)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateAircraftManufacturerAsync();
-                    break;
-                case "2":
-                    await ViewAllAircraftManufacturersAsync();
-                    break;
-                case "3":
-                    await ViewAircraftManufacturerByIdAsync();
-                    break;
-                case "4":
-                    await UpdateAircraftManufacturerAsync();
-                    break;
-                case "5":
-                    await DeleteAircraftManufacturerAsync();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Please try again.");
-                    break;
-            }
+                ("Crear fabricante", () => CreateAircraftManufacturerAsync().GetAwaiter().GetResult()),
+                ("Listar todos", () => ViewAllAircraftManufacturersAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => ViewAircraftManufacturerByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateAircraftManufacturerAsync().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteAircraftManufacturerAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateAircraftManufacturerAsync()
     {
+        SpectreUi.ModuleHeader("Crear fabricante", null);
         try
         {
-            Console.Write("Enter Aircraft Manufacturer ID (int): ");
+            Console.Write("ID del fabricante (entero): ");
             var id = int.Parse(Console.ReadLine()!);
             var aircraftManufacturerId = AircraftManufacturerId.Create(id);
 
-            Console.Write("Enter Name: ");
+            Console.Write("Nombre: ");
             var name = Console.ReadLine()!;
             var aircraftManufacturerName = AircraftManufacturerName.Create(name);
 
-            Console.Write("Enter Country: ");
+            Console.Write("País: ");
             var country = Console.ReadLine()!;
             var countryValue = Country.Create(country);
 
             await _createUseCase.ExecuteAsync(aircraftManufacturerId, aircraftManufacturerName, countryValue);
-            Console.WriteLine("Aircraft manufacturer created successfully.");
+            Console.WriteLine("Fabricante creado correctamente.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task ViewAllAircraftManufacturersAsync()
     {
+        SpectreUi.ModuleHeader("Fabricantes registrados", null);
         var aircraftManufacturers = await _getAllUseCase.ExecuteAsync();
         foreach (var am in aircraftManufacturers)
         {
-            Console.WriteLine($"ID: {am.Id.Value}, Name: {am.Name.Value}, Country: {am.Country.Value}");
+            Console.WriteLine($"ID: {am.Id.Value}, Nombre: {am.Name.Value}, País: {am.Country.Value}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task ViewAircraftManufacturerByIdAsync()
     {
-        Console.Write("Enter Aircraft Manufacturer ID (int): ");
+        SpectreUi.ModuleHeader("Consultar fabricante", null);
+        Console.Write("ID del fabricante: ");
         var id = int.Parse(Console.ReadLine()!);
         var aircraftManufacturerId = AircraftManufacturerId.Create(id);
 
         var aircraftManufacturer = await _getByIdUseCase.ExecuteAsync(aircraftManufacturerId);
         if (aircraftManufacturer != null)
         {
-            Console.WriteLine($"ID: {aircraftManufacturer.Id.Value}, Name: {aircraftManufacturer.Name.Value}, Country: {aircraftManufacturer.Country.Value}");
+            Console.WriteLine($"ID: {aircraftManufacturer.Id.Value}, Nombre: {aircraftManufacturer.Name.Value}, País: {aircraftManufacturer.Country.Value}");
         }
         else
         {
-            Console.WriteLine("Aircraft manufacturer not found.");
+            Console.WriteLine("No se encontró el fabricante.");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task UpdateAircraftManufacturerAsync()
     {
+        SpectreUi.ModuleHeader("Actualizar fabricante", null);
         try
         {
-            Console.Write("Enter Aircraft Manufacturer ID (int): ");
+            Console.Write("ID del fabricante: ");
             var id = int.Parse(Console.ReadLine()!);
             var aircraftManufacturerId = AircraftManufacturerId.Create(id);
 
-            Console.Write("Enter new Name: ");
+            Console.Write("Nuevo nombre: ");
             var name = Console.ReadLine()!;
             var aircraftManufacturerName = AircraftManufacturerName.Create(name);
 
-            Console.Write("Enter new Country: ");
+            Console.Write("Nuevo país: ");
             var country = Console.ReadLine()!;
             var countryValue = Country.Create(country);
 
             await _updateUseCase.ExecuteAsync(aircraftManufacturerId, aircraftManufacturerName, countryValue);
-            Console.WriteLine("Aircraft manufacturer updated successfully.");
+            Console.WriteLine("Fabricante actualizado.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task DeleteAircraftManufacturerAsync()
     {
-        Console.Write("Enter Aircraft Manufacturer ID (int): ");
+        SpectreUi.ModuleHeader("Eliminar fabricante", null);
+        Console.Write("ID del fabricante: ");
         var id = int.Parse(Console.ReadLine()!);
         var aircraftManufacturerId = AircraftManufacturerId.Create(id);
 
         await _deleteUseCase.ExecuteAsync(aircraftManufacturerId);
-        Console.WriteLine("Aircraft manufacturer deleted successfully.");
+        Console.WriteLine("Fabricante eliminado.");
+        SpectreUi.Pause();
     }
 }
