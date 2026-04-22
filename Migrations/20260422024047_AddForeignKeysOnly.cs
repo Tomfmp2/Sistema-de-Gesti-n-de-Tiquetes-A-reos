@@ -5,7 +5,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace sistema_gestor_de_tiquetes_aereos.Migrations
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Añade FKs y alinea nombres de tablas/columnas (legado → modelo) antes, para que una BD creada con las
+    /// migraciones antiguas coincida con <c>AppDbContext</c>. Mapeo resumido: <c>reservation_*</c>→<c>booking_*</c>,
+    /// <c>checkins</c>→<c>check_ins</c>, <c>directions</c>→<c>addresses</c> + <c>direction_id</c>→<c>address_id</c>,
+    /// <c>route_layovers</c>→<c>route_stopovers</c>, etc. Cualquier tabla nueva en EF debe añadirse aquí si el
+    /// <c>Create*</c> todavía usa otro nombre.
+    /// </summary>
     public partial class AddForeignKeysOnly : Migration
     {
         /// <summary>
@@ -322,6 +328,36 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
             """;
 
+        /// <summary>
+        /// <c>CreateRouteLayovers</c> crea <c>route_layovers</c>; el modelo y el snapshot usan <c>route_stopovers</c> y
+        /// <c>layover_airport_id</c> (mismas columnas salvo el nombre de tabla / índice).
+        /// </summary>
+        private const string AlignRouteLayoversToRouteStopoversSql = """
+            SET @need_rl_to_rs = (
+                SELECT IF(
+                    EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'route_layovers')
+                    AND NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'route_stopovers'),
+                    1, 0
+                )
+            );
+
+            SET @q = IF(
+                @need_rl_to_rs = 1,
+                'RENAME TABLE `route_layovers` TO `route_stopovers`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_rl_to_rs = 1
+                AND EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'route_stopovers' AND INDEX_NAME = 'IX_route_layovers_route_id_sequence_order')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'route_stopovers' AND INDEX_NAME = 'IX_route_stopovers_route_id_sequence_order'),
+                'ALTER TABLE `route_stopovers` RENAME INDEX `IX_route_layovers_route_id_sequence_order` TO `IX_route_stopovers_route_id_sequence_order`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+            """;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -487,6 +523,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             migrationBuilder.Sql(AlignLegacyReservationNamesToBookingSql);
             migrationBuilder.Sql(AlignCheckinsToCheckInsSql);
             migrationBuilder.Sql(AlignDirectionsToAddressesSql);
+            migrationBuilder.Sql(AlignRouteLayoversToRouteStopoversSql);
 
             // Note: some base FKs already exist in the DB (e.g., addresses -> cities/street_types, aircraft -> models/airlines, etc.)
 
@@ -537,7 +574,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             // document_type_id: ya definida en RenameDatabaseSchemaToEnglish (FK_persons_document_types_document_type_id).
             migrationBuilder.AddForeignKey("FK_persons_addresses_address_id", "persons", "address_id", "addresses", principalColumn: "id", onDelete: ReferentialAction.Restrict);
 
-            migrationBuilder.AddForeignKey("FK_route_stopovers_airports_stopover_airport_id", "route_stopovers", "stopover_airport_id", "airports", principalColumn: "id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.AddForeignKey("FK_route_stopovers_airports_layover_airport_id", "route_stopovers", "layover_airport_id", "airports", principalColumn: "id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.AddForeignKey("FK_route_stopovers_routes_route_id", "route_stopovers", "route_id", "routes", principalColumn: "id", onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey("FK_routes_airports_origin_airport_id", "routes", "origin_airport_id", "airports", principalColumn: "id", onDelete: ReferentialAction.Restrict);
@@ -616,7 +653,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             migrationBuilder.DropForeignKey("FK_invoices_bookings_booking_id", "invoices");
             migrationBuilder.DropForeignKey("FK_payments_bookings_booking_id", "payments");
             migrationBuilder.DropForeignKey("FK_persons_addresses_address_id", "persons");
-            migrationBuilder.DropForeignKey("FK_route_stopovers_airports_stopover_airport_id", "route_stopovers");
+            migrationBuilder.DropForeignKey("FK_route_stopovers_airports_layover_airport_id", "route_stopovers");
             migrationBuilder.DropForeignKey("FK_route_stopovers_routes_route_id", "route_stopovers");
             migrationBuilder.DropForeignKey("FK_routes_airports_origin_airport_id", "routes");
             migrationBuilder.DropForeignKey("FK_routes_airports_destination_airport_id", "routes");
