@@ -12,14 +12,15 @@ public sealed class PhoneCodeEntityConfiguration : IEntityTypeConfiguration<Phon
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
+        // Alineado con SchemaAlignedWithReferenceDdlEnglish (sustituye dial_code/name).
         builder
             .Property(x => x.CountryDialCode)
-            .HasColumnName("country_code")
+            .HasColumnName("country_dial_code")
             .HasColumnType("varchar(5)")
             .IsRequired();
 

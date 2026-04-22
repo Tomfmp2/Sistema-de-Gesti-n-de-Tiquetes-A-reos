@@ -1074,7 +1074,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<int?>("ReservationPassengerId")
                         .HasColumnType("int")
-                        .HasColumnName("reservation_passenger_id");
+                        .HasColumnName("booking_passenger_id");
 
                     b.Property<decimal>("Subtotal")
                         .HasColumnType("decimal(18,2)")
@@ -1336,7 +1336,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("Id");
+                        .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
@@ -1347,7 +1347,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(100)")
-                        .HasColumnName("Name");
+                        .HasColumnName("name");
 
                     b.HasKey("Id");
 
@@ -1495,14 +1495,14 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("Id");
+                        .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CountryDialCode")
                         .IsRequired()
                         .HasColumnType("varchar(5)")
-                        .HasColumnName("country_code");
+                        .HasColumnName("country_dial_code");
 
                     b.Property<string>("CountryName")
                         .IsRequired()
@@ -2032,7 +2032,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("Id");
+                        .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
@@ -2043,7 +2043,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(50)")
-                        .HasColumnName("Name");
+                        .HasColumnName("name");
 
                     b.HasKey("Id");
 

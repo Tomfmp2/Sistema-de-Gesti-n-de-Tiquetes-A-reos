@@ -1505,7 +1505,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<string>("CountryDialCode")
                         .IsRequired()
                         .HasColumnType("varchar(5)")
-                        .HasColumnName("country_code");
+                        .HasColumnName("country_dial_code");
 
                     b.Property<string>("CountryName")
                         .IsRequired()
