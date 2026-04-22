@@ -21,21 +21,21 @@ public class RouteEntityConfiguration : IEntityTypeConfiguration<RouteEntity>
 
         // Relationships
         builder
-            .HasOne(r => r.OriginAirport)
-            .WithMany()
+            .HasOne<AirportEntity>(r => r.OriginAirport)
+            .WithMany(a => a.OriginRoutes)
             .HasForeignKey(r => r.OriginAirportId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(r => r.DestinationAirport)
-            .WithMany()
+            .HasOne<AirportEntity>(r => r.DestinationAirport)
+            .WithMany(a => a.DestinationRoutes)
             .HasForeignKey(r => r.DestinationAirportId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
             .HasMany(r => r.Flights)
             .WithOne(f => f.Route)
-            .HasForeignKey("route_id")
+            .HasForeignKey(f => f.RouteId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -49,18 +49,18 @@ public class FlightSeatEntityConfiguration : IEntityTypeConfiguration<FlightSeat
         builder.HasIndex(x => new { x.FlightId, x.SeatCode })
             .IsUnique();
 
-        builder.HasOne<FlightEntity>()
-            .WithMany()
+        builder.HasOne<FlightEntity>(x => x.Flight)
+            .WithMany(f => f.FlightSeats)
             .HasForeignKey(x => x.FlightId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<CabinTypeEntity>()
-            .WithMany()
+        builder.HasOne<CabinTypeEntity>(x => x.CabinType)
+            .WithMany(ct => ct.FlightSeats)
             .HasForeignKey(x => x.CabinTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<SeatLocationTypeEntity>()
-            .WithMany()
+        builder.HasOne<SeatLocationTypeEntity>(x => x.LocationType)
+            .WithMany(lt => lt.FlightSeats)
             .HasForeignKey(x => x.LocationTypeId)
             .OnDelete(DeleteBehavior.Restrict);
     }

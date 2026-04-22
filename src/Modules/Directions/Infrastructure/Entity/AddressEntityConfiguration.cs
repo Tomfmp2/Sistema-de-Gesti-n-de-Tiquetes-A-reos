@@ -1,15 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StreetsTypes.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Directions.Infrastructure.Entity;
 
-public sealed class DirectionEntityConfiguration : IEntityTypeConfiguration<DirectionEntity>
+public sealed class AddressEntityConfiguration : IEntityTypeConfiguration<AddressEntity>
 {
-    public void Configure(EntityTypeBuilder<DirectionEntity> builder)
+    public void Configure(EntityTypeBuilder<AddressEntity> builder)
     {
-        builder.ToTable("directions");
+        builder.ToTable("addresses");
 
         builder.HasKey(x => x.Id);
         builder
@@ -33,7 +33,7 @@ public sealed class DirectionEntityConfiguration : IEntityTypeConfiguration<Dire
 
         builder
             .Property(x => x.StreetNumber)
-            .HasColumnName("street_number")
+            .HasColumnName("number")
             .HasColumnType("varchar(20)")
             .IsRequired(false);
 
@@ -56,14 +56,14 @@ public sealed class DirectionEntityConfiguration : IEntityTypeConfiguration<Dire
             .IsRequired(false);
 
         builder
-            .HasOne<CityEntity>()
-            .WithMany()
+            .HasOne<CityEntity>(x => x.City)
+            .WithMany(c => c.Addresses)
             .HasForeignKey(x => x.CityId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<StreetTypeEntity>()
-            .WithMany()
+            .HasOne<StreetTypeEntity>(x => x.StreetType)
+            .WithMany(s => s.Addresses)
             .HasForeignKey(x => x.StreetTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 

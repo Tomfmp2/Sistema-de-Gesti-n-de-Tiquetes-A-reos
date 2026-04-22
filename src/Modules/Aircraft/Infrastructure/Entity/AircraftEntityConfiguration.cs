@@ -39,13 +39,13 @@ public class AircraftEntityConfiguration : IEntityTypeConfiguration<AircraftEnti
             .HasColumnName("is_active")
             .IsRequired();
 
-        builder.HasOne(a => a.Model)
-            .WithMany()
+        builder.HasOne<AircraftModelEntity>(x => x.Model)
+            .WithMany(m => m.Aircrafts)
             .HasForeignKey(a => a.ModelId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(a => a.Airline)
-            .WithMany()
+        builder.HasOne<AirlineEntity>(x => x.Airline)
+            .WithMany(a => a.Aircraft)
             .HasForeignKey(a => a.AirlineId)
             .OnDelete(DeleteBehavior.Restrict);
 

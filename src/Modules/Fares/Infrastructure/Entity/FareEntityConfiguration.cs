@@ -62,26 +62,26 @@ public class FareEntityConfiguration : IEntityTypeConfiguration<FareEntity>
             .HasColumnType("date");
 
         builder
-            .HasOne<RouteEntity>()
-            .WithMany()
+            .HasOne<RouteEntity>(x => x.Route)
+            .WithMany(r => r.Fares)
             .HasForeignKey(x => x.RouteId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<CabinTypeEntity>()
-            .WithMany()
+            .HasOne<CabinTypeEntity>(x => x.CabinType)
+            .WithMany(ct => ct.Fares)
             .HasForeignKey(x => x.CabinTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<PassengerTypeEntity>()
-            .WithMany()
+            .HasOne<PassengerTypeEntity>(x => x.PassengerType)
+            .WithMany(pt => pt.Fares)
             .HasForeignKey(x => x.PassengerTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<SeasonEntity>()
-            .WithMany()
+            .HasOne<SeasonEntity>(x => x.Season)
+            .WithMany(s => s.Fares)
             .HasForeignKey(x => x.SeasonId)
             .OnDelete(DeleteBehavior.Restrict);
     }

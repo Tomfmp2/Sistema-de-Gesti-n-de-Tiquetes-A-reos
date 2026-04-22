@@ -1,22 +1,20 @@
-using System;
-
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Domain.ValueObject;
 
 public sealed class StaffAvailabilityId
 {
-    public Guid Value { get; }
+    public int Value { get; }
 
-    private StaffAvailabilityId(Guid value)
+    private StaffAvailabilityId(int value)
     {
         Value = value;
     }
 
-    public static StaffAvailabilityId Create(Guid value)
+    public static StaffAvailabilityId Create(int value)
     {
         return new StaffAvailabilityId(value);
     }
 
-    public static StaffAvailabilityId Reconstitute(Guid value)
+    public static StaffAvailabilityId Reconstitute(int value)
     {
         return new StaffAvailabilityId(value);
     }

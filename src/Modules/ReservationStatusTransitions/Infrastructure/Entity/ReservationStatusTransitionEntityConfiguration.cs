@@ -9,7 +9,7 @@ public class ReservationStatusTransitionEntityConfiguration
 {
     public void Configure(EntityTypeBuilder<ReservationStatusTransitionEntity> builder)
     {
-        builder.ToTable("reservation_status_transitions");
+        builder.ToTable("booking_status_transitions");
 
         builder.HasKey(x => x.Id);
         builder
@@ -21,27 +21,27 @@ public class ReservationStatusTransitionEntityConfiguration
 
         builder
             .Property(x => x.OriginStatusId)
-            .HasColumnName("origin_status_id")
+            .HasColumnName("from_status_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.DestinationStatusId)
-            .HasColumnName("destination_status_id")
+            .HasColumnName("to_status_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder.HasIndex(x => new { x.OriginStatusId, x.DestinationStatusId }).IsUnique();
 
         builder
-            .HasOne<ReservationStatusEntity>()
-            .WithMany()
+            .HasOne<ReservationStatusEntity>(x => x.OriginStatus)
+            .WithMany(s => s.OriginTransitions)
             .HasForeignKey(x => x.OriginStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<ReservationStatusEntity>()
-            .WithMany()
+            .HasOne<ReservationStatusEntity>(x => x.DestinationStatus)
+            .WithMany(s => s.DestinationTransitions)
             .HasForeignKey(x => x.DestinationStatusId)
             .OnDelete(DeleteBehavior.Restrict);
     }

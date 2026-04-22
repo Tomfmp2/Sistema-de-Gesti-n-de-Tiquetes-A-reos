@@ -3,6 +3,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject;
 using System.Collections.Generic;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
 
@@ -18,6 +20,8 @@ public class RouteEntity
     public AirportEntity? OriginAirport { get; set; }
     public AirportEntity? DestinationAirport { get; set; }
     public ICollection<FlightEntity> Flights { get; set; } = new List<FlightEntity>();
+    public ICollection<RouteLayoverEntity> RouteLayovers { get; set; } = new List<RouteLayoverEntity>();
+    public ICollection<FareEntity> Fares { get; set; } = new List<FareEntity>();
 
     public static RouteEntity FromDomain(Route route)
     {

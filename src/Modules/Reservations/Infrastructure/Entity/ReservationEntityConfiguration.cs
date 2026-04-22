@@ -9,7 +9,7 @@ public class ReservationEntityConfiguration : IEntityTypeConfiguration<Reservati
 {
     public void Configure(EntityTypeBuilder<ReservationEntity> builder)
     {
-        builder.ToTable("reservations");
+        builder.ToTable("bookings");
 
         builder.HasKey(x => x.Id);
         builder
@@ -27,19 +27,19 @@ public class ReservationEntityConfiguration : IEntityTypeConfiguration<Reservati
 
         builder
             .Property(x => x.ReservationDate)
-            .HasColumnName("reservation_date")
+            .HasColumnName("booked_at")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.ReservationStatusId)
-            .HasColumnName("reservation_status_id")
+            .HasColumnName("booking_status_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.TotalValue)
-            .HasColumnName("total_value")
+            .HasColumnName("total_amount")
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
@@ -61,14 +61,14 @@ public class ReservationEntityConfiguration : IEntityTypeConfiguration<Reservati
             .IsRequired();
 
         builder
-            .HasOne(x => x.ReservationStatus)
-            .WithMany()
+            .HasOne<ReservationStatusEntity>(x => x.ReservationStatus)
+            .WithMany(s => s.Reservations)
             .HasForeignKey(x => x.ReservationStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.Client)
-            .WithMany()
+            .HasOne<ClientEntity>(x => x.Client)
+            .WithMany(c => c.Reservations)
             .HasForeignKey(x => x.ClientId)
             .OnDelete(DeleteBehavior.Restrict);
     }

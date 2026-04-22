@@ -31,9 +31,9 @@ public sealed class ClientEntityConfiguration : IEntityTypeConfiguration<ClientE
             .IsRequired();
 
         builder
-            .HasOne<PersonEntity>()
-            .WithMany()
-            .HasForeignKey(x => x.PersonId)
+            .HasOne<PersonEntity>(x => x.Person)
+            .WithOne(p => p.Client)
+            .HasForeignKey<ClientEntity>(x => x.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.PersonId).IsUnique();

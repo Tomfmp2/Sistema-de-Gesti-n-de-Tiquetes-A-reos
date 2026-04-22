@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
 
@@ -20,6 +21,8 @@ public class AircraftEntity
     public AircraftModelEntity? Model { get; set; }
     public AirlineEntity? Airline { get; set; }
     public ICollection<FlightEntity> Flights { get; set; } = new List<FlightEntity>();
+    public ICollection<CabinConfigurationEntity> CabinConfigurations { get; set; } =
+        new List<CabinConfigurationEntity>();
 
     public static AircraftEntity FromDomain(Aggregate.Aircraft aircraft)
     {

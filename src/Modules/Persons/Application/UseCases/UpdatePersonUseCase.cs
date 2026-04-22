@@ -41,7 +41,7 @@ public sealed class UpdatePersonUseCase : IUpdatePersonUseCase
             PersonLastName.Create(request.LastName),
             request.BirthDate,
             request.Gender,
-            request.DirectionId,
+            request.AddressId,
             existing.CreatedAt,
             existing.UpdatedAt
         );

@@ -21,7 +21,7 @@ public class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity>
 
         builder
             .Property(x => x.ReservationPassengerId)
-            .HasColumnName("reservation_passenger_id")
+            .HasColumnName("booking_passenger_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -33,7 +33,7 @@ public class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity>
 
         builder
             .Property(x => x.IssueDate)
-            .HasColumnName("issue_date")
+            .HasColumnName("issued_at")
             .HasColumnType("datetime")
             .IsRequired();
 
@@ -59,14 +59,14 @@ public class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity>
         builder.HasIndex(x => x.Code).IsUnique();
 
         builder
-            .HasOne<ReservationPassengerEntity>()
-            .WithMany()
+            .HasOne<ReservationPassengerEntity>(x => x.ReservationPassenger)
+            .WithMany(rp => rp.Tickets)
             .HasForeignKey(x => x.ReservationPassengerId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<TicketStatusEntity>()
-            .WithMany()
+            .HasOne<TicketStatusEntity>(x => x.TicketStatus)
+            .WithMany(ts => ts.Tickets)
             .HasForeignKey(x => x.TicketStatusId)
             .OnDelete(DeleteBehavior.Restrict);
     }

@@ -1,4 +1,6 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Entity;
 
@@ -11,6 +13,9 @@ public class CabinConfigurationEntity
     public int EndRow { get; set; }
     public int SeatsPerRow { get; set; }
     public string SeatLetters { get; set; } = string.Empty;
+
+    public AircraftEntity? Aircraft { get; set; }
+    public CabinTypeEntity? CabinType { get; set; }
 
     public static CabinConfigurationEntity FromDomain(sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Domain.Aggregate.CabinConfiguration cabinConfiguration)
     {

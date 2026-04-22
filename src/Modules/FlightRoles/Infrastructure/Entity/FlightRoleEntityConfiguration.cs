@@ -9,7 +9,7 @@ public class FlightRoleEntityConfiguration : IEntityTypeConfiguration<FlightRole
 {
     public void Configure(EntityTypeBuilder<FlightRoleEntity> builder)
     {
-        builder.ToTable("flight_roles");
+        builder.ToTable("flight_crew_roles");
 
         builder.HasKey(x => x.Id);
 
@@ -28,8 +28,8 @@ public class FlightRoleEntityConfiguration : IEntityTypeConfiguration<FlightRole
         builder.HasIndex(x => x.Name).IsUnique();
 
         builder.HasMany(x => x.FlightAssignments)
-            .WithOne()
-            .HasForeignKey("flight_role_id")
+            .WithOne(fa => fa.FlightRole)
+            .HasForeignKey(fa => fa.FlightRoleId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -5,7 +5,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastruc
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Entity;
 
-[Table("flight_roles")]
+[Table("flight_crew_roles")]
 public class FlightRoleEntity
 {
     [Key]

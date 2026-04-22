@@ -14,14 +14,19 @@ public class CreateStaffAvailabilityUseCase
     }
 
     public async Task ExecuteAsync(
-        StaffAvailabilityId id,
         StaffId staffId,
         AvailabilityStatusId availabilityStatusId,
         StartDate startDate,
         EndDate endDate,
         Observation? observation)
     {
-        var staffAvailability = StaffAvailabilityRecord.Create(id, staffId, availabilityStatusId, startDate, endDate, observation);
+        var staffAvailability = StaffAvailabilityRecord.Create(
+            StaffAvailabilityId.Create(0),
+            staffId,
+            availabilityStatusId,
+            startDate,
+            endDate,
+            observation);
         await _repository.AddAsync(staffAvailability);
     }
 }

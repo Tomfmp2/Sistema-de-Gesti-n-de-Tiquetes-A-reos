@@ -44,14 +44,14 @@ public sealed class PersonEmailEntityConfiguration : IEntityTypeConfiguration<Pe
             .IsRequired();
 
         builder
-            .HasOne<PersonEntity>()
-            .WithMany()
+            .HasOne<PersonEntity>(x => x.Person)
+            .WithMany(p => p.Emails)
             .HasForeignKey(x => x.PersonId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne<EmailDomainEntity>()
-            .WithMany()
+            .HasOne<EmailDomainEntity>(x => x.EmailDomain)
+            .WithMany(d => d.PersonEmails)
             .HasForeignKey(x => x.EmailDomainId)
             .OnDelete(DeleteBehavior.Restrict);
 

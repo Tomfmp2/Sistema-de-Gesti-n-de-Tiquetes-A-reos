@@ -28,4 +28,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tooling projects live under /tools and must not be compiled into the main app -->
+    <Compile Remove="tools\**\*.cs" />
+    <None Remove="tools\**\*" />
+  </ItemGroup>
 </Project>

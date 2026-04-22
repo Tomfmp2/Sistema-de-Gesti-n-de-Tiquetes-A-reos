@@ -22,7 +22,7 @@ public class PaymentEntityConfiguration : IEntityTypeConfiguration<PaymentEntity
 
         builder
             .Property(x => x.ReservationId)
-            .HasColumnName("reservation_id")
+            .HasColumnName("booking_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -34,7 +34,7 @@ public class PaymentEntityConfiguration : IEntityTypeConfiguration<PaymentEntity
 
         builder
             .Property(x => x.PaymentDate)
-            .HasColumnName("payment_date")
+            .HasColumnName("paid_at")
             .HasColumnType("datetime")
             .IsRequired();
 
@@ -63,20 +63,20 @@ public class PaymentEntityConfiguration : IEntityTypeConfiguration<PaymentEntity
             .IsRequired();
 
         builder
-            .HasOne(x => x.Reservation)
-            .WithMany()
+            .HasOne<ReservationEntity>(x => x.Reservation)
+            .WithMany(r => r.Payments)
             .HasForeignKey(x => x.ReservationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.PaymentStatus)
-            .WithMany()
+            .HasOne<PaymentStatusEntity>(x => x.PaymentStatus)
+            .WithMany(ps => ps.Payments)
             .HasForeignKey(x => x.PaymentStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.PaymentMethod)
-            .WithMany()
+            .HasOne<PaymentMethodEntity>(x => x.PaymentMethod)
+            .WithMany(pm => pm.Payments)
             .HasForeignKey(x => x.PaymentMethodId)
             .OnDelete(DeleteBehavior.Restrict);
     }

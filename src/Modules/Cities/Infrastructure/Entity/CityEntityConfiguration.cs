@@ -30,8 +30,8 @@ public sealed class CityEntityConfiguration : IEntityTypeConfiguration<CityEntit
             .HasColumnType("int")
             .IsRequired();
         builder
-            .HasOne<RegionEntity>()
-            .WithMany()
+            .HasOne<RegionEntity>(x => x.Region)
+            .WithMany(r => r.Cities)
             .HasForeignKey(x => x.RegionId)
             .OnDelete(DeleteBehavior.Restrict);
 

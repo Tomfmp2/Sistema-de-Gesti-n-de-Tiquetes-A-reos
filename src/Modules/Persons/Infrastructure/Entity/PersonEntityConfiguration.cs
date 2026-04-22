@@ -56,8 +56,8 @@ public sealed class PersonEntityConfiguration : IEntityTypeConfiguration<PersonE
             .IsRequired(false);
 
         builder
-            .Property(x => x.DirectionId)
-            .HasColumnName("direction_id")
+            .Property(x => x.AddressId)
+            .HasColumnName("address_id")
             .HasColumnType("int")
             .IsRequired(false);
 
@@ -74,18 +74,18 @@ public sealed class PersonEntityConfiguration : IEntityTypeConfiguration<PersonE
             .IsRequired();
 
         builder
-            .HasOne<DocumentTypeEntity>()
-            .WithMany()
+            .HasOne<DocumentTypeEntity>(x => x.DocumentType)
+            .WithMany(dt => dt.Persons)
             .HasForeignKey(x => x.DocumentTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<DirectionEntity>()
-            .WithMany()
-            .HasForeignKey(x => x.DirectionId)
+            .HasOne<AddressEntity>(x => x.Address)
+            .WithMany(a => a.Persons)
+            .HasForeignKey(x => x.AddressId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(x => x.DirectionId);
+        builder.HasIndex(x => x.AddressId).HasDatabaseName("IX_persons_address_id");
         builder.HasIndex(x => new { x.DocumentTypeId, x.DocumentNumber }).IsUnique();
     }
 }

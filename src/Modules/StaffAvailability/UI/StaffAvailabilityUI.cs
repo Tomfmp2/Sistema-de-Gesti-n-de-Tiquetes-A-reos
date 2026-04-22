@@ -53,10 +53,6 @@ public class StaffAvailabilityUI : IModuleUI
         SpectreUi.ModuleHeader("Registrar disponibilidad", null);
         try
         {
-            Console.Write("ID del registro (GUID): ");
-            var id = Guid.Parse(Console.ReadLine()!);
-            var staffAvailabilityId = StaffAvailabilityId.Create(id);
-
             Console.Write("ID del empleado (staff): ");
             var staffIdValue = int.Parse(Console.ReadLine()!);
             var staffId = StaffId.Create(staffIdValue);
@@ -81,7 +77,7 @@ public class StaffAvailabilityUI : IModuleUI
                 observation = Observation.Create(observationInput);
             }
 
-            await _createUseCase.ExecuteAsync(staffAvailabilityId, staffId, availabilityStatusId, startDate, endDate, observation);
+            await _createUseCase.ExecuteAsync(staffId, availabilityStatusId, startDate, endDate, observation);
             Console.WriteLine("Disponibilidad registrada.");
         }
         catch (Exception ex)
@@ -107,8 +103,8 @@ public class StaffAvailabilityUI : IModuleUI
     private async Task ViewStaffAvailabilityByIdAsync()
     {
         SpectreUi.ModuleHeader("Consultar disponibilidad", null);
-        Console.Write("ID (GUID): ");
-        var id = Guid.Parse(Console.ReadLine()!);
+        Console.Write("ID: ");
+        var id = int.Parse(Console.ReadLine()!);
         var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
         var staffAvailability = await _getByIdUseCase.ExecuteAsync(staffAvailabilityId);
@@ -129,8 +125,8 @@ public class StaffAvailabilityUI : IModuleUI
         SpectreUi.ModuleHeader("Actualizar disponibilidad", null);
         try
         {
-            Console.Write("ID (GUID): ");
-            var id = Guid.Parse(Console.ReadLine()!);
+            Console.Write("ID: ");
+            var id = int.Parse(Console.ReadLine()!);
             var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
             Console.Write("Nuevo ID de empleado: ");
@@ -171,8 +167,8 @@ public class StaffAvailabilityUI : IModuleUI
     private async Task DeleteStaffAvailabilityAsync()
     {
         SpectreUi.ModuleHeader("Eliminar disponibilidad", null);
-        Console.Write("ID (GUID): ");
-        var id = Guid.Parse(Console.ReadLine()!);
+        Console.Write("ID: ");
+        var id = int.Parse(Console.ReadLine()!);
         var staffAvailabilityId = StaffAvailabilityId.Create(id);
 
         await _deleteUseCase.ExecuteAsync(staffAvailabilityId);

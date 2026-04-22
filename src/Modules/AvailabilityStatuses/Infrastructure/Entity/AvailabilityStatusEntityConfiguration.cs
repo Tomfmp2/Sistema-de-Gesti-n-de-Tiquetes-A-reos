@@ -8,9 +8,11 @@ public class AvailabilityStatusEntityConfiguration : IEntityTypeConfiguration<Av
 {
     public void Configure(EntityTypeBuilder<AvailabilityStatusEntity> builder)
     {
+        builder.ToTable("availability_statuses");
+
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
-        builder.Property(e => e.Name).HasMaxLength(50).IsRequired();
+        builder.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+        builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(50).IsRequired();
         builder.HasIndex(e => e.Name).IsUnique();
     }
 }

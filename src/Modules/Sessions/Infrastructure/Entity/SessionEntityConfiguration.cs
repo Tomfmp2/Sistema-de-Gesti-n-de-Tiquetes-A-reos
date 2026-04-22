@@ -32,13 +32,13 @@ public sealed class SessionEntityConfiguration : IEntityTypeConfiguration<Sessio
 
         builder
             .Property(x => x.ClosedAt)
-            .HasColumnName("closed_at")
+            .HasColumnName("ended_at")
             .HasColumnType("datetime(6)")
             .IsRequired(false);
 
         builder
             .Property(x => x.OriginIp)
-            .HasColumnName("origin_ip")
+            .HasColumnName("ip_address")
             .HasColumnType("varchar(45)")
             .IsRequired(false);
 
@@ -49,8 +49,8 @@ public sealed class SessionEntityConfiguration : IEntityTypeConfiguration<Sessio
             .IsRequired();
 
         builder
-            .HasOne<UserEntity>()
-            .WithMany()
+            .HasOne<UserEntity>(x => x.User)
+            .WithMany(u => u.Sessions)
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 

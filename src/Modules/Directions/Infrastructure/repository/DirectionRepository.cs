@@ -26,7 +26,7 @@ public sealed class DirectionRepository : IDirectionRepository
             return null;
         }
 
-        var e = await _context.Set<DirectionEntity>().AsNoTracking()
+        var e = await _context.Set<AddressEntity>().AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id.Value, cancellationToken);
         return e is null ? null : ToDomain(e);
     }
@@ -35,7 +35,7 @@ public sealed class DirectionRepository : IDirectionRepository
         CancellationToken cancellationToken = default
     )
     {
-        var list = await _context.Set<DirectionEntity>().AsNoTracking().ToListAsync(cancellationToken);
+        var list = await _context.Set<AddressEntity>().AsNoTracking().ToListAsync(cancellationToken);
         return list.Select(ToDomain).ToList();
     }
 
@@ -46,7 +46,7 @@ public sealed class DirectionRepository : IDirectionRepository
             throw new InvalidOperationException("Use Direction.CreateNew para insertar.");
         }
 
-        var e = new DirectionEntity
+        var e = new AddressEntity
         {
             CityId = entity.CityId.Value,
             StreetTypeId = entity.StreetTypeId.Value,
@@ -55,7 +55,7 @@ public sealed class DirectionRepository : IDirectionRepository
             Complement = entity.Complement,
             PostalCode = entity.PostalCode,
         };
-        _context.Set<DirectionEntity>().Add(e);
+        _context.Set<AddressEntity>().Add(e);
         await _context.SaveChangesAsync(cancellationToken);
         return ToDomain(e);
     }
@@ -67,7 +67,7 @@ public sealed class DirectionRepository : IDirectionRepository
             throw new InvalidOperationException("Id inválido.");
         }
 
-        var e = await _context.Set<DirectionEntity>().FirstOrDefaultAsync(
+        var e = await _context.Set<AddressEntity>().FirstOrDefaultAsync(
             x => x.Id == entity.Id.Value,
             cancellationToken
         );
@@ -93,7 +93,7 @@ public sealed class DirectionRepository : IDirectionRepository
             return;
         }
 
-        var e = await _context.Set<DirectionEntity>().FirstOrDefaultAsync(
+        var e = await _context.Set<AddressEntity>().FirstOrDefaultAsync(
             x => x.Id == id.Value,
             cancellationToken
         );
@@ -103,11 +103,11 @@ public sealed class DirectionRepository : IDirectionRepository
             return;
         }
 
-        _context.Set<DirectionEntity>().Remove(e);
+        _context.Set<AddressEntity>().Remove(e);
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private static Direction ToDomain(DirectionEntity e)
+    private static Direction ToDomain(AddressEntity e)
     {
         return Direction.Create(
             DirectionId.Create(e.Id),

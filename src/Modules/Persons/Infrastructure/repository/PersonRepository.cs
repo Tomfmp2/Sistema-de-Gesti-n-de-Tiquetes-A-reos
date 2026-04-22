@@ -50,7 +50,7 @@ public sealed class PersonRepository : IPersonRepository
             LastName = entity.LastName.Value,
             BirthDate = entity.BirthDate,
             Gender = entity.Gender,
-            DirectionId = entity.DirectionId,
+            AddressId = entity.AddressId,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -82,7 +82,7 @@ public sealed class PersonRepository : IPersonRepository
         e.LastName = entity.LastName.Value;
         e.BirthDate = entity.BirthDate;
         e.Gender = entity.Gender;
-        e.DirectionId = entity.DirectionId;
+        e.AddressId = entity.AddressId;
         e.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
     }
@@ -118,7 +118,7 @@ public sealed class PersonRepository : IPersonRepository
             PersonLastName.Create(e.LastName ?? string.Empty),
             e.BirthDate,
             e.Gender,
-            e.DirectionId,
+            e.AddressId,
             e.CreatedAt,
             e.UpdatedAt
         );

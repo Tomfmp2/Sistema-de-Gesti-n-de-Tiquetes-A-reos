@@ -33,14 +33,14 @@ public sealed class RolePermissionEntityConfiguration : IEntityTypeConfiguration
             .IsRequired();
 
         builder
-            .HasOne<SystemRoleEntity>()
-            .WithMany()
+            .HasOne<SystemRoleEntity>(x => x.Role)
+            .WithMany(r => r.RolePermissions)
             .HasForeignKey(x => x.RoleId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne<PermissionEntity>()
-            .WithMany()
+            .HasOne<PermissionEntity>(x => x.Permission)
+            .WithMany(p => p.RolePermissions)
             .HasForeignKey(x => x.PermissionId)
             .OnDelete(DeleteBehavior.Cascade);
 

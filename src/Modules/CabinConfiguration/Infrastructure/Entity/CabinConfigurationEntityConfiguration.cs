@@ -10,7 +10,7 @@ public class CabinConfigurationEntityConfiguration : IEntityTypeConfiguration<Ca
 {
     public void Configure(EntityTypeBuilder<CabinConfigurationEntity> builder)
     {
-        builder.ToTable("cabin_configuration");
+        builder.ToTable("cabin_configurations");
 
         builder.HasKey(x => x.Id);
 
@@ -27,11 +27,11 @@ public class CabinConfigurationEntityConfiguration : IEntityTypeConfiguration<Ca
             .IsRequired();
 
         builder.Property(x => x.StartRow)
-            .HasColumnName("start_row")
+            .HasColumnName("row_start")
             .IsRequired();
 
         builder.Property(x => x.EndRow)
-            .HasColumnName("end_row")
+            .HasColumnName("row_end")
             .IsRequired();
 
         builder.Property(x => x.SeatsPerRow)
@@ -46,13 +46,13 @@ public class CabinConfigurationEntityConfiguration : IEntityTypeConfiguration<Ca
         builder.HasIndex(x => new { x.AircraftId, x.CabinTypeId })
             .IsUnique();
 
-        builder.HasOne<AircraftEntity>()
-            .WithMany()
+        builder.HasOne<AircraftEntity>(x => x.Aircraft)
+            .WithMany(a => a.CabinConfigurations)
             .HasForeignKey(x => x.AircraftId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<CabinTypeEntity>()
-            .WithMany()
+        builder.HasOne<CabinTypeEntity>(x => x.CabinType)
+            .WithMany(ct => ct.CabinConfigurations)
             .HasForeignKey(x => x.CabinTypeId)
             .OnDelete(DeleteBehavior.Restrict);
     }

@@ -45,20 +45,20 @@ public class PaymentMethodEntityConfiguration : IEntityTypeConfiguration<Payment
         builder.HasIndex(x => x.CommercialName).IsUnique();
 
         builder
-            .HasOne<PaymentMethodTypeEntity>()
-            .WithMany()
+            .HasOne<PaymentMethodTypeEntity>(x => x.PaymentMethodType)
+            .WithMany(t => t.PaymentMethods)
             .HasForeignKey(x => x.PaymentMethodTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<CardTypeEntity>()
-            .WithMany()
+            .HasOne<CardTypeEntity>(x => x.CardType)
+            .WithMany(ct => ct.PaymentMethods)
             .HasForeignKey(x => x.CardTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<CardIssuerEntity>()
-            .WithMany()
+            .HasOne<CardIssuerEntity>(x => x.CardIssuer)
+            .WithMany(ci => ci.PaymentMethods)
             .HasForeignKey(x => x.CardIssuerId)
             .OnDelete(DeleteBehavior.Restrict);
     }

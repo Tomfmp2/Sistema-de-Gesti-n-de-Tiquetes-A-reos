@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.Entity;
@@ -9,7 +10,7 @@ public class ReservationPassengerEntityConfiguration
 {
     public void Configure(EntityTypeBuilder<ReservationPassengerEntity> builder)
     {
-        builder.ToTable("reservation_passengers");
+        builder.ToTable("booking_passengers");
 
         builder.HasKey(x => x.Id);
         builder
@@ -21,7 +22,7 @@ public class ReservationPassengerEntityConfiguration
 
         builder
             .Property(x => x.ReservationFlightId)
-            .HasColumnName("reservation_flight_id")
+            .HasColumnName("booking_flight_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -34,9 +35,15 @@ public class ReservationPassengerEntityConfiguration
         builder.HasIndex(x => new { x.ReservationFlightId, x.PassengerId }).IsUnique();
 
         builder
-            .HasOne<ReservationFlightEntity>()
-            .WithMany()
+            .HasOne<ReservationFlightEntity>(x => x.ReservationFlight)
+            .WithMany(rf => rf.ReservationPassengers)
             .HasForeignKey(x => x.ReservationFlightId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne<PassengerEntity>(x => x.Passenger)
+            .WithMany(p => p.ReservationPassengers)
+            .HasForeignKey(x => x.PassengerId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

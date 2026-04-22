@@ -1,27 +1,17 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity;
 
-[Table("staff_availability")]
 public class StaffAvailabilityEntity
 {
-    [Key]
-    [Column("id")]
-    public Guid Id { get; set; }
-
-    [Column("staff_id")]
+    public int Id { get; set; }
     public int StaffId { get; set; }
-
-    [Column("availability_status_id")]
     public int AvailabilityStatusId { get; set; }
+    public DateTime StartsAt { get; set; }
+    public DateTime EndsAt { get; set; }
+    public string? Notes { get; set; }
 
-    [Column("start_date")]
-    public DateTime StartDate { get; set; }
-
-    [Column("end_date")]
-    public DateTime EndDate { get; set; }
-
-    [Column("observation")]
-    public string? Observation { get; set; }
+    public StaffEntity? Staff { get; set; }
+    public AvailabilityStatusEntity? AvailabilityStatus { get; set; }
 }

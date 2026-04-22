@@ -8,7 +8,7 @@ public class ReservationStatusEntityConfiguration
 {
     public void Configure(EntityTypeBuilder<ReservationStatusEntity> builder)
     {
-        builder.ToTable("reservation_statuses");
+        builder.ToTable("booking_statuses");
 
         builder.HasKey(x => x.Id);
         builder

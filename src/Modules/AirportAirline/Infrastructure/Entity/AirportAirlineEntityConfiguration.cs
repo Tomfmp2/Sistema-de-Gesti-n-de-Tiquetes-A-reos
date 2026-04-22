@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-// using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
-// using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructure.Entity;
 
@@ -58,14 +58,14 @@ public sealed class AirportAirlineEntityConfiguration : IEntityTypeConfiguration
             .IsRequired();
 
         builder
-            .HasOne(x => x.Airport)
+            .HasOne<AirportEntity>(x => x.Airport)
             .WithMany(x => x.AirportAirlines)
             .HasForeignKey(x => x.AirportId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.Airline)
-            .WithMany()
+            .HasOne<AirlineEntity>(x => x.Airline)
+            .WithMany(a => a.AirportAirlines)
             .HasForeignKey(x => x.AirlineId)
             .OnDelete(DeleteBehavior.Restrict);
     }

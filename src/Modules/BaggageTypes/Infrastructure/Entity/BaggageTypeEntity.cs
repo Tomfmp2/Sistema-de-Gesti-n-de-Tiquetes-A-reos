@@ -1,6 +1,8 @@
-namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastructure.Entity;
-
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Baggage.Infrastructure.Entity;
+
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastructure.Entity;
 
 [Table("baggage_types")]
 public class BaggageTypeEntity
@@ -16,4 +18,6 @@ public class BaggageTypeEntity
 
     [Column("base_price")]
     public decimal BasePrice { get; set; }
+
+    public ICollection<BaggageEntity> Baggages { get; set; } = new List<BaggageEntity>();
 }

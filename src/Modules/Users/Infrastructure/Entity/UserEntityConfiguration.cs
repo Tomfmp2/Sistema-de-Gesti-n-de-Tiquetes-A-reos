@@ -39,7 +39,7 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
 
         builder
             .Property(x => x.SystemRoleId)
-            .HasColumnName("system_role_id")
+            .HasColumnName("role_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -51,7 +51,7 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
 
         builder
             .Property(x => x.LastAccessAt)
-            .HasColumnName("last_access_at")
+            .HasColumnName("last_access")
             .HasColumnType("datetime(6)")
             .IsRequired(false);
 
@@ -68,14 +68,14 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
             .IsRequired();
 
         builder
-            .HasOne<PersonEntity>()
-            .WithMany()
-            .HasForeignKey(x => x.PersonId)
+            .HasOne<PersonEntity>(x => x.Person)
+            .WithOne(p => p.User)
+            .HasForeignKey<UserEntity>(x => x.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<SystemRoleEntity>()
-            .WithMany()
+            .HasOne<SystemRoleEntity>(x => x.SystemRole)
+            .WithMany(sr => sr.Users)
             .HasForeignKey(x => x.SystemRoleId)
             .OnDelete(DeleteBehavior.Restrict);
 

@@ -10,24 +10,24 @@ public class RouteLayoverEntityConfiguration : IEntityTypeConfiguration<RouteLay
 {
     public void Configure(EntityTypeBuilder<RouteLayoverEntity> builder)
     {
-        builder.ToTable("route_layovers");
+        builder.ToTable("route_stopovers");
         builder.HasKey(rl => rl.Id);
         builder.Property(rl => rl.Id).HasColumnName("id").ValueGeneratedOnAdd();
         builder.Property(rl => rl.RouteId).HasColumnName("route_id").IsRequired();
-        builder.Property(rl => rl.LayoverAirportId).HasColumnName("layover_airport_id").IsRequired();
-        builder.Property(rl => rl.SequenceOrder).HasColumnName("sequence_order").IsRequired();
-        builder.Property(rl => rl.LayoverDurationMin).HasColumnName("layover_duration_min").IsRequired().HasDefaultValue(0);
+        builder.Property(rl => rl.LayoverAirportId).HasColumnName("stopover_airport_id").IsRequired();
+        builder.Property(rl => rl.SequenceOrder).HasColumnName("stop_order").IsRequired();
+        builder.Property(rl => rl.LayoverDurationMin).HasColumnName("layover_min").IsRequired().HasDefaultValue(0);
         builder.HasIndex(rl => new { rl.RouteId, rl.SequenceOrder }).IsUnique();
 
         builder
-            .HasOne<RouteEntity>()
-            .WithMany()
+            .HasOne<RouteEntity>(x => x.Route)
+            .WithMany(r => r.RouteLayovers)
             .HasForeignKey(rl => rl.RouteId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<AirportEntity>()
-            .WithMany()
+            .HasOne<AirportEntity>(x => x.LayoverAirport)
+            .WithMany(a => a.RouteLayovers)
             .HasForeignKey(rl => rl.LayoverAirportId)
             .OnDelete(DeleteBehavior.Restrict);
     }

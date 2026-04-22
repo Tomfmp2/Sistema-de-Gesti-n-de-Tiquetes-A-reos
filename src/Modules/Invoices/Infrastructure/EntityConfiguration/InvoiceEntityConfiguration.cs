@@ -22,18 +22,18 @@ public class InvoiceEntityConfiguration : IEntityTypeConfiguration<InvoiceEntity
 
         builder
             .Property(x => x.ReservationId)
-            .HasColumnName("reservation_id")
+            .HasColumnName("booking_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.Number)
-            .HasColumnName("number")
-            .HasColumnType("varchar(50)");
+            .HasColumnName("invoice_number")
+            .HasColumnType("varchar(30)");
 
         builder
             .Property(x => x.IssueDate)
-            .HasColumnName("issue_date")
+            .HasColumnName("issued_at")
             .HasColumnType("datetime")
             .IsRequired();
 
@@ -63,15 +63,15 @@ public class InvoiceEntityConfiguration : IEntityTypeConfiguration<InvoiceEntity
 
         // Relationships
         builder
-            .HasOne(x => x.Reservation)
-            .WithMany()
+            .HasOne<ReservationEntity>(x => x.Reservation)
+            .WithMany(r => r.Invoices)
             .HasForeignKey(x => x.ReservationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
             .HasMany(x => x.InvoiceItems)
             .WithOne(ii => ii.Invoice)
-            .HasForeignKey("invoice_id")
+            .HasForeignKey(ii => ii.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(x => x.ReservationId);

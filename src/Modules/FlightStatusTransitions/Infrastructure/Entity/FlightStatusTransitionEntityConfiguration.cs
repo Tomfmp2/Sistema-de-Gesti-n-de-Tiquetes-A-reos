@@ -20,27 +20,27 @@ public class FlightStatusTransitionEntityConfiguration : IEntityTypeConfiguratio
 
         builder
             .Property(x => x.OriginStatusId)
-            .HasColumnName("origin_status_id")
+            .HasColumnName("from_status_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.DestinationStatusId)
-            .HasColumnName("destination_status_id")
+            .HasColumnName("to_status_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder.HasIndex(x => new { x.OriginStatusId, x.DestinationStatusId }).IsUnique();
 
         builder
-            .HasOne<FlightStatusEntity>()
-            .WithMany()
+            .HasOne<FlightStatusEntity>(x => x.OriginStatus)
+            .WithMany(s => s.OriginTransitions)
             .HasForeignKey(x => x.OriginStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<FlightStatusEntity>()
-            .WithMany()
+            .HasOne<FlightStatusEntity>(x => x.DestinationStatus)
+            .WithMany(s => s.DestinationTransitions)
             .HasForeignKey(x => x.DestinationStatusId)
             .OnDelete(DeleteBehavior.Restrict);
     }

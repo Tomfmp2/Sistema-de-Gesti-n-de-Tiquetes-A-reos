@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Baggage.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Baggage.Infrastructure.Config;
 
@@ -8,6 +10,8 @@ public class BaggageEntityConfiguration : IEntityTypeConfiguration<BaggageEntity
 {
     public void Configure(EntityTypeBuilder<BaggageEntity> builder)
     {
+        builder.ToTable("baggage");
+
         builder.HasKey(e => e.Id).HasName("PK_baggage");
 
         builder.Property(e => e.Id)
@@ -35,15 +39,19 @@ public class BaggageEntityConfiguration : IEntityTypeConfiguration<BaggageEntity
             .HasPrecision(18, 2)
             .HasDefaultValue(0m);
 
-        builder.Property(e => e.CreatedAt)
-            .IsRequired()
-            .HasColumnName("created_at");
+        builder.HasIndex(e => e.CheckinId).HasDatabaseName("IX_baggage_checkin_id");
+        builder.HasIndex(e => e.BaggageTypeId).HasDatabaseName("IX_baggage_baggage_type_id");
 
-        builder.Property(e => e.UpdatedAt)
-            .IsRequired()
-            .HasColumnName("updated_at");
+        builder
+            .HasOne<CheckinEntity>(x => x.Checkin)
+            .WithMany(c => c.Baggages)
+            .HasForeignKey(e => e.CheckinId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => e.CheckinId).HasName("IX_baggage_checkin_id");
-        builder.HasIndex(e => e.BaggageTypeId).HasName("IX_baggage_baggage_type_id");
+        builder
+            .HasOne<BaggageTypeEntity>(x => x.BaggageType)
+            .WithMany(bt => bt.Baggages)
+            .HasForeignKey(e => e.BaggageTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
