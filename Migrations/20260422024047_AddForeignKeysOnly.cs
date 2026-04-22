@@ -9,8 +9,8 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
     /// Añade FKs y alinea nombres de tablas/columnas (legado → modelo) antes, para que una BD creada con las
     /// migraciones antiguas coincida con <c>AppDbContext</c>. Mapeo resumido: <c>reservation_*</c>→<c>booking_*</c>,
     /// <c>checkins</c>→<c>check_ins</c>, <c>directions</c>→<c>addresses</c> + <c>direction_id</c>→<c>address_id</c>,
-    /// <c>route_layovers</c>→<c>route_stopovers</c>, etc. Cualquier tabla nueva en EF debe añadirse aquí si el
-    /// <c>Create*</c> todavía usa otro nombre.
+    /// <c>route_layovers</c>→<c>route_stopovers</c>, <c>staff</c> (PascalCase→snake_case), etc. Cualquier tabla
+    /// nueva en EF debe añadirse aquí si el <c>Create*</c> todavía usa otro nombre.
     /// </summary>
     public partial class AddForeignKeysOnly : Migration
     {
@@ -358,6 +358,92 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
             """;
 
+        /// <summary>
+        /// <c>CreateStaff</c> usó nombres de columna en PascalCase (<c>PersonId</c>, <c>Id</c>, etc.);
+        /// el modelo usa snake_case. Debe ejecutarse antes de cualquier <c>AddForeignKey</c> que referencie <c>staff</c>.
+        /// </summary>
+        private const string AlignStaffPascalCaseColumnsSql = """
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'Id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'id'),
+                'ALTER TABLE `staff` RENAME COLUMN `Id` TO `id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'PersonId')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'person_id'),
+                'ALTER TABLE `staff` RENAME COLUMN `PersonId` TO `person_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'PositionId')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'position_id'),
+                'ALTER TABLE `staff` RENAME COLUMN `PositionId` TO `position_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'AirlineId')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'airline_id'),
+                'ALTER TABLE `staff` RENAME COLUMN `AirlineId` TO `airline_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'AirportId')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'airport_id'),
+                'ALTER TABLE `staff` RENAME COLUMN `AirportId` TO `airport_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'HireDate')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'hire_date'),
+                'ALTER TABLE `staff` RENAME COLUMN `HireDate` TO `hire_date`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'IsActive')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'is_active'),
+                'ALTER TABLE `staff` RENAME COLUMN `IsActive` TO `is_active`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'CreatedAt')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'created_at'),
+                'ALTER TABLE `staff` RENAME COLUMN `CreatedAt` TO `created_at`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'UpdatedAt')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND COLUMN_NAME = 'updated_at'),
+                'ALTER TABLE `staff` RENAME COLUMN `UpdatedAt` TO `updated_at`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND INDEX_NAME = 'IX_staff_PersonId')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff' AND INDEX_NAME = 'IX_staff_person_id'),
+                'ALTER TABLE `staff` RENAME INDEX `IX_staff_PersonId` TO `IX_staff_person_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+            """;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -524,6 +610,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             migrationBuilder.Sql(AlignCheckinsToCheckInsSql);
             migrationBuilder.Sql(AlignDirectionsToAddressesSql);
             migrationBuilder.Sql(AlignRouteLayoversToRouteStopoversSql);
+            migrationBuilder.Sql(AlignStaffPascalCaseColumnsSql);
 
             // Note: some base FKs already exist in the DB (e.g., addresses -> cities/street_types, aircraft -> models/airlines, etc.)
 
