@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Entity;
 
@@ -23,5 +24,7 @@ public class ReservationStatusEntityConfiguration
             .HasColumnName("Name")
             .HasColumnType("varchar(50)")
             .IsRequired();
+
+        builder.HasData(ReservationStatusDefaultData.ReservationStatuses);
     }
 }

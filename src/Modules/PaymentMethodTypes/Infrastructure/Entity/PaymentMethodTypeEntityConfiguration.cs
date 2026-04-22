@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentMethodTypes.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentMethodTypes.Infrastructure.Entity;
 
@@ -24,5 +25,7 @@ public class PaymentMethodTypeEntityConfiguration : IEntityTypeConfiguration<Pay
             .IsRequired();
 
         builder.HasIndex(x => x.Name).IsUnique();
+
+        builder.HasData(PaymentMethodTypeDefaultData.PaymentMethodTypes);
     }
 }
