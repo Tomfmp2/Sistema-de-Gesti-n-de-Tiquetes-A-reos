@@ -15,6 +15,13 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infras
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Directions.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.StreetsTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
@@ -81,6 +88,7 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             {
                 ("Crear reservación", () => Create().GetAwaiter().GetResult()),
                 ("Listar mis reservaciones", () => ListMine().GetAwaiter().GetResult()),
+                ("Check-in", () => Checkin().GetAwaiter().GetResult()),
                 ("Confirmar (por ID)", () => Confirm().GetAwaiter().GetResult()),
                 ("Cambiar expiración (por ID)", () => Update().GetAwaiter().GetResult()),
                 ("Cancelar (por ID)", () => Cancel().GetAwaiter().GetResult()),
@@ -98,20 +106,35 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             var list = (await _getMine.ExecuteAsync(_auth.ClientId!.Value)).ToList();
             if (list.Count == 0)
             {
-                Console.WriteLine("No tienes reservaciones.");
+                SpectreUi.MarkupLineOrPlain("[grey]No tienes reservaciones.[/]", "No tienes reservaciones.");
                 return;
             }
 
-            foreach (var r in list.OrderByDescending(x => x.ReservationDate.Value))
-            {
-                Console.WriteLine(
-                    $"ID: {r.Id.Value}, Status: {r.ReservationStatusId.Value}, Total: {r.TotalValue.Value}, BookedAt: {r.ReservationDate.Value:yyyy-MM-dd HH:mm}, ExpiresAt: {(r.ExpiresAt.Value.HasValue ? r.ExpiresAt.Value.Value.ToString("yyyy-MM-dd HH:mm") : "null")}"
-                );
-            }
+            SpectreUi.ShowTable(
+                "Mis reservaciones",
+                ["ID", "EstadoId", "Total", "Fecha", "Expira"],
+                list.OrderByDescending(x => x.ReservationDate.Value)
+                    .Select(r => (IReadOnlyList<string>)
+                    [
+                        r.Id.Value.ToString(),
+                        r.ReservationStatusId.Value.ToString(),
+                        r.TotalValue.Value.ToString("0.00"),
+                        r.ReservationDate.Value.ToString("yyyy-MM-dd HH:mm"),
+                        r.ExpiresAt.Value.HasValue ? r.ExpiresAt.Value.Value.ToString("yyyy-MM-dd HH:mm") : "-"
+                    ])
+                    .ToList()
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -163,33 +186,47 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             if (flights.Count == 0)
                 throw new InvalidOperationException("No hay vuelos disponibles con cupos.");
 
-            Console.WriteLine("Vuelos disponibles (máx 20):");
-            foreach (var f in flights)
-            {
-                var origin = string.IsNullOrWhiteSpace(f.OriginCode) ? "?" : f.OriginCode;
-                var dest = string.IsNullOrWhiteSpace(f.DestinationCode) ? "?" : f.DestinationCode;
-                var airline = string.IsNullOrWhiteSpace(f.AirlineName) ? "" : $" · {f.AirlineName}";
+            SpectreUi.ShowTable(
+                "Vuelos disponibles (máx 20)",
+                ["ID", "Código", "Ruta", "Salida", "Cupos", "Aerolínea"],
+                flights.Select(f =>
+                {
+                    var origin = string.IsNullOrWhiteSpace(f.OriginCode) ? "?" : f.OriginCode;
+                    var dest = string.IsNullOrWhiteSpace(f.DestinationCode) ? "?" : f.DestinationCode;
+                    return (IReadOnlyList<string>)
+                    [
+                        f.Id.ToString(),
+                        f.FlightCode ?? "-",
+                        $"{origin} → {dest}",
+                        f.DepartureDate.ToString("yyyy-MM-dd HH:mm"),
+                        f.AvailableSeats.ToString(),
+                        f.AirlineName ?? "-"
+                    ];
+                }).ToList()
+            );
 
-                Console.WriteLine(
-                    $"- {f.Id}: {f.FlightCode} · {origin} → {dest} · {f.DepartureDate:yyyy-MM-dd HH:mm} · Cupos: {f.AvailableSeats}{airline}"
-                );
-            }
-
-            Console.Write("ID vuelo a reservar: ");
-            var flightId = int.Parse(Console.ReadLine()!);
+            var flightId = SpectreUi.PromptIntRequiredCancelable(
+                "ID vuelo a reservar",
+                "0/c/cancelar para salir"
+            );
             var selected = flights.FirstOrDefault(x => x.Id == flightId);
             if (selected is null)
                 throw new InvalidOperationException("Vuelo inválido.");
 
-            Console.Write("Cantidad de pasajeros (>=1): ");
-            var paxCount = int.Parse(Console.ReadLine()!);
+            var paxCount = SpectreUi.PromptIntRequiredCancelable(
+                "Cantidad de pasajeros",
+                $"mín=1, máx={selected.AvailableSeats} (0/c/cancelar para salir)",
+                min: 1
+            );
             if (paxCount < 1)
                 throw new InvalidOperationException("Cantidad inválida.");
             if (paxCount > selected.AvailableSeats)
                 throw new InvalidOperationException("No hay cupos suficientes en el vuelo.");
 
-            Console.Write("Expira en (minutos, opcional; Enter = sin expiración): ");
-            var minutesRaw = (Console.ReadLine() ?? string.Empty).Trim();
+            var minutesRaw = (SpectreUi.PromptOptionalCancelable(
+                "Expira en (minutos)",
+                "Enter = sin expiración (0/c/cancelar para salir)"
+            ) ?? string.Empty).Trim();
             DateTime? expiresAt = null;
             if (!string.IsNullOrWhiteSpace(minutesRaw))
             {
@@ -197,6 +234,9 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                     throw new InvalidOperationException("Minutos inválidos.");
                 expiresAt = utcNow.AddMinutes(minutes);
             }
+
+            // 1.5) Dirección de facturación (se guarda en la persona del usuario/cliente)
+            await EnsureBillingAddressAsync();
 
             // 2) Crear booking + relaciones en transacción
             await using var tx = await _ctx.Database.BeginTransactionAsync();
@@ -226,16 +266,19 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
 
             for (var i = 1; i <= paxCount; i++)
             {
-                Console.WriteLine($"Pasajero {i}/{paxCount}");
-                Console.Write("Nombre: ");
-                var firstName = (Console.ReadLine() ?? string.Empty).Trim();
-                Console.Write("Apellido: ");
-                var lastName = (Console.ReadLine() ?? string.Empty).Trim();
+                SpectreUi.MarkupLineOrPlain(
+                    $"[grey]Pasajero {i}/{paxCount}[/]",
+                    $"Pasajero {i}/{paxCount}"
+                );
+                var firstName = SpectreUi.PromptRequiredCancelable("Nombre", "0/c/cancelar para salir").Trim();
+                var lastName = SpectreUi.PromptRequiredCancelable("Apellido", "0/c/cancelar para salir").Trim();
                 if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
                     throw new InvalidOperationException("Nombre y apellido son obligatorios.");
 
-                Console.Write($"Documento ({docTypeLabel}) número: ");
-                var docNumber = (Console.ReadLine() ?? string.Empty).Trim();
+                var docNumber = SpectreUi.PromptRequiredCancelable(
+                    $"Documento ({docTypeLabel}) número",
+                    "0/c/cancelar para salir"
+                ).Trim();
                 if (string.IsNullOrWhiteSpace(docNumber))
                     throw new InvalidOperationException("Número de documento es obligatorio.");
 
@@ -267,9 +310,16 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 $"Reservación creada booking_id={booking.Id.Value} vuelo={selected.FlightCode} pasajeros={paxCount}."
             );
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -279,8 +329,7 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID reservación: ");
-            var id = int.Parse(Console.ReadLine()!);
+            var id = SpectreUi.PromptIntRequiredCancelable("ID reservación", "0/c/cancelar para salir", min: 1);
 
             var current = await _getById.ExecuteAsync(id);
             if (current is null)
@@ -313,6 +362,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
 
             Console.WriteLine("Confirmada.");
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
@@ -325,8 +378,7 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID reservación: ");
-            var id = int.Parse(Console.ReadLine()!);
+            var id = SpectreUi.PromptIntRequiredCancelable("ID reservación", "0/c/cancelar para salir", min: 1);
 
             var current = await _getById.ExecuteAsync(id);
             if (current is null)
@@ -372,6 +424,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
 
             Console.WriteLine("Expiración actualizada.");
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
@@ -384,8 +440,7 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID reservación: ");
-            var id = int.Parse(Console.ReadLine()!);
+            var id = SpectreUi.PromptIntRequiredCancelable("ID reservación", "0/c/cancelar para salir", min: 1);
 
             var current = await _getById.ExecuteAsync(id);
             if (current is null)
@@ -445,6 +500,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
 
             Console.WriteLine("Cancelada (cupos devueltos).");
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
@@ -464,12 +523,13 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         if (types.Count == 0)
             throw new InvalidOperationException("No hay tipos de documento (document_types).");
 
-        Console.WriteLine("Tipos de documento:");
-        foreach (var t in types)
-            Console.WriteLine($"- {t.Code}: {t.Name}");
+        SpectreUi.ShowTable(
+            "Tipos de documento",
+            ["Código", "Nombre"],
+            types.Select(t => (IReadOnlyList<string>)[t.Code ?? "-", t.Name ?? "-"]).ToList()
+        );
 
-        Console.Write("Código (p.ej. CC/PAS): ");
-        var code = (Console.ReadLine() ?? string.Empty).Trim();
+        var code = SpectreUi.PromptRequiredCancelable("Código (p.ej. CC/PAS)", "0/c/cancelar para salir").Trim();
         var match = types.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase))
                     ?? types.FirstOrDefault(t => string.Equals(t.Name, code, StringComparison.OrdinalIgnoreCase));
         if (match is null)
@@ -489,12 +549,16 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         if (types.Count == 0)
             throw new InvalidOperationException("No hay tipos de pasajero (passenger_types).");
 
-        Console.WriteLine("Tipo de pasajero:");
-        foreach (var t in types)
-            Console.WriteLine($"- {t.Id}: {t.Name}");
+        SpectreUi.ShowTable(
+            "Tipos de pasajero",
+            ["Id", "Nombre"],
+            types.Select(t => (IReadOnlyList<string>)[t.Id.ToString(), t.Name ?? "-"]).ToList()
+        );
 
-        Console.Write("Seleccione (Enter = Adulto): ");
-        var raw = (Console.ReadLine() ?? string.Empty).Trim();
+        var raw = (SpectreUi.PromptOptionalCancelable(
+            "Seleccione Id",
+            "Enter = Adulto (0/c/cancelar para salir)"
+        ) ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(raw))
         {
             var adulto = types.FirstOrDefault(t => string.Equals(t.Name, "Adulto", StringComparison.OrdinalIgnoreCase));
@@ -508,6 +572,277 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         if (types.All(t => t.Id != id))
             throw new InvalidOperationException("Tipo inválido.");
         return id;
+    }
+
+    private async Task Checkin()
+    {
+        try
+        {
+            if (_auth.ClientId is null)
+                throw new InvalidOperationException("No tienes client_id.");
+
+            var available = await HasReservationsAvailableForCheckinAsync(_auth.ClientId.Value);
+            if (!available)
+            {
+                SpectreUi.MarkupLineOrPlain(
+                    "[grey]No tienes reservaciones disponibles para hacer check-in.[/]",
+                    "No tienes reservaciones disponibles para hacer check-in."
+                );
+                SpectreUi.Pause();
+                return;
+            }
+
+            SpectreUi.MarkupLineOrPlain(
+                "[green]Tienes reservaciones disponibles para check-in.[/]",
+                "Tienes reservaciones disponibles para check-in."
+            );
+
+            var reservationId = SpectreUi.PromptIntRequiredCancelable(
+                "ID reservación a hacer check-in",
+                "0/c/cancelar para salir",
+                min: 1
+            );
+
+            await PerformCheckinAsync(_auth.ClientId.Value, reservationId);
+
+            SpectreUi.MarkupLineOrPlain(
+                "[green]Check-in realizado.[/]",
+                "Check-in realizado."
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
+
+        SpectreUi.Pause();
+    }
+
+    private async Task<bool> HasReservationsAvailableForCheckinAsync(int clientId)
+    {
+        // Disponible = reserva Confirmada (2) con al menos un pasajero sin check-in aún.
+        const int confirmedStatusId = 2;
+
+        var reservationIds = await _ctx.Set<ReservationEntity>()
+            .AsNoTracking()
+            .Where(r => r.ClientId == clientId && r.ReservationStatusId == confirmedStatusId)
+            .Select(r => r.Id)
+            .ToListAsync();
+
+        if (reservationIds.Count == 0)
+            return false;
+
+        var passengerIds = await _ctx.Set<ReservationPassengerEntity>()
+            .AsNoTracking()
+            .Where(rp => reservationIds.Contains(rp.ReservationFlight!.ReservationId))
+            .Select(rp => rp.Id)
+            .ToListAsync();
+
+        if (passengerIds.Count == 0)
+            return false;
+
+        var withCheckin = await _ctx.Set<TicketEntity>()
+            .AsNoTracking()
+            .Where(t => passengerIds.Contains(t.ReservationPassengerId))
+            .Where(t => t.Checkin != null)
+            .Select(t => t.ReservationPassengerId)
+            .Distinct()
+            .ToListAsync();
+
+        return passengerIds.Any(id => !withCheckin.Contains(id));
+    }
+
+    private async Task PerformCheckinAsync(int clientId, int reservationId)
+    {
+        const int confirmedStatusId = 2;
+        const int ticketStatusIssued = 1; // Emitido
+        const int checkinStatusDone = 2; // Realizado
+
+        var reservation = await _ctx.Set<ReservationEntity>()
+            .FirstOrDefaultAsync(r => r.Id == reservationId);
+
+        if (reservation is null)
+            throw new InvalidOperationException("Reservación no encontrada.");
+        if (reservation.ClientId != clientId)
+            throw new InvalidOperationException("No puedes hacer check-in de otra persona.");
+        if (reservation.ReservationStatusId != confirmedStatusId)
+            throw new InvalidOperationException("Solo puedes hacer check-in cuando la reservación está Confirmada.");
+
+        var staffId = await _ctx.Set<StaffEntity>()
+            .AsNoTracking()
+            .OrderBy(s => s.Id)
+            .Select(s => s.Id)
+            .FirstOrDefaultAsync();
+        if (staffId < 1)
+            throw new InvalidOperationException("No hay personal (staff) para registrar el check-in.");
+
+        var reservationFlights = await _ctx.Set<ReservationFlightEntity>()
+            .AsNoTracking()
+            .Where(rf => rf.ReservationId == reservationId)
+            .Select(rf => new { rf.Id, rf.FlightId })
+            .ToListAsync();
+
+        if (reservationFlights.Count == 0)
+            throw new InvalidOperationException("La reservación no tiene vuelos asociados.");
+
+        await using var tx = await _ctx.Database.BeginTransactionAsync();
+
+        foreach (var rf in reservationFlights)
+        {
+            var reservationPassengers = await _ctx.Set<ReservationPassengerEntity>()
+                .AsNoTracking()
+                .Where(rp => rp.ReservationFlightId == rf.Id)
+                .Select(rp => rp.Id)
+                .ToListAsync();
+
+            foreach (var reservationPassengerId in reservationPassengers)
+            {
+                var existingTicket = await _ctx.Set<TicketEntity>()
+                    .Include(t => t.Checkin)
+                    .FirstOrDefaultAsync(t => t.ReservationPassengerId == reservationPassengerId);
+
+                if (existingTicket?.Checkin is not null)
+                {
+                    continue; // ya hizo check-in
+                }
+
+                var ticket = existingTicket ?? new TicketEntity
+                {
+                    ReservationPassengerId = reservationPassengerId,
+                    Code = $"TKT-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant(),
+                    IssueDate = DateTime.UtcNow,
+                    TicketStatusId = ticketStatusIssued,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                if (existingTicket is null)
+                {
+                    _ctx.Set<TicketEntity>().Add(ticket);
+                    await _ctx.SaveChangesAsync(); // necesita Id para el boarding pass/checkin
+                }
+
+                var seat = await _ctx.Set<FlightSeatEntity>()
+                    .FirstOrDefaultAsync(s => s.FlightId == rf.FlightId && !s.IsOccupied);
+
+                if (seat is null)
+                    throw new InvalidOperationException($"No hay asientos disponibles para el vuelo {rf.FlightId}.");
+
+                seat.IsOccupied = true;
+
+                var checkin = new CheckinEntity
+                {
+                    TicketId = ticket.Id,
+                    StaffId = staffId,
+                    FlightSeatId = seat.Id,
+                    CheckinDate = DateTime.UtcNow,
+                    CheckinStatusId = checkinStatusDone,
+                    BoardingPassNumber = $"BP-{ticket.Id}-{seat.SeatCode}",
+                    HasCheckedBaggage = false,
+                    BaggageWeightKg = null
+                };
+
+                _ctx.Set<CheckinEntity>().Add(checkin);
+                await _ctx.SaveChangesAsync();
+            }
+        }
+
+        await tx.CommitAsync();
+    }
+
+    private async Task EnsureBillingAddressAsync()
+    {
+        // Solicita dirección de facturación y la asocia a la persona del usuario (si existe).
+        var userPersonId = await _ctx.Set<UserEntity>()
+            .AsNoTracking()
+            .Where(u => u.Id == _auth.UserId)
+            .Select(u => u.PersonId)
+            .FirstOrDefaultAsync();
+
+        if (!userPersonId.HasValue)
+        {
+            // Usuario sin persona asociada: no podemos guardar dirección a nivel de persona.
+            return;
+        }
+
+        SpectreUi.MarkupLineOrPlain(
+            "[grey]Dirección de facturación[/] (0/c/cancelar para salir)",
+            "Dirección de facturación (0/c/cancelar para salir)"
+        );
+
+        // City
+        var cities = await _ctx.Set<sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Infrastructure.Entity.CityEntity>()
+            .AsNoTracking()
+            .OrderBy(c => c.Id)
+            .Select(c => new { c.Id, c.Name })
+            .Take(50)
+            .ToListAsync();
+
+        if (cities.Count == 0)
+            throw new InvalidOperationException("No hay ciudades (cities) registradas.");
+
+        SpectreUi.ShowTable(
+            "Ciudades (top 50)",
+            ["Id", "Nombre"],
+            cities.Select(c => (IReadOnlyList<string>)[c.Id.ToString(), c.Name ?? "-"]).ToList()
+        );
+
+        var cityId = SpectreUi.PromptIntRequiredCancelable("CityId", "0/c/cancelar para salir", min: 1);
+        if (cities.All(c => c.Id != cityId))
+            throw new InvalidOperationException("CityId inválido.");
+
+        var streetTypes = await _ctx.Set<StreetTypeEntity>()
+            .AsNoTracking()
+            .OrderBy(s => s.Id)
+            .Select(s => new { s.Id, s.Name })
+            .ToListAsync();
+
+        if (streetTypes.Count == 0)
+            throw new InvalidOperationException("No hay tipos de vía (street_types).");
+
+        SpectreUi.ShowTable(
+            "Tipos de vía",
+            ["Id", "Nombre"],
+            streetTypes.Select(s => (IReadOnlyList<string>)[s.Id.ToString(), s.Name ?? "-"]).ToList()
+        );
+
+        var streetTypeId = SpectreUi.PromptIntRequiredCancelable("StreetTypeId", "0/c/cancelar para salir", min: 1);
+        if (streetTypes.All(s => s.Id != streetTypeId))
+            throw new InvalidOperationException("StreetTypeId inválido.");
+
+        var streetName = SpectreUi.PromptRequiredCancelable("Nombre de la vía", "Ej: 10A");
+        var streetNumber = SpectreUi.PromptRequiredCancelable("Número", "Ej: 20-30");
+        var complement = SpectreUi.PromptOptionalCancelable("Complemento", "Apto/torre/bloque (opcional)");
+        var postalCode = SpectreUi.PromptOptionalCancelable("Código postal", "opcional");
+
+        var address = new AddressEntity
+        {
+            CityId = cityId,
+            StreetTypeId = streetTypeId,
+            StreetName = streetName,
+            StreetNumber = streetNumber,
+            Complement = complement,
+            PostalCode = postalCode
+        };
+        _ctx.Set<AddressEntity>().Add(address);
+        await _ctx.SaveChangesAsync();
+
+        // Actualiza persona.address_id (si existe la columna y mapeo)
+        // Preferimos SQL directo para evitar que falle si el entity no expone AddressId.
+#pragma warning disable EF1002
+        await _ctx.Database.ExecuteSqlRawAsync(
+            "UPDATE persons SET address_id = {0} WHERE id = {1}",
+            address.Id,
+            userPersonId.Value
+        );
+#pragma warning restore EF1002
     }
 
     private async Task<int> CreatePersonAsync(

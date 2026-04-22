@@ -1,6 +1,7 @@
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.UI;
 
 using Application.UseCases;
+using Shared.Helpers;
 using Shared.Ui;
 
 public class BaggageTypeConsoleUI : IModuleUI
@@ -27,197 +28,185 @@ public class BaggageTypeConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        var exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Console.WriteLine("╔════════════════════════════════════════════╗");
-            Console.WriteLine("║    Tipos de equipaje                      ║");
-            Console.WriteLine("╠════════════════════════════════════════════╣");
-            Console.WriteLine("║ 1. Crear tipo de equipaje                  ║");
-            Console.WriteLine("║ 2. Consultar tipo por ID                   ║");
-            Console.WriteLine("║ 3. Listar todos los tipos                  ║");
-            Console.WriteLine("║ 4. Actualizar tipo                         ║");
-            Console.WriteLine("║ 5. Eliminar tipo                           ║");
-            Console.WriteLine("║ 0. Volver                                  ║");
-            Console.WriteLine("╚════════════════════════════════════════════╝");
-            Console.Write("Elija una opción: ");
+            SpectreUi.ModuleHeader("Tipos de equipaje", "Crear / listar / consultar / actualizar / eliminar");
 
-            if (!int.TryParse(Console.ReadLine(), out int option))
+            var items = new List<(string Label, Action Action)>
             {
-                Console.WriteLine("Entrada no válida. Pulse una tecla para continuar…");
-                Console.ReadKey();
-                continue;
-            }
+                ("Crear", () => CreateBaggageTypeAsync().GetAwaiter().GetResult()),
+                ("Listar", () => ListAllBaggageTypesAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetBaggageTypeByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateBaggageTypeAsync().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteBaggageTypeAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
 
-            try
-            {
-                switch (option)
-                {
-                    case 1:
-                        await CreateBaggageTypeAsync();
-                        break;
-                    case 2:
-                        await GetBaggageTypeByIdAsync();
-                        break;
-                    case 3:
-                        await ListAllBaggageTypesAsync();
-                        break;
-                    case 4:
-                        await UpdateBaggageTypeAsync();
-                        break;
-                    case 5:
-                        await DeleteBaggageTypeAsync();
-                        break;
-                    case 0:
-                        return;
-                    default:
-                        Console.WriteLine("Opción no válida. Pulse una tecla para continuar…");
-                        Console.ReadKey();
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-                Console.ReadKey();
-            }
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateBaggageTypeAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Crear tipo de equipaje ===");
-
-        Console.Write("Nombre (p. ej. equipaje de bodega): ");
-        string name = Console.ReadLine() ?? "";
-
-        Console.Write("Peso máximo (kg): ");
-        if (!decimal.TryParse(Console.ReadLine(), out decimal maxWeight))
+        try
         {
-            Console.WriteLine("Formato de peso no válido.");
-            Console.ReadKey();
-            return;
-        }
+            SpectreUi.ModuleHeader("Tipos de equipaje", "Crear");
+            var name = SpectreUi.PromptRequiredCancelable("Nombre", "0/c/cancelar para salir");
+            var maxWeight = decimal.Parse(SpectreUi.PromptRequiredCancelable("Peso máximo (kg)", "0/c/cancelar para salir"));
+            var basePrice = decimal.Parse(SpectreUi.PromptRequiredCancelable("Precio base", "0/c/cancelar para salir"));
 
-        Console.Write("Precio base: ");
-        if (!decimal.TryParse(Console.ReadLine(), out decimal basePrice))
+            var baggageType = await _createUseCase.ExecuteAsync(name, maxWeight, basePrice);
+            SpectreUi.MarkupLineOrPlain(
+                $"[green]Creado[/] id={baggageType.Id.Value}.",
+                $"Creado id={baggageType.Id.Value}."
+            );
+        }
+        catch (OperationCanceledException)
         {
-            Console.WriteLine("Formato de precio no válido.");
-            Console.ReadKey();
-            return;
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
-
-        var baggageType = await _createUseCase.ExecuteAsync(name, maxWeight, basePrice);
-        Console.WriteLine($"Tipo de equipaje creado. ID: {baggageType.Id}");
-        Console.ReadKey();
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
+        SpectreUi.Pause();
     }
 
     private async Task GetBaggageTypeByIdAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Consultar tipo por ID ===");
-
-        Console.Write("ID tipo de equipaje: ");
-        if (!int.TryParse(Console.ReadLine(), out int id))
+        try
         {
-            Console.WriteLine("Formato de ID no válido.");
-            Console.ReadKey();
-            return;
-        }
+            SpectreUi.ModuleHeader("Tipos de equipaje", "Consultar por ID");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
+            var baggageType = await _getByIdUseCase.ExecuteAsync(id);
 
-        var baggageType = await _getByIdUseCase.ExecuteAsync(id);
-        Console.WriteLine($"\nID: {baggageType.Id.Value}");
-        Console.WriteLine($"Nombre: {baggageType.Name.Value}");
-        Console.WriteLine($"Peso máx.: {baggageType.MaxWeightKg.Value} kg");
-        Console.WriteLine($"Precio base: ${baggageType.BasePrice.Value}");
-        Console.ReadKey();
+            SpectreUi.ShowTable(
+                "Tipo de equipaje",
+                ["Campo", "Valor"],
+                [
+                    ["ID", baggageType.Id.Value.ToString()],
+                    ["Nombre", baggageType.Name.Value],
+                    ["Peso máx (kg)", baggageType.MaxWeightKg.Value.ToString("0.##")],
+                    ["Precio base", baggageType.BasePrice.Value.ToString("0.00")]
+                ]
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
+        SpectreUi.Pause();
     }
 
     private async Task ListAllBaggageTypesAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Tipos de equipaje ===\n");
-
-        var baggageTypes = await _getAllUseCase.ExecuteAsync();
-
-        if (baggageTypes.Count == 0)
+        try
         {
-            Console.WriteLine("No hay tipos de equipaje registrados.");
-        }
-        else
-        {
-            Console.WriteLine($"{"ID",-5} {"Nombre",-25} {"Peso máx. (kg)",-15} {"Precio base",-12}");
-            Console.WriteLine("────────────────────────────────────────────────────────");
-
-            foreach (var bt in baggageTypes)
+            SpectreUi.ModuleHeader("Tipos de equipaje", "Listar");
+            var baggageTypes = await _getAllUseCase.ExecuteAsync();
+            if (baggageTypes.Count == 0)
             {
-                Console.WriteLine($"{bt.Id.Value,-5} {bt.Name.Value,-25} {bt.MaxWeightKg.Value,-15} ${bt.BasePrice.Value,-11}");
+                SpectreUi.MarkupLineOrPlain("[grey]No hay tipos de equipaje registrados.[/]", "No hay tipos de equipaje registrados.");
+                return;
             }
-        }
 
-        Console.ReadKey();
+            SpectreUi.ShowTable(
+                "Tipos de equipaje",
+                ["ID", "Nombre", "Peso máx(kg)", "Precio base"],
+                baggageTypes.Select(bt => (IReadOnlyList<string>)
+                [
+                    bt.Id.Value.ToString(),
+                    bt.Name.Value,
+                    bt.MaxWeightKg.Value.ToString("0.##"),
+                    bt.BasePrice.Value.ToString("0.00")
+                ]).ToList()
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
+        SpectreUi.Pause();
     }
 
     private async Task UpdateBaggageTypeAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Actualizar tipo de equipaje ===");
-
-        Console.Write("ID del tipo a actualizar: ");
-        if (!int.TryParse(Console.ReadLine(), out int id))
+        try
         {
-            Console.WriteLine("Formato de ID no válido.");
-            Console.ReadKey();
-            return;
+            SpectreUi.ModuleHeader("Tipos de equipaje", "Actualizar");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
+            var newName = SpectreUi.PromptOptionalCancelable("Nuevo nombre", "Enter=omitir");
+            if (string.IsNullOrWhiteSpace(newName))
+                newName = null;
+
+            var newMaxWeightRaw = SpectreUi.PromptOptionalCancelable("Nuevo peso máximo (kg)", "Enter=omitir");
+            decimal? newMaxWeight = string.IsNullOrWhiteSpace(newMaxWeightRaw) ? null : decimal.Parse(newMaxWeightRaw);
+
+            var newBasePriceRaw = SpectreUi.PromptOptionalCancelable("Nuevo precio base", "Enter=omitir");
+            decimal? newBasePrice = string.IsNullOrWhiteSpace(newBasePriceRaw) ? null : decimal.Parse(newBasePriceRaw);
+
+            await _updateUseCase.ExecuteAsync(id, newName, newMaxWeight, newBasePrice);
+            SpectreUi.MarkupLineOrPlain("[green]Actualizado correctamente.[/]", "Actualizado correctamente.");
         }
-
-        Console.Write("Nuevo nombre (vacío para omitir): ");
-        string? newName = Console.ReadLine();
-        if (string.IsNullOrWhiteSpace(newName))
-            newName = null;
-
-        Console.Write("Nuevo peso máximo (vacío para omitir): ");
-        decimal? newMaxWeight = null;
-        string? weightInput = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(weightInput) && decimal.TryParse(weightInput, out decimal weight))
-            newMaxWeight = weight;
-
-        Console.Write("Nuevo precio base (vacío para omitir): ");
-        decimal? newBasePrice = null;
-        string? priceInput = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(priceInput) && decimal.TryParse(priceInput, out decimal price))
-            newBasePrice = price;
-
-        var baggageType = await _updateUseCase.ExecuteAsync(id, newName, newMaxWeight, newBasePrice);
-        Console.WriteLine("Tipo de equipaje actualizado correctamente.");
-        Console.ReadKey();
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
+        SpectreUi.Pause();
     }
 
     private async Task DeleteBaggageTypeAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Eliminar tipo de equipaje ===");
-
-        Console.Write("ID del tipo a eliminar: ");
-        if (!int.TryParse(Console.ReadLine(), out int id))
+        try
         {
-            Console.WriteLine("Formato de ID no válido.");
-            Console.ReadKey();
-            return;
-        }
+            SpectreUi.ModuleHeader("Tipos de equipaje", "Eliminar");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
+            var confirm = SpectreUi.PromptBool("¿Confirma la eliminación?", defaultValue: false);
+            if (!confirm)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]Eliminación cancelada.[/]", "Eliminación cancelada.");
+                return;
+            }
 
-        Console.Write("¿Confirma la eliminación? (s/n): ");
-        var confirm = Console.ReadLine()?.Trim().ToLowerInvariant();
-        if (confirm is not "y" and not "s")
+            await _deleteUseCase.ExecuteAsync(id);
+            SpectreUi.MarkupLineOrPlain("[green]Eliminado correctamente.[/]", "Eliminado correctamente.");
+        }
+        catch (OperationCanceledException)
         {
-            Console.WriteLine("Eliminación cancelada.");
-            Console.ReadKey();
-            return;
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
-
-        await _deleteUseCase.ExecuteAsync(id);
-        Console.WriteLine("Tipo de equipaje eliminado correctamente.");
-        Console.ReadKey();
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
+        SpectreUi.Pause();
     }
 }

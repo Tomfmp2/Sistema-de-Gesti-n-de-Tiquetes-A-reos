@@ -1,5 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.PersonEmails.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.PersonPhones.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.PhoneCodes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.Services;
@@ -47,20 +52,19 @@ public sealed class UserConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("Username: ");
-            var username = (Console.ReadLine() ?? string.Empty).Trim();
+            var username = SpectreUi.PromptRequiredCancelable("Username", "0/c/cancelar para salir").Trim();
             if (string.IsNullOrWhiteSpace(username))
                 throw new InvalidOperationException("Username es obligatorio.");
 
-            Console.Write("Contraseña (se guardará tal cual o como SHA-256 hex): ");
-            var password = Console.ReadLine() ?? string.Empty;
+            var password = SpectreUi.PromptRequiredCancelable(
+                "Contraseña",
+                "se guardará tal cual o como SHA-256 hex (0/c/cancelar para salir)"
+            );
 
             var (roleId, roleName) = await PromptRoleByNameAsync();
 
-            Console.Write("Nombre: ");
-            var firstName = (Console.ReadLine() ?? string.Empty).Trim();
-            Console.Write("Apellido: ");
-            var lastName = (Console.ReadLine() ?? string.Empty).Trim();
+            var firstName = SpectreUi.PromptRequiredCancelable("Nombre", "0/c/cancelar para salir").Trim();
+            var lastName = SpectreUi.PromptRequiredCancelable("Apellido", "0/c/cancelar para salir").Trim();
 
             if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
             {
@@ -69,13 +73,17 @@ public sealed class UserConsoleUI : IModuleUI
 
             var (documentTypeId, documentTypeLabel) = await PromptDocumentTypeAsync();
 
-            Console.Write("Número de documento: ");
-            var documentNumber = (Console.ReadLine() ?? string.Empty).Trim();
+            var documentNumber = SpectreUi.PromptRequiredCancelable(
+                "Número de documento",
+                "0/c/cancelar para salir"
+            ).Trim();
             if (string.IsNullOrWhiteSpace(documentNumber))
                 throw new InvalidOperationException("Número de documento es obligatorio.");
 
-            Console.Write("Fecha de nacimiento (yyyy-MM-dd, opcional): ");
-            var birthRaw = (Console.ReadLine() ?? string.Empty).Trim();
+            var birthRaw = (SpectreUi.PromptOptionalCancelable(
+                "Fecha de nacimiento",
+                "yyyy-MM-dd (opcional, 0/c/cancelar para salir)"
+            ) ?? string.Empty).Trim();
             DateTime? birthDate = null;
             if (!string.IsNullOrWhiteSpace(birthRaw))
             {
@@ -84,8 +92,10 @@ public sealed class UserConsoleUI : IModuleUI
                 birthDate = bd.Date;
             }
 
-            Console.Write("Género (M/F/N, opcional): ");
-            var genderRaw = (Console.ReadLine() ?? string.Empty).Trim();
+            var genderRaw = (SpectreUi.PromptOptionalCancelable(
+                "Género",
+                "M/F/N (opcional, 0/c/cancelar para salir)"
+            ) ?? string.Empty).Trim();
             char? gender = null;
             if (!string.IsNullOrWhiteSpace(genderRaw))
             {
@@ -95,9 +105,7 @@ public sealed class UserConsoleUI : IModuleUI
                 gender = g;
             }
 
-            Console.Write("¿Activo? (true/false, default=true): ");
-            var isActiveRaw = Console.ReadLine();
-            var isActive = string.IsNullOrWhiteSpace(isActiveRaw) || bool.Parse(isActiveRaw);
+            var isActive = SpectreUi.PromptBool("¿Activo?", defaultValue: true);
 
             await using var tx = await _ctx.Database.BeginTransactionAsync();
             var usernameExists = await _ctx.Set<UserEntity>()
@@ -114,6 +122,8 @@ public sealed class UserConsoleUI : IModuleUI
                 birthDate,
                 gender
             );
+
+            await PromptEmailsAndPhonesAsync(personId);
 
             var created = await _service.CreateAsync(
                 new CreateUserRequest(
@@ -138,6 +148,10 @@ public sealed class UserConsoleUI : IModuleUI
                 $"Usuario creado id={created.Id.Value} username={created.Username.Value} role={roleName} persona={firstName} {lastName} ({documentTypeLabel} {documentNumber}){(clientId.HasValue ? $" client_id={clientId.Value}" : "")}."
             );
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
@@ -155,6 +169,19 @@ public sealed class UserConsoleUI : IModuleUI
         char? gender
     )
     {
+        // Regla: (document_type_id, document_number) identifica una única persona.
+        // Si ya existe, la reutilizamos para permitir múltiples usuarios con la misma persona.
+        var existingId = await _ctx.Set<PersonEntity>()
+            .AsNoTracking()
+            .Where(p => p.DocumentTypeId == documentTypeId && p.DocumentNumber == documentNumber)
+            .Select(p => p.Id)
+            .FirstOrDefaultAsync();
+
+        if (existingId > 0)
+        {
+            return existingId;
+        }
+
         // Insertamos con SQL directo para no depender de mapeos EF en runtime.
         var utcNow = DateTime.UtcNow;
 
@@ -169,7 +196,7 @@ public sealed class UserConsoleUI : IModuleUI
             documentNumber,
             firstName,
             lastName,
-            birthDate,
+            birthDate.HasValue ? birthDate.Value : DBNull.Value,
             gender.HasValue ? gender.Value.ToString() : DBNull.Value,
             utcNow,
             utcNow
@@ -188,6 +215,144 @@ public sealed class UserConsoleUI : IModuleUI
         }
 
         return id;
+    }
+
+    private async Task PromptEmailsAndPhonesAsync(int personId)
+    {
+        // Emails (múltiples)
+        var wantsEmail = SpectreUi.PromptBool("¿Deseas registrar email(s)?", defaultValue: true);
+        if (wantsEmail)
+        {
+            var first = true;
+            while (true)
+            {
+                var email = SpectreUi.PromptRequiredCancelable(
+                    first ? "Email principal" : "Email adicional",
+                    "ej: nombre@dominio.com (0/c/cancelar para salir)"
+                ).Trim();
+
+                var parts = email.Split('@', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+                    throw new InvalidOperationException("Email inválido (formato esperado: local@dominio).");
+
+                var local = parts[0];
+                var domain = parts[1].ToLowerInvariant();
+
+                var domainId = await EnsureEmailDomainIdAsync(domain);
+
+                var exists = await _ctx.Set<PersonEmailEntity>()
+                    .AsNoTracking()
+                    .AnyAsync(e => e.PersonId == personId && e.EmailLocalPart == local && e.EmailDomainId == domainId);
+
+                if (!exists)
+                {
+                    _ctx.Set<PersonEmailEntity>().Add(new PersonEmailEntity
+                    {
+                        PersonId = personId,
+                        EmailLocalPart = local,
+                        EmailDomainId = domainId,
+                        IsPrimary = first
+                    });
+                    await _ctx.SaveChangesAsync();
+                }
+
+                first = false;
+                var more = SpectreUi.PromptBool("¿Registrar otro email?", defaultValue: false);
+                if (!more)
+                    break;
+            }
+        }
+
+        // Teléfonos (múltiples)
+        var wantsPhone = SpectreUi.PromptBool("¿Deseas registrar teléfono(s)?", defaultValue: true);
+        if (wantsPhone)
+        {
+            var codes = await _ctx.Set<PhoneCodeEntity>()
+                .AsNoTracking()
+                .OrderBy(c => c.Id)
+                .Select(c => new { c.Id, c.CountryDialCode, c.CountryName })
+                .ToListAsync();
+
+            if (codes.Count == 0)
+                throw new InvalidOperationException("No hay códigos telefónicos (phone_codes).");
+
+            SpectreUi.ShowTable(
+                "Códigos telefónicos",
+                ["Id", "Código", "País"],
+                codes.Take(40).Select(c => (IReadOnlyList<string>)[
+                    c.Id.ToString(),
+                    c.CountryDialCode ?? "-",
+                    c.CountryName ?? "-"
+                ]).ToList()
+            );
+
+            var first = true;
+            while (true)
+            {
+                var codeRaw = SpectreUi.PromptRequiredCancelable(
+                    "Código país",
+                    "escribe Id o el código (ej: +57) (0/c/cancelar para salir)"
+                ).Trim();
+
+                int codeId;
+                if (int.TryParse(codeRaw, out var parsedId))
+                {
+                    codeId = parsedId;
+                }
+                else
+                {
+                    var match = codes.FirstOrDefault(c =>
+                        string.Equals(c.CountryDialCode, codeRaw, StringComparison.OrdinalIgnoreCase));
+                    codeId = match?.Id ?? 0;
+                }
+
+                if (codes.All(c => c.Id != codeId))
+                    throw new InvalidOperationException("Código país inválido.");
+
+                var number = SpectreUi.PromptRequiredCancelable(
+                    first ? "Teléfono principal" : "Teléfono adicional",
+                    "solo número (0/c/cancelar para salir)"
+                ).Trim();
+
+                var exists = await _ctx.Set<PersonPhoneEntity>()
+                    .AsNoTracking()
+                    .AnyAsync(p => p.PersonId == personId && p.PhoneCodeId == codeId && p.Number == number);
+
+                if (!exists)
+                {
+                    _ctx.Set<PersonPhoneEntity>().Add(new PersonPhoneEntity
+                    {
+                        PersonId = personId,
+                        PhoneCodeId = codeId,
+                        Number = number,
+                        IsPrimary = first
+                    });
+                    await _ctx.SaveChangesAsync();
+                }
+
+                first = false;
+                var more = SpectreUi.PromptBool("¿Registrar otro teléfono?", defaultValue: false);
+                if (!more)
+                    break;
+            }
+        }
+    }
+
+    private async Task<int> EnsureEmailDomainIdAsync(string domain)
+    {
+        var existing = await _ctx.Set<EmailDomainEntity>()
+            .AsNoTracking()
+            .Where(d => d.Domain != null && d.Domain.ToLower() == domain.ToLower())
+            .Select(d => d.Id)
+            .FirstOrDefaultAsync();
+
+        if (existing > 0)
+            return existing;
+
+        var entity = new EmailDomainEntity { Domain = domain };
+        _ctx.Set<EmailDomainEntity>().Add(entity);
+        await _ctx.SaveChangesAsync();
+        return entity.Id;
     }
 
     private async Task<int> EnsureClientForPersonAsync(int personId)

@@ -3,6 +3,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Data;
@@ -100,17 +102,6 @@ static async Task SeedRootUserAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared
     const string username = "ROOT";
     const string passwordHash = "12345"; // LoginShell soporta password plano o SHA-256 hex
 
-    var existing = await context.Set<UserEntity>().FirstOrDefaultAsync(u => u.Username == username);
-    if (existing is not null)
-    {
-        existing.PasswordHash = passwordHash;
-        existing.IsActive = true;
-        existing.UpdatedAt = DateTime.UtcNow;
-        await context.SaveChangesAsync();
-        Console.WriteLine("ROOT ya existía. Contraseña actualizada a 12345 y activado.");
-        return;
-    }
-
     var role = await context.Set<SystemRoleEntity>()
         .OrderBy(r => r.Id)
         .FirstOrDefaultAsync(r => r.Name == "admin" || r.Name == "ADMIN" || r.Name == "root" || r.Name == "ROOT");
@@ -120,6 +111,56 @@ static async Task SeedRootUserAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared
         role = new SystemRoleEntity { Name = "admin", Description = "Administrador del sistema" };
         context.Set<SystemRoleEntity>().Add(role);
         await context.SaveChangesAsync();
+    }
+
+    // Aseguramos permisos base y que el rol admin tenga TODOS los permisos.
+    // (Si la BD fue creada por SQL legacy, esto evita quedar sin acceso.)
+    var permissionNames = new[]
+    {
+        ("reservations.manage", "Gestionar reservas"),
+        ("flights.manage", "Gestionar vuelos"),
+        ("catalogs.manage", "Gestionar catálogos del sistema"),
+        ("payments.manage", "Gestionar pagos"),
+        ("reports.view", "Consultar reportes")
+    };
+
+    foreach (var (name, desc) in permissionNames)
+    {
+        var perm = await context.Set<PermissionEntity>()
+            .FirstOrDefaultAsync(p => p.Name != null && p.Name == name);
+
+        if (perm is null)
+        {
+            perm = new PermissionEntity { Name = name, Description = desc };
+            context.Set<PermissionEntity>().Add(perm);
+            await context.SaveChangesAsync();
+        }
+
+        var linkExists = await context.Set<RolePermissionEntity>()
+            .AsNoTracking()
+            .AnyAsync(rp => rp.RoleId == role.Id && rp.PermissionId == perm.Id);
+
+        if (!linkExists)
+        {
+            context.Set<RolePermissionEntity>().Add(new RolePermissionEntity
+            {
+                RoleId = role.Id,
+                PermissionId = perm.Id
+            });
+            await context.SaveChangesAsync();
+        }
+    }
+
+    var existing = await context.Set<UserEntity>().FirstOrDefaultAsync(u => u.Username == username);
+    if (existing is not null)
+    {
+        existing.PasswordHash = passwordHash;
+        existing.IsActive = true;
+        existing.SystemRoleId = role.Id;
+        existing.UpdatedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync();
+        Console.WriteLine("ROOT ya existía. Contraseña actualizada a 12345 y activado.");
+        return;
     }
 
     var now = DateTime.UtcNow;

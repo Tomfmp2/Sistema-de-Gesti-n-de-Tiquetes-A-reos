@@ -24,12 +24,26 @@ public class DbContextFactory
             throw new InvalidOperationException("No connection string found");
         }
 
-        var detectedVersion = MySqlVersionResolver.DetectVersion(ConnectionString);
+        // Si la BD está caída, la detección automática puede fallar.
+        // En ese caso usamos una versión "razonable" para permitir que la app
+        // llegue al login y muestre el error de conexión de forma amigable.
+        Version detectedVersion;
+        try
+        {
+            detectedVersion = MySqlVersionResolver.DetectVersion(ConnectionString);
+        }
+        catch
+        {
+            detectedVersion = new Version(8, 0, 0);
+        }
+
         var minVersion = new Version(8, 0, 0);
         if (detectedVersion < minVersion)
+        {
             throw new NotSupportedException(
                 $"Versión de MySQL no soportada: {detectedVersion}. Requiere {minVersion} o superior."
             );
+        }
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseMySql(
