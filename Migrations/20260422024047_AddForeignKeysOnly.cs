@@ -74,6 +74,32 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             RenameColumnIfExists("flight_crew_assignments", "StaffId", "staff_id");
             RenameColumnIfExists("flight_crew_assignments", "FlightRoleId", "crew_role_id");
 
+            // CreateCabinConfiguration (20260416210330) crea la tabla como "cabin_configuration" (singular).
+            // El modelo y FKs usan "cabin_configurations" (plural) con columnas row_start/row_end.
+            migrationBuilder.Sql("""
+                SET @legacy_cc_table = (
+                    SELECT TABLE_NAME
+                    FROM information_schema.TABLES
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND LOWER(TABLE_NAME) = 'cabin_configuration'
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM information_schema.TABLES
+                          WHERE TABLE_SCHEMA = DATABASE()
+                            AND TABLE_NAME = 'cabin_configurations'
+                      )
+                    LIMIT 1
+                );
+                SET @sql = IF(
+                    @legacy_cc_table IS NOT NULL,
+                    CONCAT('RENAME TABLE `', @legacy_cc_table, '` TO `cabin_configurations`'),
+                    'SELECT 1'
+                );
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+                """);
+
             migrationBuilder.CreateTable(
                 name: "flight_crew_roles",
                 columns: table => new
@@ -89,14 +115,58 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.RenameColumn(name: "departure_date", table: "flights", newName: "departure_at");
-            migrationBuilder.RenameColumn(name: "estimated_arrival_date", table: "flights", newName: "estimated_arrival_at");
+            RenameColumnIfExists("flights", "departure_date", "departure_at");
+            RenameColumnIfExists("flights", "estimated_arrival_date", "estimated_arrival_at");
 
-            migrationBuilder.RenameColumn(name: "start_row", table: "cabin_configurations", newName: "row_start");
-            migrationBuilder.RenameColumn(name: "end_row", table: "cabin_configurations", newName: "row_end");
+            RenameColumnIfExists("cabin_configurations", "start_row", "row_start");
+            RenameColumnIfExists("cabin_configurations", "end_row", "row_end");
 
-            migrationBuilder.RenameColumn(name: "origin_status_id", table: "flight_status_transitions", newName: "from_status_id");
-            migrationBuilder.RenameColumn(name: "destination_status_id", table: "flight_status_transitions", newName: "to_status_id");
+            // CreateFaresAndFlightStatusesTransitions ya añadió FKs sobre origin_/destination_status_id.
+            // Hay que quitarlas antes de renombrar columnas y volver a crear las FK con nombres del modelo.
+            migrationBuilder.Sql("""
+                SET @fk1 = (
+                    SELECT k.CONSTRAINT_NAME
+                    FROM information_schema.KEY_COLUMN_USAGE k
+                    INNER JOIN information_schema.REFERENTIAL_CONSTRAINTS r
+                        ON k.CONSTRAINT_SCHEMA = r.CONSTRAINT_SCHEMA
+                        AND k.CONSTRAINT_NAME = r.CONSTRAINT_NAME
+                    WHERE k.TABLE_SCHEMA = DATABASE()
+                      AND k.TABLE_NAME = 'flight_status_transitions'
+                      AND k.COLUMN_NAME = 'origin_status_id'
+                      AND r.REFERENCED_TABLE_NAME = 'flight_statuses'
+                    LIMIT 1
+                );
+                SET @q1 = IF(@fk1 IS NOT NULL,
+                    CONCAT('ALTER TABLE `flight_status_transitions` DROP FOREIGN KEY `', @fk1, '`'),
+                    'SELECT 1'
+                );
+                PREPARE s1 FROM @q1;
+                EXECUTE s1;
+                DEALLOCATE PREPARE s1;
+
+                SET @fk2 = (
+                    SELECT k.CONSTRAINT_NAME
+                    FROM information_schema.KEY_COLUMN_USAGE k
+                    INNER JOIN information_schema.REFERENTIAL_CONSTRAINTS r
+                        ON k.CONSTRAINT_SCHEMA = r.CONSTRAINT_SCHEMA
+                        AND k.CONSTRAINT_NAME = r.CONSTRAINT_NAME
+                    WHERE k.TABLE_SCHEMA = DATABASE()
+                      AND k.TABLE_NAME = 'flight_status_transitions'
+                      AND k.COLUMN_NAME = 'destination_status_id'
+                      AND r.REFERENCED_TABLE_NAME = 'flight_statuses'
+                    LIMIT 1
+                );
+                SET @q2 = IF(@fk2 IS NOT NULL,
+                    CONCAT('ALTER TABLE `flight_status_transitions` DROP FOREIGN KEY `', @fk2, '`'),
+                    'SELECT 1'
+                );
+                PREPARE s2 FROM @q2;
+                EXECUTE s2;
+                DEALLOCATE PREPARE s2;
+                """);
+
+            RenameColumnIfExists("flight_status_transitions", "origin_status_id", "from_status_id");
+            RenameColumnIfExists("flight_status_transitions", "destination_status_id", "to_status_id");
 
             // Note: some base FKs already exist in the DB (e.g., addresses -> cities/street_types, aircraft -> models/airlines, etc.)
 
