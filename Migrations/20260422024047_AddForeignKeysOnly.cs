@@ -272,6 +272,56 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
             """;
 
+        /// <summary>
+        /// <c>RenameDatabaseSchemaToEnglish</c> dejó <c>directions</c> y <c>persons.direction_id</c>.
+        /// El modelo usa <c>addresses</c> y <c>address_id</c>. Quitar la FK antigua, renombrar tabla y columna.
+        /// </summary>
+        private const string AlignDirectionsToAddressesSql = """
+            SET @need_dir_to_addr = (
+                SELECT IF(
+                    EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'persons' AND COLUMN_NAME = 'direction_id')
+                    AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'persons' AND COLUMN_NAME = 'address_id'),
+                    1, 0
+                )
+            );
+
+            /* Quitar FK persons -> directions o -> addresses (estado intermedio) */
+            SET @cn = IF(@need_dir_to_addr = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'persons'
+                   AND rc.REFERENCED_TABLE_NAME IN ('directions', 'addresses') LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `persons` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_dir_to_addr = 1
+                AND EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'directions')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'addresses'),
+                'RENAME TABLE `directions` TO `addresses`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_dir_to_addr = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'persons' AND COLUMN_NAME = 'direction_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'persons' AND COLUMN_NAME = 'address_id'),
+                'ALTER TABLE `persons` RENAME COLUMN `direction_id` TO `address_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_dir_to_addr = 1
+                AND EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'persons' AND INDEX_NAME = 'IX_persons_direction_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'persons' AND INDEX_NAME = 'IX_persons_address_id'),
+                'ALTER TABLE `persons` RENAME INDEX `IX_persons_direction_id` TO `IX_persons_address_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+            """;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -436,6 +486,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             // Sin este bloque, en una BD nueva no existen booking_flights, bookings, etc.
             migrationBuilder.Sql(AlignLegacyReservationNamesToBookingSql);
             migrationBuilder.Sql(AlignCheckinsToCheckInsSql);
+            migrationBuilder.Sql(AlignDirectionsToAddressesSql);
 
             // Note: some base FKs already exist in the DB (e.g., addresses -> cities/street_types, aircraft -> models/airlines, etc.)
 
@@ -483,8 +534,8 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             // payment_method_id y payment_status_id: ya creadas en CreatePaymentAndCardsEtc (mismas columnas y nombres de FK).
             migrationBuilder.AddForeignKey("FK_payments_bookings_booking_id", "payments", "booking_id", "bookings", principalColumn: "id", onDelete: ReferentialAction.Restrict);
 
+            // document_type_id: ya definida en RenameDatabaseSchemaToEnglish (FK_persons_document_types_document_type_id).
             migrationBuilder.AddForeignKey("FK_persons_addresses_address_id", "persons", "address_id", "addresses", principalColumn: "id", onDelete: ReferentialAction.Restrict);
-            migrationBuilder.AddForeignKey("FK_persons_document_types_document_type_id", "persons", "document_type_id", "document_types", principalColumn: "id", onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey("FK_route_stopovers_airports_stopover_airport_id", "route_stopovers", "stopover_airport_id", "airports", principalColumn: "id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.AddForeignKey("FK_route_stopovers_routes_route_id", "route_stopovers", "route_id", "routes", principalColumn: "id", onDelete: ReferentialAction.Restrict);
@@ -565,7 +616,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             migrationBuilder.DropForeignKey("FK_invoices_bookings_booking_id", "invoices");
             migrationBuilder.DropForeignKey("FK_payments_bookings_booking_id", "payments");
             migrationBuilder.DropForeignKey("FK_persons_addresses_address_id", "persons");
-            migrationBuilder.DropForeignKey("FK_persons_document_types_document_type_id", "persons");
             migrationBuilder.DropForeignKey("FK_route_stopovers_airports_stopover_airport_id", "route_stopovers");
             migrationBuilder.DropForeignKey("FK_route_stopovers_routes_route_id", "route_stopovers");
             migrationBuilder.DropForeignKey("FK_routes_airports_origin_airport_id", "routes");
