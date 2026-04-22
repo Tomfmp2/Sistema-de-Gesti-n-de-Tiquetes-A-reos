@@ -34,6 +34,24 @@ public sealed class ReservationRepository : IReservationRepository
         return list.Select(ToDomain).ToList();
     }
 
+    public async Task<IReadOnlyList<Reservation>> GetAllByClientIdAsync(
+        int clientId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (clientId < 1)
+        {
+            return Array.Empty<Reservation>();
+        }
+
+        var list = await _context.Set<ReservationEntity>()
+            .AsNoTracking()
+            .Where(x => x.ClientId == clientId)
+            .ToListAsync(cancellationToken);
+
+        return list.Select(ToDomain).ToList();
+    }
+
     public async Task<Reservation> AddAsync(Reservation entity, CancellationToken cancellationToken = default)
     {
         if (entity.Id.Value != 0)

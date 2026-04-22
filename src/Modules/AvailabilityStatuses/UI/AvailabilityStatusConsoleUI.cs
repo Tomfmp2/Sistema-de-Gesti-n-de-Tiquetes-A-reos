@@ -65,6 +65,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        SpectreUi.Pause();
     }
 
     private async Task GetAvailabilityStatusById()
@@ -90,15 +91,31 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        SpectreUi.Pause();
     }
 
     private async Task GetAllAvailabilityStatuses()
     {
-        var availabilityStatuses = await _getAllUseCase.ExecuteAsync();
-        foreach (var as_ in availabilityStatuses)
+        try
         {
-            Console.WriteLine($"ID: {as_.Id.Value}, Name: {as_.Name.Value}");
+            var availabilityStatuses = (await _getAllUseCase.ExecuteAsync()).ToList();
+            if (availabilityStatuses.Count == 0)
+            {
+                Console.WriteLine("No hay estados para mostrar.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            foreach (var as_ in availabilityStatuses)
+            {
+                Console.WriteLine($"ID: {as_.Id.Value}, Name: {as_.Name.Value}");
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        SpectreUi.Pause();
     }
 
     private async Task UpdateAvailabilityStatus()
@@ -123,6 +140,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 }
             }
         }
+        SpectreUi.Pause();
     }
 
     private async Task DeleteAvailabilityStatus()
@@ -141,5 +159,6 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        SpectreUi.Pause();
     }
 }

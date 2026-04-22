@@ -61,30 +61,54 @@ public class AirportConsoleUI : IModuleUI
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+        SpectreUi.Pause();
     }
 
     private void GetAirportById()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        var airport = _getByIdUseCase.ExecuteAsync(id).Result;
-        if (airport != null)
+        try
         {
-            Console.WriteLine($"ID: {airport.Id.Value}, Name: {airport.Name.Value}, IATA: {airport.IataCode.Value}, ICAO: {airport.IcaoCode.Value}");
+            Console.Write("ID: ");
+            var id = int.Parse(Console.ReadLine()!);
+            var airport = _getByIdUseCase.ExecuteAsync(id).Result;
+            if (airport != null)
+            {
+                Console.WriteLine($"ID: {airport.Id.Value}, Name: {airport.Name.Value}, IATA: {airport.IataCode.Value}, ICAO: {airport.IcaoCode.Value}");
+            }
+            else
+            {
+                Console.WriteLine("Not found");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Not found");
+            Console.WriteLine($"Error: {ex.Message}");
         }
+        SpectreUi.Pause();
     }
 
     private void GetAllAirports()
     {
-        var airports = _getAllUseCase.ExecuteAsync().Result;
-        foreach (var a in airports)
+        try
         {
-            Console.WriteLine($"ID: {a.Id.Value}, Name: {a.Name.Value}, IATA: {a.IataCode.Value}, ICAO: {a.IcaoCode.Value}");
+            var airports = _getAllUseCase.ExecuteAsync().Result.ToList();
+            if (airports.Count == 0)
+            {
+                Console.WriteLine("No hay aeropuertos para mostrar.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            foreach (var a in airports)
+            {
+                Console.WriteLine($"ID: {a.Id.Value}, Name: {a.Name.Value}, IATA: {a.IataCode.Value}, ICAO: {a.IcaoCode.Value}");
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        SpectreUi.Pause();
     }
 
     private void UpdateAirport()
@@ -108,13 +132,22 @@ public class AirportConsoleUI : IModuleUI
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+        SpectreUi.Pause();
     }
 
     private void DeleteAirport()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        _deleteUseCase.ExecuteAsync(id).Wait();
-        Console.WriteLine("Deleted");
+        try
+        {
+            Console.Write("ID: ");
+            var id = int.Parse(Console.ReadLine()!);
+            _deleteUseCase.ExecuteAsync(id).Wait();
+            Console.WriteLine("Deleted");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        SpectreUi.Pause();
     }
 }

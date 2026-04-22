@@ -1,12 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using AppFlightAssign = sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Application.Interfaces;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.Aggregate;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.Repositories;
+using DomFlightAssign = sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Domain.ValueObject;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.repository;
 
-public sealed class FlightAssignmentRepository : IFlightAssignmentRepository
+public sealed class FlightAssignmentRepository
+    : DomFlightAssign.IFlightAssignmentRepository,
+        AppFlightAssign.IFlightAssignmentRepository
 {
     private readonly DbContext _context;
     private readonly DbSet<FlightAssignmentEntity> _dbSet;

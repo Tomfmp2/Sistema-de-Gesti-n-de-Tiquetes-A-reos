@@ -32,13 +32,13 @@ public sealed class SessionEntityConfiguration : IEntityTypeConfiguration<Sessio
 
         builder
             .Property(x => x.ClosedAt)
-            .HasColumnName("ended_at")
+            .HasColumnName("closed_at")
             .HasColumnType("datetime(6)")
             .IsRequired(false);
 
         builder
             .Property(x => x.OriginIp)
-            .HasColumnName("ip_address")
+            .HasColumnName("origin_ip")
             .HasColumnType("varchar(45)")
             .IsRequired(false);
 

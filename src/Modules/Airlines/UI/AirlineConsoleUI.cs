@@ -57,31 +57,58 @@ public class AirlineConsoleUI : IModuleUI
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
+        SpectreUi.Pause();
     }
 
     private void GetAirlineById()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        var airline = _getByIdUseCase.ExecuteAsync(id).Result;
-        if (airline != null)
+        try
         {
-            Console.WriteLine($"ID: {airline.Id.Value}, Name: {airline.Name.Value}, IATA: {airline.IataCode.Value}");
+            Console.Write("ID: ");
+            var id = int.Parse(Console.ReadLine()!);
+            var airline = _getByIdUseCase.ExecuteAsync(id).Result;
+            if (airline != null)
+            {
+                Console.WriteLine($"ID: {airline.Id.Value}, Name: {airline.Name.Value}, IATA: {airline.IataCode.Value}");
+            }
+            else
+            {
+                Console.WriteLine("Not found");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Not found");
+            Console.WriteLine($"Error: {ex.Message}");
         }
+        SpectreUi.Pause();
     }
 
     private void GetAllAirlines()
     {
-        var airlines = _getAllUseCase.ExecuteAsync().Result;
-        foreach (var a in airlines)
+        try
         {
-            Console.WriteLine($"ID: {a.Id.Value}, Name: {a.Name.Value}, IATA: {a.IataCode.Value}");
+            var airlines = _getAllUseCase.ExecuteAsync().Result.ToList();
+
+            if (airlines.Count == 0)
+            {
+                Console.WriteLine("No hay aerolíneas para mostrar.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            foreach (var a in airlines)
+            {
+                Console.WriteLine($"ID: {a.Id.Value}, Name: {a.Name.Value}, IATA: {a.IataCode.Value}");
+            }
+
+            SpectreUi.Pause();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            SpectreUi.Pause();
         }
     }
 
@@ -104,15 +131,24 @@ public class AirlineConsoleUI : IModuleUI
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
+        SpectreUi.Pause();
     }
 
     private void DeleteAirline()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        _deleteUseCase.ExecuteAsync(id).Wait();
-        Console.WriteLine("Deleted");
+        try
+        {
+            Console.Write("ID: ");
+            var id = int.Parse(Console.ReadLine()!);
+            _deleteUseCase.ExecuteAsync(id).Wait();
+            Console.WriteLine("Deleted");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        SpectreUi.Pause();
     }
 }

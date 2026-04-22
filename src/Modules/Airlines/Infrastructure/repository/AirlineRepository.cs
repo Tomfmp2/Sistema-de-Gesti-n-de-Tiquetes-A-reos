@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,6 +51,14 @@ public class AirlineRepository : IAirlineRepository
 
     public async Task AddAsync(Airline airline)
     {
+        var countryExists = await _context.Countries.AnyAsync(c => c.Id == airline.OriginCountryId);
+        if (!countryExists)
+        {
+            throw new InvalidOperationException(
+                $"No existe un país con id={airline.OriginCountryId}. Use un id válido de la tabla countries (listar países en la base o cargar datos de catálogo)."
+            );
+        }
+
         var entity = new AirlineEntity
         {
             Name = airline.Name.Value,
@@ -67,6 +76,14 @@ public class AirlineRepository : IAirlineRepository
 
     public async Task UpdateAsync(Airline airline)
     {
+        var countryExists = await _context.Countries.AnyAsync(c => c.Id == airline.OriginCountryId);
+        if (!countryExists)
+        {
+            throw new InvalidOperationException(
+                $"No existe un país con id={airline.OriginCountryId}. Use un id válido de la tabla countries."
+            );
+        }
+
         var entity = await _context.Airlines.FindAsync(airline.Id.Value);
         if (entity == null) return;
         entity.Name = airline.Name.Value;

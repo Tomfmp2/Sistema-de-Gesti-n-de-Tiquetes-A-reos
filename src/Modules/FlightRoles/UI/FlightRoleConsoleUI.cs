@@ -56,10 +56,24 @@ public sealed class FlightRoleConsoleUI : IModuleUI
     private async Task ListAllAsync()
     {
         SpectreUi.ModuleHeader("Roles registrados", null);
-        var all = await _service.GetAllAsync();
-        foreach (var r in all)
+        try
         {
-            Console.WriteLine($"ID: {r.Id.Value}, Nombre: {r.Name.Value}");
+            var all = (await _service.GetAllAsync()).ToList();
+            if (all.Count == 0)
+            {
+                Console.WriteLine("No hay roles para mostrar.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            foreach (var r in all)
+            {
+                Console.WriteLine($"ID: {r.Id.Value}, Nombre: {r.Name.Value}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
         }
 
         SpectreUi.Pause();
