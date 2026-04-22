@@ -60,6 +60,56 @@ Ejemplo (PowerShell):
 $env:MYSQL_CONNECTION="server=localhost;port=3306;database=airlinesdb;user=root;password=TU_PASSWORD;"
 ```
 
+## Guía rápida (para usarlo en otro computador)
+
+Esta guía asume que solo quieres clonar/abrir el proyecto y ejecutar `dotnet run`.
+
+### 1) Instalar y levantar MySQL
+
+- Instala **MySQL 8.0+**.
+- Asegúrate de que el servicio esté **ejecutándose** y escuchando en el puerto (por defecto `3306`).
+
+### 2) Crear un usuario de MySQL (recomendado)
+
+Usa un usuario que tenga permisos para:
+- crear base de datos (solo la primera vez) y
+- crear/alterar tablas (para migraciones).
+
+Si ya usarás `root`, omite este paso.
+
+### 3) Configurar la conexión
+
+Opción A (recomendada): variable de entorno `MYSQL_CONNECTION`:
+
+```powershell
+$env:MYSQL_CONNECTION="server=localhost;port=3306;database=airlinesdb;user=root;password=TU_PASSWORD;"
+```
+
+Opción B: editar `appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "MySqlDB": "server=localhost;port=3306;database=airlinesdb;user=root;password=TU_PASSWORD;"
+  }
+}
+```
+
+### 4) Ejecutar
+
+```powershell
+dotnet run
+```
+
+En el arranque, si hay conexión al servidor MySQL, la app ejecuta automáticamente (de forma **idempotente**):
+
+- **Creación de base de datos si no existe** (`CREATE DATABASE IF NOT EXISTS`) cuando el servidor está accesible.
+- **Migraciones EF Core** (`Migrate()`).
+- **Seed de data default** (catálogos mínimos).
+- **Seed de usuario ROOT** (admin) con contraseña **`12345`**.
+
+> Si el servidor MySQL está apagado/no instalado, la app no puede funcionar y mostrará un mensaje de conexión fallida.
+
 ## Base de datos (MySQL)
 
 1. Crea una base de datos (por ejemplo `airlinesdb`).
@@ -165,6 +215,7 @@ dotnet build
 
 - Verifica que MySQL esté levantado y el puerto/usuario/contraseña sean correctos.
 - Asegúrate de estar usando `MYSQL_CONNECTION` o `appsettings.json`.
+- Si el usuario MySQL no tiene permisos, la creación automática de DB/migraciones puede fallar.
 - Si hay dudas de mapeos (columnas que no existen), usa:
 
 ```powershell

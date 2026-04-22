@@ -353,8 +353,10 @@ static async Task NormalizePersonsColumnsAsync(sistema_gestor_de_tiquetes_aereos
 
 static async Task EnsureDefaultsAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context)
 {
-    await ContinentCatalogSeed.SeedAsync(context);
-    await CountryCatalogSeed.SeedAsync(context);
+    // Seed global de catálogos (cada módulo aporta su propio seeder).
+    await sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed.CatalogSeed.SeedAsync(context);
+
+    // Seed específico que el módulo de Reservas requiere por compatibilidad (idempotente).
     await ReservationStatusSeeder.EnsureAsync(context);
 }
 
