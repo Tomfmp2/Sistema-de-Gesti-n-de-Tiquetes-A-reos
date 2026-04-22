@@ -480,9 +480,8 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             migrationBuilder.AddForeignKey("FK_invoice_items_booking_passengers_booking_passenger_id", "invoice_items", "booking_passenger_id", "booking_passengers", principalColumn: "id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.AddForeignKey("FK_invoices_bookings_booking_id", "invoices", "booking_id", "bookings", principalColumn: "id", onDelete: ReferentialAction.Restrict);
 
+            // payment_method_id y payment_status_id: ya creadas en CreatePaymentAndCardsEtc (mismas columnas y nombres de FK).
             migrationBuilder.AddForeignKey("FK_payments_bookings_booking_id", "payments", "booking_id", "bookings", principalColumn: "id", onDelete: ReferentialAction.Restrict);
-            migrationBuilder.AddForeignKey("FK_payments_payment_methods_payment_method_id", "payments", "payment_method_id", "payment_methods", principalColumn: "id", onDelete: ReferentialAction.Restrict);
-            migrationBuilder.AddForeignKey("FK_payments_payment_statuses_payment_status_id", "payments", "payment_status_id", "payment_statuses", principalColumn: "id", onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey("FK_persons_addresses_address_id", "persons", "address_id", "addresses", principalColumn: "id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.AddForeignKey("FK_persons_document_types_document_type_id", "persons", "document_type_id", "document_types", principalColumn: "id", onDelete: ReferentialAction.Restrict);
@@ -565,8 +564,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             migrationBuilder.DropForeignKey("FK_invoice_items_booking_passengers_booking_passenger_id", "invoice_items");
             migrationBuilder.DropForeignKey("FK_invoices_bookings_booking_id", "invoices");
             migrationBuilder.DropForeignKey("FK_payments_bookings_booking_id", "payments");
-            migrationBuilder.DropForeignKey("FK_payments_payment_methods_payment_method_id", "payments");
-            migrationBuilder.DropForeignKey("FK_payments_payment_statuses_payment_status_id", "payments");
             migrationBuilder.DropForeignKey("FK_persons_addresses_address_id", "persons");
             migrationBuilder.DropForeignKey("FK_persons_document_types_document_type_id", "persons");
             migrationBuilder.DropForeignKey("FK_route_stopovers_airports_stopover_airport_id", "route_stopovers");
