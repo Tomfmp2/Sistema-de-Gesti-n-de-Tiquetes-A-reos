@@ -9,11 +9,45 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
     /// Añade FKs y alinea nombres de tablas/columnas (legado → modelo) antes, para que una BD creada con las
     /// migraciones antiguas coincida con <c>AppDbContext</c>. Mapeo resumido: <c>reservation_*</c>→<c>booking_*</c>,
     /// <c>checkins</c>→<c>check_ins</c>, <c>directions</c>→<c>addresses</c> + <c>direction_id</c>→<c>address_id</c>,
-    /// <c>route_layovers</c>→<c>route_stopovers</c>, <c>staff</c> (PascalCase→snake_case), etc. Cualquier tabla
-    /// nueva en EF debe añadirse aquí si el <c>Create*</c> todavía usa otro nombre.
+    /// <c>route_layovers</c>→<c>route_stopovers</c>, <c>staff</c> (PascalCase→snake_case), <c>users.system_role_id</c>
+    /// o <c>rol_id</c>→<c>role_id</c>, <c>last_access_at</c>→<c>last_access</c> en <c>users</c>, etc. Cualquier tabla
+    /// nueva en EF debe añadirse aquí si el <c>Create*</c> todavía usa otro nombre. Las claves a
+    /// <c>staff_positions</c> usan la columna <c>Id</c> (PascalCase) creada en
+    /// <c>CreateStaffPositions</c>.
     /// </summary>
     public partial class AddForeignKeysOnly : Migration
     {
+        /// <summary>Evita "Duplicate foreign key" si una ejecución anterior dejó el mismo identificador.</summary>
+        private const string DropIdempotentReAddForeignKeysSql = """
+            SET @c = (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments'
+                  AND CONSTRAINT_NAME = 'FK_payments_bookings_booking_id' AND CONSTRAINT_TYPE = 'FOREIGN KEY');
+            SET @q = IF(@c > 0, 'ALTER TABLE `payments` DROP FOREIGN KEY `FK_payments_bookings_booking_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+            SET @c = (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments'
+                  AND CONSTRAINT_NAME = 'FK_payments_reservations_reservation_id' AND CONSTRAINT_TYPE = 'FOREIGN KEY');
+            SET @q = IF(@c > 0, 'ALTER TABLE `payments` DROP FOREIGN KEY `FK_payments_reservations_reservation_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @c = (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'persons'
+                  AND CONSTRAINT_NAME = 'FK_persons_addresses_address_id' AND CONSTRAINT_TYPE = 'FOREIGN KEY');
+            SET @q = IF(@c > 0, 'ALTER TABLE `persons` DROP FOREIGN KEY `FK_persons_addresses_address_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @c = (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'staff'
+                  AND CONSTRAINT_NAME = 'FK_staff_staff_positions_position_id' AND CONSTRAINT_TYPE = 'FOREIGN KEY');
+            SET @q = IF(@c > 0, 'ALTER TABLE `staff` DROP FOREIGN KEY `FK_staff_staff_positions_position_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @c = (SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+                  AND CONSTRAINT_NAME = 'FK_users_system_roles_role_id' AND CONSTRAINT_TYPE = 'FOREIGN KEY');
+            SET @q = IF(@c > 0, 'ALTER TABLE `users` DROP FOREIGN KEY `FK_users_system_roles_role_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+            """;
         /// <summary>
         /// Alinea nombres creados por CreateReservations / CreateReservationAndTicketBaseModules (reservation_*)
         /// con el modelo actual (booking_*). Idempotente: no hace nada si <c>booking_flights</c> ya existe.
@@ -444,6 +478,64 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
             """;
 
+        /// <summary>
+        /// <c>SchemaAlignedWithReferenceDdlEnglish</c> pasa <c>rol_id</c> a <c>system_role_id</c> y crea
+        /// <c>FK_users_system_roles_system_role_id</c>. El modelo y esta migración usan <c>role_id</c> y
+        /// <c>FK_users_system_roles_role_id</c>. Quitar la FK hacia <c>system_roles</c>, alinear columna/índice.
+        /// Esa misma migración añade <c>last_access_at</c> mientras <c>UserEntityConfiguration</c> mapea <c>last_access</c>.
+        /// </summary>
+        private const string AlignUsersSystemRoleToRoleIdColumnSql = """
+            SET @cn = (
+                SELECT rc.CONSTRAINT_NAME
+                FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'users'
+                  AND rc.REFERENCED_TABLE_NAME = 'system_roles' LIMIT 1
+            );
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `users` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'system_role_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'role_id'),
+                'ALTER TABLE `users` RENAME COLUMN `system_role_id` TO `role_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'rol_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'role_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'system_role_id'),
+                'ALTER TABLE `users` RENAME COLUMN `rol_id` TO `role_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND INDEX_NAME = 'IX_users_system_role_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND INDEX_NAME = 'IX_users_role_id'),
+                'ALTER TABLE `users` RENAME INDEX `IX_users_system_role_id` TO `IX_users_role_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND INDEX_NAME = 'IX_users_rol_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND INDEX_NAME = 'IX_users_role_id'),
+                'ALTER TABLE `users` RENAME INDEX `IX_users_rol_id` TO `IX_users_role_id`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'last_access_at')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'last_access'),
+                'ALTER TABLE `users` RENAME COLUMN `last_access_at` TO `last_access`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+            """;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -611,8 +703,10 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             migrationBuilder.Sql(AlignDirectionsToAddressesSql);
             migrationBuilder.Sql(AlignRouteLayoversToRouteStopoversSql);
             migrationBuilder.Sql(AlignStaffPascalCaseColumnsSql);
+            migrationBuilder.Sql(AlignUsersSystemRoleToRoleIdColumnSql);
 
             // Note: some base FKs already exist in the DB (e.g., addresses -> cities/street_types, aircraft -> models/airlines, etc.)
+            migrationBuilder.Sql(DropIdempotentReAddForeignKeysSql);
 
             migrationBuilder.AddForeignKey("FK_booking_flights_bookings_booking_id", "booking_flights", "booking_id", "bookings", principalColumn: "id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.AddForeignKey("FK_booking_flights_flights_flight_id", "booking_flights", "flight_id", "flights", principalColumn: "id", onDelete: ReferentialAction.Restrict);
@@ -668,7 +762,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             migrationBuilder.AddForeignKey("FK_routes_airports_destination_airport_id", "routes", "destination_airport_id", "airports", principalColumn: "id", onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey("FK_staff_persons_person_id", "staff", "person_id", "persons", principalColumn: "id", onDelete: ReferentialAction.Restrict);
-            migrationBuilder.AddForeignKey("FK_staff_staff_positions_position_id", "staff", "position_id", "staff_positions", principalColumn: "id", onDelete: ReferentialAction.Restrict);
+            migrationBuilder.AddForeignKey("FK_staff_staff_positions_position_id", "staff", "position_id", "staff_positions", principalColumn: "Id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.AddForeignKey("FK_staff_airlines_airline_id", "staff", "airline_id", "airlines", principalColumn: "id", onDelete: ReferentialAction.SetNull);
             migrationBuilder.AddForeignKey("FK_staff_airports_airport_id", "staff", "airport_id", "airports", principalColumn: "id", onDelete: ReferentialAction.SetNull);
 
