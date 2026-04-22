@@ -43,10 +43,36 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             RenameColumnIfExists("flight_seats", "LocationTypeId", "location_type_id");
             RenameColumnIfExists("flight_seats", "IsOccupied", "is_occupied");
 
-            migrationBuilder.RenameColumn(name: "Id", table: "flight_crew_assignments", newName: "id");
-            migrationBuilder.RenameColumn(name: "FlightId", table: "flight_crew_assignments", newName: "flight_id");
-            migrationBuilder.RenameColumn(name: "StaffId", table: "flight_crew_assignments", newName: "staff_id");
-            migrationBuilder.RenameColumn(name: "FlightRoleId", table: "flight_crew_assignments", newName: "crew_role_id");
+            // CreateFlightAssignments creó la tabla como "FlightAssignments" (PascalCase).
+            // El modelo actual usa "flight_crew_assignments"; sin este paso, RenameColumn falla en BD nuevas.
+            migrationBuilder.Sql("""
+                SET @legacy_fca_table = (
+                    SELECT TABLE_NAME
+                    FROM information_schema.TABLES
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME IN ('FlightAssignments', 'flightassignments')
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM information_schema.TABLES
+                          WHERE TABLE_SCHEMA = DATABASE()
+                            AND TABLE_NAME = 'flight_crew_assignments'
+                      )
+                    LIMIT 1
+                );
+                SET @sql = IF(
+                    @legacy_fca_table IS NOT NULL,
+                    CONCAT('RENAME TABLE `', @legacy_fca_table, '` TO `flight_crew_assignments`'),
+                    'SELECT 1'
+                );
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+                """);
+
+            RenameColumnIfExists("flight_crew_assignments", "Id", "id");
+            RenameColumnIfExists("flight_crew_assignments", "FlightId", "flight_id");
+            RenameColumnIfExists("flight_crew_assignments", "StaffId", "staff_id");
+            RenameColumnIfExists("flight_crew_assignments", "FlightRoleId", "crew_role_id");
 
             migrationBuilder.CreateTable(
                 name: "flight_crew_roles",

@@ -29,8 +29,6 @@ try
 
     if (context.Database.CanConnect())
     {
-        Console.WriteLine("Conexión exitosa");
-
         // Bootstrap automático (sin flags):
         // - Asegura que el esquema esté actualizado (migraciones)
         // - Carga catálogos mínimos para que el sistema funcione
@@ -38,6 +36,8 @@ try
         //
         // Todo es idempotente: se puede ejecutar en cada arranque sin duplicar datos.
         context.Database.Migrate();
+        Console.WriteLine("Conexión exitosa. Migraciones aplicadas.");
+
         await EnsureDefaultsAsync(context);
         await SeedRootUserAsync(context);
 
