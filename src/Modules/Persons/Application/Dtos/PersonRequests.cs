@@ -7,7 +7,7 @@ public sealed record CreatePersonRequest(
     string LastName,
     DateTime? BirthDate,
     char? Gender,
-    int? DirectionId
+    int? AddressId
 );
 
 public sealed record UpdatePersonRequest(
@@ -18,5 +18,5 @@ public sealed record UpdatePersonRequest(
     string LastName,
     DateTime? BirthDate,
     char? Gender,
-    int? DirectionId
+    int? AddressId
 );

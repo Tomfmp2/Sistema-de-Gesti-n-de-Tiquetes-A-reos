@@ -14,14 +14,14 @@ public class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity>
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.ReservationPassengerId)
-            .HasColumnName("ReservationpassengerId")
+            .HasColumnName("booking_passenger_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -33,25 +33,25 @@ public class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity>
 
         builder
             .Property(x => x.IssueDate)
-            .HasColumnName("issue_date")
+            .HasColumnName("issued_at")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.TicketStatusId)
-            .HasColumnName("TicketstatusId")
+            .HasColumnName("ticket_status_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("CreatedAt")
+            .HasColumnName("created_at")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("UpdatedAt")
+            .HasColumnName("updated_at")
             .HasColumnType("datetime")
             .IsRequired();
 
@@ -59,14 +59,14 @@ public class TicketEntityConfiguration : IEntityTypeConfiguration<TicketEntity>
         builder.HasIndex(x => x.Code).IsUnique();
 
         builder
-            .HasOne<ReservationPassengerEntity>()
-            .WithMany()
+            .HasOne<ReservationPassengerEntity>(x => x.ReservationPassenger)
+            .WithMany(rp => rp.Tickets)
             .HasForeignKey(x => x.ReservationPassengerId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<TicketStatusEntity>()
-            .WithMany()
+            .HasOne<TicketStatusEntity>(x => x.TicketStatus)
+            .WithMany(ts => ts.Tickets)
             .HasForeignKey(x => x.TicketStatusId)
             .OnDelete(DeleteBehavior.Restrict);
     }

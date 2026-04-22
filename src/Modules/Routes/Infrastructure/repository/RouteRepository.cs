@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.Repositories;
+using AppRoutes = sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Application.Interfaces;
+using DomRoutes = sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
@@ -10,7 +11,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.repository;
 
-public class RouteRepository : IRouteRepository
+public class RouteRepository : DomRoutes.IRouteRepository, AppRoutes.IRouteRepository
 {
     private readonly AppDbContext _context;
 

@@ -10,25 +10,25 @@ public class InvoiceItemEntityConfiguration : IEntityTypeConfiguration<InvoiceIt
 {
     public void Configure(EntityTypeBuilder<InvoiceItemEntity> builder)
     {
-        builder.ToTable("InvoiceItems");
+        builder.ToTable("invoice_items");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.InvoiceId)
-            .HasColumnName("InvoiceId")
+            .HasColumnName("invoice_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.InvoiceItemTypeId)
-            .HasColumnName("InvoiceitemtypeId")
+            .HasColumnName("invoice_item_type_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -58,24 +58,24 @@ public class InvoiceItemEntityConfiguration : IEntityTypeConfiguration<InvoiceIt
 
         builder
             .Property(x => x.ReservationPassengerId)
-            .HasColumnName("ReservationpassengerId")
+            .HasColumnName("booking_passenger_id")
             .HasColumnType("int");
 
         builder
-            .HasOne(x => x.Invoice)
+            .HasOne<InvoiceEntity>(x => x.Invoice)
             .WithMany(i => i.InvoiceItems)
             .HasForeignKey(x => x.InvoiceId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.InvoiceItemType)
-            .WithMany()
+            .HasOne<InvoiceItemTypeEntity>(x => x.InvoiceItemType)
+            .WithMany(it => it.InvoiceItems)
             .HasForeignKey(x => x.InvoiceItemTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.ReservationPassenger)
-            .WithMany()
+            .HasOne<ReservationPassengerEntity>(x => x.ReservationPassenger)
+            .WithMany(rp => rp.InvoiceItems)
             .HasForeignKey(x => x.ReservationPassengerId)
             .OnDelete(DeleteBehavior.Restrict);
     }

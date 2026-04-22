@@ -58,8 +58,8 @@ public sealed class AirlineEntityConfiguration : IEntityTypeConfiguration<Airlin
             .HasColumnType("datetime")
             .IsRequired();
 
-        builder.HasOne<CountryEntity>()
-            .WithMany()
+        builder.HasOne<CountryEntity>(x => x.OriginCountry)
+            .WithMany(c => c.Airlines)
             .HasForeignKey(x => x.OriginCountryId)
             .OnDelete(DeleteBehavior.Restrict);
 

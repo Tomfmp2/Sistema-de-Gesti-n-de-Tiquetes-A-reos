@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Directions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity;
 
@@ -15,14 +14,14 @@ public sealed class PersonEntityConfiguration : IEntityTypeConfiguration<PersonE
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.DocumentTypeId)
-            .HasColumnName("DocumenttypeId")
+            .HasColumnName("document_type_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -57,38 +56,36 @@ public sealed class PersonEntityConfiguration : IEntityTypeConfiguration<PersonE
             .IsRequired(false);
 
         builder
-            .Property(x => x.DirectionId)
-            .HasColumnName("DirectionId")
+            .Property(x => x.AddressId)
+            .HasColumnName("address_id")
             .HasColumnType("int")
             .IsRequired(false);
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("CreatedAt")
+            .HasColumnName("created_at")
             .HasColumnType("datetime(6)")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("UpdatedAt")
+            .HasColumnName("updated_at")
             .HasColumnType("datetime(6)")
             .IsRequired();
 
         builder
-            .HasOne<DocumentTypeEntity>()
-            .WithMany()
+            .HasOne<DocumentTypeEntity>(x => x.DocumentType)
+            .WithMany(dt => dt.Persons)
             .HasForeignKey(x => x.DocumentTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<DirectionEntity>()
-            .WithMany()
-            .HasForeignKey(x => x.DirectionId)
+            .HasOne<AddressEntity>(x => x.Address)
+            .WithMany(a => a.Persons)
+            .HasForeignKey(x => x.AddressId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(x => x.DirectionId);
+        builder.HasIndex(x => x.AddressId).HasDatabaseName("IX_persons_address_id");
         builder.HasIndex(x => new { x.DocumentTypeId, x.DocumentNumber }).IsUnique();
-
-        builder.HasData(PersonDefaultData.Persons);
     }
 }

@@ -11,7 +11,7 @@ public sealed class Person
     public PersonLastName LastName { get; private set; }
     public DateTime? BirthDate { get; private set; }
     public char? Gender { get; private set; }
-    public int? DirectionId { get; private set; }
+    public int? AddressId { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
@@ -23,7 +23,7 @@ public sealed class Person
         PersonLastName lastName,
         DateTime? birthDate,
         char? gender,
-        int? directionId,
+        int? addressId,
         DateTime createdAt,
         DateTime updatedAt
     )
@@ -35,7 +35,7 @@ public sealed class Person
         LastName = lastName;
         BirthDate = birthDate;
         Gender = gender;
-        DirectionId = directionId;
+        AddressId = addressId;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
     }
@@ -47,7 +47,7 @@ public sealed class Person
         PersonLastName lastName,
         DateTime? birthDate,
         char? gender,
-        int? directionId
+        int? addressId
     )
     {
         return new Person(
@@ -58,7 +58,7 @@ public sealed class Person
             lastName,
             birthDate,
             NormalizeGender(gender),
-            directionId,
+            addressId,
             default,
             default
         );
@@ -72,7 +72,7 @@ public sealed class Person
         PersonLastName lastName,
         DateTime? birthDate,
         char? gender,
-        int? directionId,
+        int? addressId,
         DateTime createdAt,
         DateTime updatedAt
     )
@@ -85,7 +85,7 @@ public sealed class Person
             lastName,
             birthDate,
             NormalizeGender(gender),
-            directionId,
+            addressId,
             createdAt,
             updatedAt
         );

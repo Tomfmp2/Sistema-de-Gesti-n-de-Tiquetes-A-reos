@@ -14,7 +14,7 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
@@ -33,13 +33,13 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
 
         builder
             .Property(x => x.PersonId)
-            .HasColumnName("PersonId")
+            .HasColumnName("person_id")
             .HasColumnType("int")
             .IsRequired(false);
 
         builder
             .Property(x => x.SystemRoleId)
-            .HasColumnName("System_roleId")
+            .HasColumnName("role_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -51,31 +51,31 @@ public sealed class UserEntityConfiguration : IEntityTypeConfiguration<UserEntit
 
         builder
             .Property(x => x.LastAccessAt)
-            .HasColumnName("last_access_at")
+            .HasColumnName("last_access")
             .HasColumnType("datetime(6)")
             .IsRequired(false);
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("CreatedAt")
+            .HasColumnName("created_at")
             .HasColumnType("datetime(6)")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("UpdatedAt")
+            .HasColumnName("updated_at")
             .HasColumnType("datetime(6)")
             .IsRequired();
 
         builder
-            .HasOne<PersonEntity>()
-            .WithMany()
-            .HasForeignKey(x => x.PersonId)
+            .HasOne<PersonEntity>(x => x.Person)
+            .WithOne(p => p.User)
+            .HasForeignKey<UserEntity>(x => x.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<SystemRoleEntity>()
-            .WithMany()
+            .HasOne<SystemRoleEntity>(x => x.SystemRole)
+            .WithMany(sr => sr.Users)
             .HasForeignKey(x => x.SystemRoleId)
             .OnDelete(DeleteBehavior.Restrict);
 

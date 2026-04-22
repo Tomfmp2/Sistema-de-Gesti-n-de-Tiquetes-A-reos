@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatusTransitions.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatusTransitions.Infrastructure.Entity;
 
@@ -10,42 +9,40 @@ public class ReservationStatusTransitionEntityConfiguration
 {
     public void Configure(EntityTypeBuilder<ReservationStatusTransitionEntity> builder)
     {
-        builder.ToTable("ReservationStatusTransitions");
+        builder.ToTable("booking_status_transitions");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.OriginStatusId)
-            .HasColumnName("Origin_statusId")
+            .HasColumnName("from_status_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.DestinationStatusId)
-            .HasColumnName("Destination_statusId")
+            .HasColumnName("to_status_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder.HasIndex(x => new { x.OriginStatusId, x.DestinationStatusId }).IsUnique();
 
         builder
-            .HasOne<ReservationStatusEntity>()
-            .WithMany()
+            .HasOne<ReservationStatusEntity>(x => x.OriginStatus)
+            .WithMany(s => s.OriginTransitions)
             .HasForeignKey(x => x.OriginStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<ReservationStatusEntity>()
-            .WithMany()
+            .HasOne<ReservationStatusEntity>(x => x.DestinationStatus)
+            .WithMany(s => s.DestinationTransitions)
             .HasForeignKey(x => x.DestinationStatusId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasData(ReservationStatusTransitionDefaultData.ReservationStatusTransitions);
     }
 }

@@ -1,5 +1,7 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Entity;
 
@@ -10,6 +12,9 @@ public class RouteLayoverEntity
     public int LayoverAirportId { get; set; }
     public int SequenceOrder { get; set; }
     public int LayoverDurationMin { get; set; }
+
+    public RouteEntity? Route { get; set; }
+    public AirportEntity? LayoverAirport { get; set; }
 
     public static RouteLayoverEntity FromDomain(RouteLayover routeLayover)
     {

@@ -49,8 +49,8 @@ public sealed class SessionEntityConfiguration : IEntityTypeConfiguration<Sessio
             .IsRequired();
 
         builder
-            .HasOne<UserEntity>()
-            .WithMany()
+            .HasOne<UserEntity>(x => x.User)
+            .WithMany(u => u.Sessions)
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 

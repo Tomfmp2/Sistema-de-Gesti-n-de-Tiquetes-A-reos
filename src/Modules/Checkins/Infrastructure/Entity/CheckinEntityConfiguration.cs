@@ -11,7 +11,7 @@ public class CheckinEntityConfiguration : IEntityTypeConfiguration<CheckinEntity
 {
     public void Configure(EntityTypeBuilder<CheckinEntity> builder)
     {
-        builder.ToTable("checkins");
+        builder.ToTable("check_ins");
 
         builder.HasKey(x => x.Id);
         builder
@@ -41,7 +41,7 @@ public class CheckinEntityConfiguration : IEntityTypeConfiguration<CheckinEntity
 
         builder
             .Property(x => x.CheckinDate)
-            .HasColumnName("checkin_date")
+            .HasColumnName("checked_in_at")
             .HasColumnType("datetime")
             .IsRequired();
 
@@ -73,27 +73,27 @@ public class CheckinEntityConfiguration : IEntityTypeConfiguration<CheckinEntity
         builder.HasIndex(x => x.BoardingPassNumber).IsUnique();
 
         builder
-            .HasOne<TicketEntity>()
-            .WithMany()
-            .HasForeignKey(x => x.TicketId)
+            .HasOne<TicketEntity>(x => x.Ticket)
+            .WithOne(t => t.Checkin)
+            .HasForeignKey<CheckinEntity>(x => x.TicketId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<CheckinStatusEntity>()
-            .WithMany()
+            .HasOne<CheckinStatusEntity>(x => x.CheckinStatus)
+            .WithMany(cs => cs.Checkins)
             .HasForeignKey(x => x.CheckinStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<StaffEntity>()
-            .WithMany()
+            .HasOne<StaffEntity>(x => x.Staff)
+            .WithMany(s => s.Checkins)
             .HasForeignKey(x => x.StaffId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<FlightSeatEntity>()
-            .WithMany()
-            .HasForeignKey(x => x.FlightSeatId)
+            .HasOne<FlightSeatEntity>(x => x.FlightSeat)
+            .WithOne(fs => fs.Checkin)
+            .HasForeignKey<CheckinEntity>(x => x.FlightSeatId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

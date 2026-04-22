@@ -61,15 +61,15 @@ public class AircraftModelEntityConfiguration : IEntityTypeConfiguration<Aircraf
 
         // Relationships
         builder
-            .HasOne(x => x.Manufacturer)
-            .WithMany()
+            .HasOne<AircraftManufacturerEntity>(x => x.Manufacturer)
+            .WithMany(m => m.Models)
             .HasForeignKey(x => x.ManufacturerId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
             .HasMany(x => x.Aircrafts)
             .WithOne(x => x.Model)
-            .HasForeignKey("model_id")
+            .HasForeignKey(x => x.ModelId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.ManufacturerId);

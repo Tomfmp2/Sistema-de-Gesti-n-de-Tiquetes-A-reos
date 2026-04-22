@@ -27,7 +27,7 @@ public sealed class Airline
     public static Airline Create(AirlineName name, IataCode iataCode, int originCountryId)
     {
         return new Airline(
-            AirlineId.Create(0), // will be set by DB
+            AirlineId.Reconstitute(0), // will be set by DB
             name,
             iataCode,
             originCountryId,

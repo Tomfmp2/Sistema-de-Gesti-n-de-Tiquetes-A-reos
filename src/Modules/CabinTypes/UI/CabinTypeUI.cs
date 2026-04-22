@@ -1,11 +1,11 @@
-using Aggregate = sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Domain.ValueObject;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
-namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.UI;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.UI;
 
 public class CabinTypeUI : IModuleUI
 {
@@ -27,80 +27,53 @@ public class CabinTypeUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Console.WriteLine("=== Cabin Types Management ===");
-            Console.WriteLine("1. Create Cabin Type");
-            Console.WriteLine("2. View All Cabin Types");
-            Console.WriteLine("3. View Cabin Type by ID");
-            Console.WriteLine("4. Update Cabin Type");
-            Console.WriteLine("5. Delete Cabin Type");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Select an option: ");
+            SpectreUi.ModuleHeader("Tipos de cabina", "Clases Económica, Business, etc.");
 
-            var option = Console.ReadLine();
-
-            switch (option)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateCabinTypeAsync();
-                    break;
-                case "2":
-                    await ViewAllCabinTypesAsync();
-                    break;
-                case "3":
-                    await ViewCabinTypeByIdAsync();
-                    break;
-                case "4":
-                    await UpdateCabinTypeAsync();
-                    break;
-                case "5":
-                    await DeleteCabinTypeAsync();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Press any key to continue...");
-                    Console.ReadKey();
-                    break;
-            }
+                ("Crear tipo de cabina", () => CreateCabinTypeAsync().GetAwaiter().GetResult()),
+                ("Listar todos", () => ViewAllCabinTypesAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => ViewCabinTypeByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateCabinTypeAsync().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteCabinTypeAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateCabinTypeAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Create Cabin Type ===");
-
+        SpectreUi.ModuleHeader("Crear tipo de cabina", null);
         try
         {
-            Console.Write("Name: ");
+            Console.Write("Nombre: ");
             var name = Console.ReadLine() ?? "";
 
             var cabinType = await _createUseCase.ExecuteAsync(name);
-            Console.WriteLine($"Cabin Type created with ID: {cabinType.Id.Value}");
+            Console.WriteLine($"Tipo creado con ID: {cabinType.Id.Value}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task ViewAllCabinTypesAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== All Cabin Types ===");
-
+        SpectreUi.ModuleHeader("Tipos de cabina", null);
         try
         {
             var cabinTypes = await _getAllUseCase.ExecuteAsync();
             foreach (var ct in cabinTypes)
             {
-                Console.WriteLine($"ID: {ct.Id.Value}, Name: {ct.Name.Value}");
+                Console.WriteLine($"ID: {ct.Id.Value}, Nombre: {ct.Name.Value}");
             }
         }
         catch (Exception ex)
@@ -108,29 +81,26 @@ public class CabinTypeUI : IModuleUI
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task ViewCabinTypeByIdAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== View Cabin Type by ID ===");
-
+        SpectreUi.ModuleHeader("Consultar tipo de cabina", null);
         try
         {
-            Console.Write("Cabin Type ID: ");
+            Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
             var cabinType = await _getByIdUseCase.ExecuteAsync(CabinTypeId.Create(id));
             if (cabinType != null)
             {
                 Console.WriteLine($"ID: {cabinType.Id.Value}");
-                Console.WriteLine($"Name: {cabinType.Name.Value}");
+                Console.WriteLine($"Nombre: {cabinType.Name.Value}");
             }
             else
             {
-                Console.WriteLine("Cabin Type not found.");
+                Console.WriteLine("No encontrado.");
             }
         }
         catch (Exception ex)
@@ -138,54 +108,47 @@ public class CabinTypeUI : IModuleUI
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task UpdateCabinTypeAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Update Cabin Type ===");
-
+        SpectreUi.ModuleHeader("Actualizar tipo de cabina", null);
         try
         {
-            Console.Write("Cabin Type ID: ");
+            Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("New Name: ");
+            Console.Write("Nuevo nombre: ");
             var name = Console.ReadLine() ?? "";
 
             await _updateUseCase.ExecuteAsync(CabinTypeId.Create(id), name);
-            Console.WriteLine("Cabin Type updated successfully!");
+            Console.WriteLine("Actualizado correctamente.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task DeleteCabinTypeAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Delete Cabin Type ===");
-
+        SpectreUi.ModuleHeader("Eliminar tipo de cabina", null);
         try
         {
-            Console.Write("Cabin Type ID: ");
+            Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
             await _deleteUseCase.ExecuteAsync(CabinTypeId.Create(id));
-            Console.WriteLine("Cabin Type deleted successfully!");
+            Console.WriteLine("Eliminado.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 }

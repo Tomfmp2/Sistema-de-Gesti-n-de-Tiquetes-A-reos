@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Domain.Repositories;
+using AppSeasons = sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Application.Interfaces;
+using DomSeasons = sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Domain.ValueObject;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.Entity;
@@ -10,7 +11,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.repository;
 
-public class SeasonRepository : ISeasonRepository
+public class SeasonRepository : DomSeasons.ISeasonRepository, AppSeasons.ISeasonRepository
 {
     private readonly AppDbContext _context;
 

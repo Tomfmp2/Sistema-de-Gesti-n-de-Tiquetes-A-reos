@@ -1,5 +1,6 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.UI;
@@ -28,41 +29,22 @@ public class AvailabilityStatusConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.WriteLine("\nAvailability Statuses Management");
-            Console.WriteLine("1. Create Availability Status");
-            Console.WriteLine("2. Get Availability Status by ID");
-            Console.WriteLine("3. Get All Availability Statuses");
-            Console.WriteLine("4. Update Availability Status");
-            Console.WriteLine("5. Delete Availability Status");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Choose an option: ");
+            SpectreUi.ModuleHeader("Estados de disponibilidad", "Disponible, asignado, vacaciones…");
 
-            var choice = Console.ReadLine();
-            switch (choice)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateAvailabilityStatus();
-                    break;
-                case "2":
-                    await GetAvailabilityStatusById();
-                    break;
-                case "3":
-                    await GetAllAvailabilityStatuses();
-                    break;
-                case "4":
-                    await UpdateAvailabilityStatus();
-                    break;
-                case "5":
-                    await DeleteAvailabilityStatus();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Try again.");
-                    break;
-            }
+                ("Crear estado", () => CreateAvailabilityStatus().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetAvailabilityStatusById().GetAwaiter().GetResult()),
+                ("Listar todos", () => GetAllAvailabilityStatuses().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateAvailabilityStatus().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteAvailabilityStatus().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
@@ -83,6 +65,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        SpectreUi.Pause();
     }
 
     private async Task GetAvailabilityStatusById()
@@ -108,15 +91,31 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        SpectreUi.Pause();
     }
 
     private async Task GetAllAvailabilityStatuses()
     {
-        var availabilityStatuses = await _getAllUseCase.ExecuteAsync();
-        foreach (var as_ in availabilityStatuses)
+        try
         {
-            Console.WriteLine($"ID: {as_.Id.Value}, Name: {as_.Name.Value}");
+            var availabilityStatuses = (await _getAllUseCase.ExecuteAsync()).ToList();
+            if (availabilityStatuses.Count == 0)
+            {
+                Console.WriteLine("No hay estados para mostrar.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            foreach (var as_ in availabilityStatuses)
+            {
+                Console.WriteLine($"ID: {as_.Id.Value}, Name: {as_.Name.Value}");
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        SpectreUi.Pause();
     }
 
     private async Task UpdateAvailabilityStatus()
@@ -141,6 +140,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 }
             }
         }
+        SpectreUi.Pause();
     }
 
     private async Task DeleteAvailabilityStatus()
@@ -159,5 +159,6 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
+        SpectreUi.Pause();
     }
 }

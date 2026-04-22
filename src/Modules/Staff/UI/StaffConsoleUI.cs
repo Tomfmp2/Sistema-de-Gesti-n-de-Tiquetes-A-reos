@@ -1,5 +1,6 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.UI;
@@ -28,41 +29,22 @@ public class StaffConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.WriteLine("\nStaff Management");
-            Console.WriteLine("1. Create Staff");
-            Console.WriteLine("2. Get Staff by ID");
-            Console.WriteLine("3. Get All Staff");
-            Console.WriteLine("4. Update Staff");
-            Console.WriteLine("5. Delete Staff");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Choose an option: ");
+            SpectreUi.ModuleHeader("Personal", "Empleados de aerolínea o aeropuerto");
 
-            var choice = Console.ReadLine();
-            switch (choice)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateStaff();
-                    break;
-                case "2":
-                    await GetStaffById();
-                    break;
-                case "3":
-                    await GetAllStaff();
-                    break;
-                case "4":
-                    await UpdateStaff();
-                    break;
-                case "5":
-                    await DeleteStaff();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Try again.");
-                    break;
-            }
+                ("Registrar personal", () => CreateStaff().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetStaffById().GetAwaiter().GetResult()),
+                ("Listar todo el personal", () => GetAllStaff().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateStaff().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteStaff().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 

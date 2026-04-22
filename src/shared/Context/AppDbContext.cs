@@ -83,7 +83,7 @@ public class AppDbContext : DbContext
 
     // Addresses
     public DbSet<StreetTypeEntity> StreetTypes { get; set; }
-    public DbSet<DirectionEntity> Directions { get; set; }
+    public DbSet<AddressEntity> Addresses { get; set; }
 
     // Users & Authorization
     public DbSet<ClientEntity> Clients { get; set; }

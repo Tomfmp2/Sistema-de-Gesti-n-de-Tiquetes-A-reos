@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations.Schema;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Baggage.Infrastructure.Entity;
 
-[Table("Baggage")]
 public class BaggageEntity
 {
     public int Id { get; set; }
@@ -10,6 +10,7 @@ public class BaggageEntity
     public int BaggageTypeId { get; set; }
     public decimal WeightKg { get; set; }
     public decimal ChargedPrice { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+
+    public CheckinEntity? Checkin { get; set; }
+    public BaggageTypeEntity? BaggageType { get; set; }
 }

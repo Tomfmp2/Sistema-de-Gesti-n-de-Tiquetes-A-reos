@@ -48,8 +48,8 @@ public sealed class AirportEntityConfiguration : IEntityTypeConfiguration<Airpor
             .HasColumnType("int")
             .IsRequired();
 
-        builder.HasOne<CityEntity>()
-            .WithMany()
+        builder.HasOne<CityEntity>(x => x.City)
+            .WithMany(c => c.Airports)
             .HasForeignKey(x => x.CityId)
             .OnDelete(DeleteBehavior.Restrict);
 

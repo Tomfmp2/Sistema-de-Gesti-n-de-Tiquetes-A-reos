@@ -22,9 +22,7 @@ public class BaggageRepository : IBaggageRepository
             CheckinId = baggage.CheckinId,
             BaggageTypeId = baggage.BaggageTypeId,
             WeightKg = baggage.WeightKg.Value,
-            ChargedPrice = baggage.ChargedPrice.Value,
-            CreatedAt = baggage.CreatedAt,
-            UpdatedAt = baggage.UpdatedAt
+            ChargedPrice = baggage.ChargedPrice.Value
         };
 
         await _context.Baggages.AddAsync(entity);
@@ -37,27 +35,32 @@ public class BaggageRepository : IBaggageRepository
         if (entity is null)
             return null;
 
+        var now = DateTime.UtcNow;
         return BaggageItem.Reconstitute(
             entity.Id,
             entity.CheckinId,
             entity.BaggageTypeId,
             entity.WeightKg,
             entity.ChargedPrice,
-            entity.CreatedAt,
-            entity.UpdatedAt);
+            now,
+            now);
     }
 
     public async Task<List<BaggageItem>> GetAllAsync()
     {
         var entities = await _context.Baggages.ToListAsync();
-        return entities.Select(e => BaggageItem.Reconstitute(
-            e.Id,
-            e.CheckinId,
-            e.BaggageTypeId,
-            e.WeightKg,
-            e.ChargedPrice,
-            e.CreatedAt,
-            e.UpdatedAt)).ToList();
+        return entities.Select(e =>
+        {
+            var now = DateTime.UtcNow;
+            return BaggageItem.Reconstitute(
+                e.Id,
+                e.CheckinId,
+                e.BaggageTypeId,
+                e.WeightKg,
+                e.ChargedPrice,
+                now,
+                now);
+        }).ToList();
     }
 
     public async Task UpdateAsync(BaggageItem baggage)
@@ -69,7 +72,6 @@ public class BaggageRepository : IBaggageRepository
         entity.BaggageTypeId = baggage.BaggageTypeId;
         entity.WeightKg = baggage.WeightKg.Value;
         entity.ChargedPrice = baggage.ChargedPrice.Value;
-        entity.UpdatedAt = baggage.UpdatedAt;
 
         _context.Baggages.Update(entity);
         await _context.SaveChangesAsync();

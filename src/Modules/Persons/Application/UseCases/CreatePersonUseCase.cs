@@ -34,7 +34,7 @@ public sealed class CreatePersonUseCase : ICreatePersonUseCase
             PersonLastName.Create(request.LastName),
             request.BirthDate,
             request.Gender,
-            request.DirectionId
+            request.AddressId
         );
         return _repository.AddAsync(x, cancellationToken);
     }

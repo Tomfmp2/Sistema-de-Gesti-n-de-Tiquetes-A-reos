@@ -1,5 +1,7 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Domain.ValueObject;
+using System.Collections.Generic;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.Entity;
 
@@ -9,6 +11,8 @@ public class SeasonEntity
     public string Name { get; set; }
     public string? Description { get; set; }
     public decimal PriceFactor { get; set; }
+
+    public ICollection<FareEntity> Fares { get; set; } = new List<FareEntity>();
 
     public static SeasonEntity FromDomain(Season season)
     {

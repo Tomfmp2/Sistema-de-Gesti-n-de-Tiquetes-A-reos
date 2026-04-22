@@ -2,6 +2,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Invoices.Infrastructure.Enti
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.InvoiceItemTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.Entity;
 
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.InvoiceItems.Infrastructure.Entity;
+
 public class InvoiceItemEntity
 {
     public int Id { get; set; }

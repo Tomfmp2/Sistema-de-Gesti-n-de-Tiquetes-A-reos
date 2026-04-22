@@ -20,7 +20,7 @@ public sealed class PhoneCodeEntityConfiguration : IEntityTypeConfiguration<Phon
 
         builder
             .Property(x => x.CountryDialCode)
-            .HasColumnName("country_dial_code")
+            .HasColumnName("country_code")
             .HasColumnType("varchar(5)")
             .IsRequired();
 

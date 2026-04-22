@@ -25,9 +25,9 @@ public class StaffAvailabilityRepository : IStaffAvailabilityRepository
             StaffAvailabilityId.Reconstitute(entity.Id),
             StaffId.Reconstitute(entity.StaffId),
             AvailabilityStatusId.Reconstitute(entity.AvailabilityStatusId),
-            StartDate.Reconstitute(entity.StartDate),
-            EndDate.Reconstitute(entity.EndDate),
-            entity.Observation != null ? Observation.Reconstitute(entity.Observation) : null
+            StartDate.Reconstitute(entity.StartsAt),
+            EndDate.Reconstitute(entity.EndsAt),
+            entity.Notes != null ? Observation.Reconstitute(entity.Notes) : null
         );
     }
 
@@ -38,9 +38,9 @@ public class StaffAvailabilityRepository : IStaffAvailabilityRepository
             StaffAvailabilityId.Reconstitute(entity.Id),
             StaffId.Reconstitute(entity.StaffId),
             AvailabilityStatusId.Reconstitute(entity.AvailabilityStatusId),
-            StartDate.Reconstitute(entity.StartDate),
-            EndDate.Reconstitute(entity.EndDate),
-            entity.Observation != null ? Observation.Reconstitute(entity.Observation) : null
+            StartDate.Reconstitute(entity.StartsAt),
+            EndDate.Reconstitute(entity.EndsAt),
+            entity.Notes != null ? Observation.Reconstitute(entity.Notes) : null
         ));
     }
 
@@ -48,12 +48,11 @@ public class StaffAvailabilityRepository : IStaffAvailabilityRepository
     {
         var entity = new StaffAvailabilityEntity
         {
-            Id = staffAvailability.Id.Value,
             StaffId = staffAvailability.StaffId.Value,
             AvailabilityStatusId = staffAvailability.AvailabilityStatusId.Value,
-            StartDate = staffAvailability.StartDate.Value,
-            EndDate = staffAvailability.EndDate.Value,
-            Observation = staffAvailability.Observation?.Value
+            StartsAt = staffAvailability.StartDate.Value,
+            EndsAt = staffAvailability.EndDate.Value,
+            Notes = staffAvailability.Observation?.Value
         };
 
         await _context.StaffAvailabilities.AddAsync(entity);
@@ -67,9 +66,9 @@ public class StaffAvailabilityRepository : IStaffAvailabilityRepository
 
         entity.StaffId = staffAvailability.StaffId.Value;
         entity.AvailabilityStatusId = staffAvailability.AvailabilityStatusId.Value;
-        entity.StartDate = staffAvailability.StartDate.Value;
-        entity.EndDate = staffAvailability.EndDate.Value;
-        entity.Observation = staffAvailability.Observation?.Value;
+        entity.StartsAt = staffAvailability.StartDate.Value;
+        entity.EndsAt = staffAvailability.EndDate.Value;
+        entity.Notes = staffAvailability.Observation?.Value;
 
         _context.StaffAvailabilities.Update(entity);
         await _context.SaveChangesAsync();

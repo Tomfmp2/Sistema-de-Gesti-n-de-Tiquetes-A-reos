@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Entity;
 
@@ -11,28 +10,28 @@ public class CabinConfigurationEntityConfiguration : IEntityTypeConfiguration<Ca
 {
     public void Configure(EntityTypeBuilder<CabinConfigurationEntity> builder)
     {
-        builder.ToTable("CabinConfiguration");
+        builder.ToTable("cabin_configurations");
 
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .ValueGeneratedOnAdd();
 
         builder.Property(x => x.AircraftId)
-            .HasColumnName("AircraftId")
+            .HasColumnName("aircraft_id")
             .IsRequired();
 
         builder.Property(x => x.CabinTypeId)
-            .HasColumnName("CabinTypeId")
+            .HasColumnName("cabin_type_id")
             .IsRequired();
 
         builder.Property(x => x.StartRow)
-            .HasColumnName("start_row")
+            .HasColumnName("row_start")
             .IsRequired();
 
         builder.Property(x => x.EndRow)
-            .HasColumnName("end_row")
+            .HasColumnName("row_end")
             .IsRequired();
 
         builder.Property(x => x.SeatsPerRow)
@@ -47,16 +46,14 @@ public class CabinConfigurationEntityConfiguration : IEntityTypeConfiguration<Ca
         builder.HasIndex(x => new { x.AircraftId, x.CabinTypeId })
             .IsUnique();
 
-        builder.HasOne<AircraftEntity>()
-            .WithMany()
+        builder.HasOne<AircraftEntity>(x => x.Aircraft)
+            .WithMany(a => a.CabinConfigurations)
             .HasForeignKey(x => x.AircraftId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<CabinTypeEntity>()
-            .WithMany()
+        builder.HasOne<CabinTypeEntity>(x => x.CabinType)
+            .WithMany(ct => ct.CabinConfigurations)
             .HasForeignKey(x => x.CabinTypeId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasData(CabinConfigurationDefaultData.CabinConfigurations);
     }
 }

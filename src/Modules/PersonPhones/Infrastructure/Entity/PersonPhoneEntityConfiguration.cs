@@ -44,14 +44,14 @@ public sealed class PersonPhoneEntityConfiguration : IEntityTypeConfiguration<Pe
             .IsRequired();
 
         builder
-            .HasOne<PersonEntity>()
-            .WithMany()
+            .HasOne<PersonEntity>(x => x.Person)
+            .WithMany(p => p.Phones)
             .HasForeignKey(x => x.PersonId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne<PhoneCodeEntity>()
-            .WithMany()
+            .HasOne<PhoneCodeEntity>(x => x.PhoneCode)
+            .WithMany(pc => pc.PersonPhones)
             .HasForeignKey(x => x.PhoneCodeId)
             .OnDelete(DeleteBehavior.Restrict);
 

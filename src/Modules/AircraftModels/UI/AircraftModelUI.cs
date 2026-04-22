@@ -1,9 +1,9 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Application.UseCases;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Domain.ValueObject;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
-namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.UI;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.UI;
 
 public class AircraftModelUI : IModuleUI
 {
@@ -29,65 +29,47 @@ public class AircraftModelUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.WriteLine("\n=== Aircraft Models Management ===");
-            Console.WriteLine("1. Create Aircraft Model");
-            Console.WriteLine("2. View All Aircraft Models");
-            Console.WriteLine("3. View Aircraft Model by ID");
-            Console.WriteLine("4. Update Aircraft Model");
-            Console.WriteLine("5. Delete Aircraft Model");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Choose an option: ");
+            SpectreUi.ModuleHeader("Modelos de aeronave", "Especificaciones técnicas");
 
-            var choice = Console.ReadLine();
-            switch (choice)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateAircraftModelAsync();
-                    break;
-                case "2":
-                    await ViewAllAircraftModelsAsync();
-                    break;
-                case "3":
-                    await ViewAircraftModelByIdAsync();
-                    break;
-                case "4":
-                    await UpdateAircraftModelAsync();
-                    break;
-                case "5":
-                    await DeleteAircraftModelAsync();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Please try again.");
-                    break;
-            }
+                ("Crear modelo", () => CreateAircraftModelAsync().GetAwaiter().GetResult()),
+                ("Listar todos", () => ViewAllAircraftModelsAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => ViewAircraftModelByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateAircraftModelAsync().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteAircraftModelAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateAircraftModelAsync()
     {
+        SpectreUi.ModuleHeader("Crear modelo de aeronave", null);
         try
         {
-            Console.Write("Enter Aircraft Model ID (int): ");
+            Console.Write("ID del modelo (entero): ");
             var id = int.Parse(Console.ReadLine()!);
             var aircraftModelId = AircraftModelId.Create(id);
 
-            Console.Write("Enter Manufacturer ID (int): ");
+            Console.Write("ID del fabricante: ");
             var manufacturerIdValue = int.Parse(Console.ReadLine()!);
             var manufacturerId = ManufacturerId.Create(manufacturerIdValue);
 
-            Console.Write("Enter Model Name: ");
+            Console.Write("Nombre del modelo: ");
             var modelName = Console.ReadLine()!;
             var modelNameValue = ModelName.Create(modelName);
 
-            Console.Write("Enter Max Capacity (int): ");
+            Console.Write("Capacidad máxima (pasajeros): ");
             var maxCapacityValue = int.Parse(Console.ReadLine()!);
             var maxCapacity = MaxCapacity.Create(maxCapacityValue);
 
-            Console.Write("Enter Max Takeoff Weight Kg (decimal, optional): ");
+            Console.Write("Peso máximo al despegue (kg, opcional): ");
             var maxTakeoffWeightInput = Console.ReadLine();
             MaxTakeoffWeightKg? maxTakeoffWeightKg = null;
             if (!string.IsNullOrWhiteSpace(maxTakeoffWeightInput))
@@ -96,7 +78,7 @@ public class AircraftModelUI : IModuleUI
                 maxTakeoffWeightKg = MaxTakeoffWeightKg.Create(maxTakeoffWeightValue);
             }
 
-            Console.Write("Enter Fuel Consumption Kg/H (decimal, optional): ");
+            Console.Write("Consumo combustible (kg/h, opcional): ");
             var fuelConsumptionInput = Console.ReadLine();
             FuelConsumptionKgH? fuelConsumptionKgH = null;
             if (!string.IsNullOrWhiteSpace(fuelConsumptionInput))
@@ -105,7 +87,7 @@ public class AircraftModelUI : IModuleUI
                 fuelConsumptionKgH = FuelConsumptionKgH.Create(fuelConsumptionValue);
             }
 
-            Console.Write("Enter Cruising Speed Kmh (int, optional): ");
+            Console.Write("Velocidad crucero (km/h, opcional): ");
             var cruisingSpeedInput = Console.ReadLine();
             CruisingSpeedKmh? cruisingSpeedKmh = null;
             if (!string.IsNullOrWhiteSpace(cruisingSpeedInput))
@@ -114,7 +96,7 @@ public class AircraftModelUI : IModuleUI
                 cruisingSpeedKmh = CruisingSpeedKmh.Create(cruisingSpeedValue);
             }
 
-            Console.Write("Enter Cruising Altitude Ft (int, optional): ");
+            Console.Write("Altitud crucero (pies, opcional): ");
             var cruisingAltitudeInput = Console.ReadLine();
             CruisingAltitudeFt? cruisingAltitudeFt = null;
             if (!string.IsNullOrWhiteSpace(cruisingAltitudeInput))
@@ -124,61 +106,70 @@ public class AircraftModelUI : IModuleUI
             }
 
             await _createUseCase.ExecuteAsync(aircraftModelId, manufacturerId, modelNameValue, maxCapacity, maxTakeoffWeightKg, fuelConsumptionKgH, cruisingSpeedKmh, cruisingAltitudeFt);
-            Console.WriteLine("Aircraft model created successfully.");
+            Console.WriteLine("Modelo creado correctamente.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task ViewAllAircraftModelsAsync()
     {
+        SpectreUi.ModuleHeader("Modelos registrados", null);
         var aircraftModels = await _getAllUseCase.ExecuteAsync();
         foreach (var am in aircraftModels)
         {
-            Console.WriteLine($"ID: {am.Id.Value}, Manufacturer ID: {am.ManufacturerId.Value}, Model: {am.ModelName.Value}, Capacity: {am.MaxCapacity.Value}, MTOW: {am.MaxTakeoffWeightKg?.Value ?? 0}, Fuel: {am.FuelConsumptionKgH?.Value ?? 0}, Speed: {am.CruisingSpeedKmh?.Value ?? 0}, Altitude: {am.CruisingAltitudeFt?.Value ?? 0}");
+            Console.WriteLine($"ID: {am.Id.Value}, Fabricante: {am.ManufacturerId.Value}, Modelo: {am.ModelName.Value}, Cap.: {am.MaxCapacity.Value}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task ViewAircraftModelByIdAsync()
     {
-        Console.Write("Enter Aircraft Model ID (int): ");
+        SpectreUi.ModuleHeader("Consultar modelo", null);
+        Console.Write("ID del modelo: ");
         var id = int.Parse(Console.ReadLine()!);
         var aircraftModelId = AircraftModelId.Create(id);
 
         var aircraftModel = await _getByIdUseCase.ExecuteAsync(aircraftModelId);
         if (aircraftModel != null)
         {
-            Console.WriteLine($"ID: {aircraftModel.Id.Value}, Manufacturer ID: {aircraftModel.ManufacturerId.Value}, Model: {aircraftModel.ModelName.Value}, Capacity: {aircraftModel.MaxCapacity.Value}, MTOW: {aircraftModel.MaxTakeoffWeightKg?.Value ?? 0}, Fuel: {aircraftModel.FuelConsumptionKgH?.Value ?? 0}, Speed: {aircraftModel.CruisingSpeedKmh?.Value ?? 0}, Altitude: {aircraftModel.CruisingAltitudeFt?.Value ?? 0}");
+            Console.WriteLine($"ID: {aircraftModel.Id.Value}, Fabricante: {aircraftModel.ManufacturerId.Value}, Modelo: {aircraftModel.ModelName.Value}, Cap.: {aircraftModel.MaxCapacity.Value}");
         }
         else
         {
-            Console.WriteLine("Aircraft model not found.");
+            Console.WriteLine("Modelo no encontrado.");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task UpdateAircraftModelAsync()
     {
+        SpectreUi.ModuleHeader("Actualizar modelo", null);
         try
         {
-            Console.Write("Enter Aircraft Model ID (int): ");
+            Console.Write("ID del modelo: ");
             var id = int.Parse(Console.ReadLine()!);
             var aircraftModelId = AircraftModelId.Create(id);
 
-            Console.Write("Enter new Manufacturer ID (int): ");
+            Console.Write("Nuevo ID de fabricante: ");
             var manufacturerIdValue = int.Parse(Console.ReadLine()!);
             var manufacturerId = ManufacturerId.Create(manufacturerIdValue);
 
-            Console.Write("Enter new Model Name: ");
+            Console.Write("Nuevo nombre del modelo: ");
             var modelName = Console.ReadLine()!;
             var modelNameValue = ModelName.Create(modelName);
 
-            Console.Write("Enter new Max Capacity (int): ");
+            Console.Write("Nueva capacidad máxima: ");
             var maxCapacityValue = int.Parse(Console.ReadLine()!);
             var maxCapacity = MaxCapacity.Create(maxCapacityValue);
 
-            Console.Write("Enter new Max Takeoff Weight Kg (decimal, optional): ");
+            Console.Write("Nuevo MTOW kg (opcional): ");
             var maxTakeoffWeightInput = Console.ReadLine();
             MaxTakeoffWeightKg? maxTakeoffWeightKg = null;
             if (!string.IsNullOrWhiteSpace(maxTakeoffWeightInput))
@@ -187,7 +178,7 @@ public class AircraftModelUI : IModuleUI
                 maxTakeoffWeightKg = MaxTakeoffWeightKg.Create(maxTakeoffWeightValue);
             }
 
-            Console.Write("Enter new Fuel Consumption Kg/H (decimal, optional): ");
+            Console.Write("Nuevo consumo kg/h (opcional): ");
             var fuelConsumptionInput = Console.ReadLine();
             FuelConsumptionKgH? fuelConsumptionKgH = null;
             if (!string.IsNullOrWhiteSpace(fuelConsumptionInput))
@@ -196,7 +187,7 @@ public class AircraftModelUI : IModuleUI
                 fuelConsumptionKgH = FuelConsumptionKgH.Create(fuelConsumptionValue);
             }
 
-            Console.Write("Enter new Cruising Speed Kmh (int, optional): ");
+            Console.Write("Nueva velocidad crucero km/h (opcional): ");
             var cruisingSpeedInput = Console.ReadLine();
             CruisingSpeedKmh? cruisingSpeedKmh = null;
             if (!string.IsNullOrWhiteSpace(cruisingSpeedInput))
@@ -205,7 +196,7 @@ public class AircraftModelUI : IModuleUI
                 cruisingSpeedKmh = CruisingSpeedKmh.Create(cruisingSpeedValue);
             }
 
-            Console.Write("Enter new Cruising Altitude Ft (int, optional): ");
+            Console.Write("Nueva altitud crucero pies (opcional): ");
             var cruisingAltitudeInput = Console.ReadLine();
             CruisingAltitudeFt? cruisingAltitudeFt = null;
             if (!string.IsNullOrWhiteSpace(cruisingAltitudeInput))
@@ -215,21 +206,25 @@ public class AircraftModelUI : IModuleUI
             }
 
             await _updateUseCase.ExecuteAsync(aircraftModelId, manufacturerId, modelNameValue, maxCapacity, maxTakeoffWeightKg, fuelConsumptionKgH, cruisingSpeedKmh, cruisingAltitudeFt);
-            Console.WriteLine("Aircraft model updated successfully.");
+            Console.WriteLine("Modelo actualizado.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task DeleteAircraftModelAsync()
     {
-        Console.Write("Enter Aircraft Model ID (int): ");
+        SpectreUi.ModuleHeader("Eliminar modelo", null);
+        Console.Write("ID del modelo: ");
         var id = int.Parse(Console.ReadLine()!);
         var aircraftModelId = AircraftModelId.Create(id);
 
         await _deleteUseCase.ExecuteAsync(aircraftModelId);
-        Console.WriteLine("Aircraft model deleted successfully.");
+        Console.WriteLine("Modelo eliminado.");
+        SpectreUi.Pause();
     }
 }

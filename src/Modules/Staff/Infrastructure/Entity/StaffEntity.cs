@@ -6,6 +6,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructur
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffAvailability.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 
@@ -28,4 +30,6 @@ public class StaffEntity
     public AirlineEntity? Airline { get; set; }
     public AirportEntity? Airport { get; set; }
     public ICollection<FlightAssignmentEntity> FlightAssignments { get; set; } = new List<FlightAssignmentEntity>();
+    public ICollection<StaffAvailabilityEntity> StaffAvailabilities { get; set; } = new List<StaffAvailabilityEntity>();
+    public ICollection<CheckinEntity> Checkins { get; set; } = new List<CheckinEntity>();
 }

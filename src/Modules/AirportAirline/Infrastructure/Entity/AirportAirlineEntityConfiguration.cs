@@ -1,8 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructure.Data;
-// using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
-// using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AirportAirline.Infrastructure.Entity;
 
@@ -15,20 +14,20 @@ public sealed class AirportAirlineEntityConfiguration : IEntityTypeConfiguration
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.AirportId)
-            .HasColumnName("AirportId")
+            .HasColumnName("airport_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.AirlineId)
-            .HasColumnName("AirlineId")
+            .HasColumnName("airline_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -42,13 +41,13 @@ public sealed class AirportAirlineEntityConfiguration : IEntityTypeConfiguration
 
         builder
             .Property(x => x.StartDate)
-            .HasColumnName("StartDate")
+            .HasColumnName("start_date")
             .HasColumnType("date")
             .IsRequired();
 
         builder
             .Property(x => x.EndDate)
-            .HasColumnName("EndDate")
+            .HasColumnName("end_date")
             .HasColumnType("date")
             .IsRequired(false);
 
@@ -59,17 +58,15 @@ public sealed class AirportAirlineEntityConfiguration : IEntityTypeConfiguration
             .IsRequired();
 
         builder
-            .HasOne(x => x.Airport)
+            .HasOne<AirportEntity>(x => x.Airport)
             .WithMany(x => x.AirportAirlines)
             .HasForeignKey(x => x.AirportId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(x => x.Airline)
-            .WithMany()
+            .HasOne<AirlineEntity>(x => x.Airline)
+            .WithMany(a => a.AirportAirlines)
             .HasForeignKey(x => x.AirlineId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasData(AirportAirlineDefaultData.AirportAirlines);
     }
 }

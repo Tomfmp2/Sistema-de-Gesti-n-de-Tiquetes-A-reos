@@ -32,14 +32,14 @@ public sealed class PassengerEntityConfiguration : IEntityTypeConfiguration<Pass
             .IsRequired();
 
         builder
-            .HasOne<PersonEntity>()
-            .WithMany()
-            .HasForeignKey(x => x.PersonId)
+            .HasOne<PersonEntity>(x => x.Person)
+            .WithOne(p => p.Passenger)
+            .HasForeignKey<PassengerEntity>(x => x.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<PassengerTypeEntity>()
-            .WithMany()
+            .HasOne<PassengerTypeEntity>(x => x.PassengerType)
+            .WithMany(pt => pt.Passengers)
             .HasForeignKey(x => x.PassengerTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 

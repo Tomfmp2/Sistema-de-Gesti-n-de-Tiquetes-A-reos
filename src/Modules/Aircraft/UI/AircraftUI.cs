@@ -3,9 +3,10 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Application.UseCase
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Domain.ValueObject;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
-namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.UI;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.UI;
 
 public class AircraftUI : IModuleUI
 {
@@ -27,64 +28,41 @@ public class AircraftUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+
+        while (!exit)
         {
-            Console.Clear();
-            Console.WriteLine("=== Aircraft Management ===");
-            Console.WriteLine("1. Create Aircraft");
-            Console.WriteLine("2. View All Aircraft");
-            Console.WriteLine("3. View Aircraft by ID");
-            Console.WriteLine("4. Update Aircraft");
-            Console.WriteLine("5. Delete Aircraft");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Select an option: ");
+            SpectreUi.ModuleHeader("Aeronaves", "Gestión de flota");
 
-            var option = Console.ReadLine();
-
-            switch (option)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateAircraftAsync();
-                    break;
-                case "2":
-                    await ViewAllAircraftAsync();
-                    break;
-                case "3":
-                    await ViewAircraftByIdAsync();
-                    break;
-                case "4":
-                    await UpdateAircraftAsync();
-                    break;
-                case "5":
-                    await DeleteAircraftAsync();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Press any key to continue...");
-                    Console.ReadKey();
-                    break;
-            }
+                ("Crear aeronave", () => CreateAircraftAsync().GetAwaiter().GetResult()),
+                ("Listar todas", () => ViewAllAircraftAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => ViewAircraftByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateAircraftAsync().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteAircraftAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateAircraftAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Create Aircraft ===");
-
+        SpectreUi.ModuleHeader("Crear aeronave", null);
         try
         {
-            Console.Write("Model ID: ");
+            Console.Write("ID del modelo: ");
             var modelId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Airline ID: ");
+            Console.Write("ID de la aerolínea: ");
             var airlineId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Registration: ");
+            Console.Write("Matrícula: ");
             var registration = Console.ReadLine() ?? "";
 
-            Console.Write("Manufacturing Date (yyyy-MM-dd, optional): ");
+            Console.Write("Fecha de fabricación (yyyy-MM-dd, opcional): ");
             var dateInput = Console.ReadLine();
             DateOnly? manufacturingDate = null;
             if (!string.IsNullOrWhiteSpace(dateInput))
@@ -92,7 +70,7 @@ public class AircraftUI : IModuleUI
                 manufacturingDate = DateOnly.Parse(dateInput);
             }
 
-            Console.Write("Is Active (true/false): ");
+            Console.Write("¿Activa? (true/false): ");
             var isActive = bool.Parse(Console.ReadLine() ?? "true");
 
             var aircraft = await _createUseCase.ExecuteAsync(
@@ -103,28 +81,25 @@ public class AircraftUI : IModuleUI
                 IsActive.Create(isActive)
             );
 
-            Console.WriteLine($"Aircraft created with ID: {aircraft.Id.Value}");
+            Console.WriteLine($"Aeronave creada con ID: {aircraft.Id.Value}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task ViewAllAircraftAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== All Aircraft ===");
-
+        SpectreUi.ModuleHeader("Listado de aeronaves", null);
         try
         {
             var aircraft = await _getAllUseCase.ExecuteAsync();
             foreach (var a in aircraft)
             {
-                Console.WriteLine($"ID: {a.Id.Value}, Registration: {a.Registration.Value}, Active: {a.IsActive.Value}");
+                Console.WriteLine($"ID: {a.Id.Value}, Matrícula: {a.Registration.Value}, Activa: {a.IsActive.Value}");
             }
         }
         catch (Exception ex)
@@ -132,33 +107,30 @@ public class AircraftUI : IModuleUI
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task ViewAircraftByIdAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== View Aircraft by ID ===");
-
+        SpectreUi.ModuleHeader("Consultar aeronave", null);
         try
         {
-            Console.Write("Aircraft ID: ");
+            Console.Write("ID de la aeronave: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
             var aircraft = await _getByIdUseCase.ExecuteAsync(AircraftId.Create(id));
             if (aircraft != null)
             {
                 Console.WriteLine($"ID: {aircraft.Id.Value}");
-                Console.WriteLine($"Model ID: {aircraft.ModelId.Value}");
-                Console.WriteLine($"Airline ID: {aircraft.AirlineId.Value}");
-                Console.WriteLine($"Registration: {aircraft.Registration.Value}");
-                Console.WriteLine($"Manufacturing Date: {aircraft.ManufacturingDate?.Value.ToString("yyyy-MM-dd") ?? "N/A"}");
-                Console.WriteLine($"Is Active: {aircraft.IsActive.Value}");
+                Console.WriteLine($"Modelo ID: {aircraft.ModelId.Value}");
+                Console.WriteLine($"Aerolínea ID: {aircraft.AirlineId.Value}");
+                Console.WriteLine($"Matrícula: {aircraft.Registration.Value}");
+                Console.WriteLine($"Fabricación: {aircraft.ManufacturingDate?.Value.ToString("yyyy-MM-dd") ?? "N/D"}");
+                Console.WriteLine($"Activa: {aircraft.IsActive.Value}");
             }
             else
             {
-                Console.WriteLine("Aircraft not found.");
+                Console.WriteLine("No se encontró la aeronave.");
             }
         }
         catch (Exception ex)
@@ -166,30 +138,27 @@ public class AircraftUI : IModuleUI
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task UpdateAircraftAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Update Aircraft ===");
-
+        SpectreUi.ModuleHeader("Actualizar aeronave", null);
         try
         {
-            Console.Write("Aircraft ID: ");
+            Console.Write("ID de la aeronave: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Model ID: ");
+            Console.Write("ID del modelo: ");
             var modelId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Airline ID: ");
+            Console.Write("ID de la aerolínea: ");
             var airlineId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Registration: ");
+            Console.Write("Matrícula: ");
             var registration = Console.ReadLine() ?? "";
 
-            Console.Write("Manufacturing Date (yyyy-MM-dd, optional): ");
+            Console.Write("Fecha de fabricación (yyyy-MM-dd, opcional): ");
             var dateInput = Console.ReadLine();
             DateOnly? manufacturingDate = null;
             if (!string.IsNullOrWhiteSpace(dateInput))
@@ -197,7 +166,7 @@ public class AircraftUI : IModuleUI
                 manufacturingDate = DateOnly.Parse(dateInput);
             }
 
-            Console.Write("Is Active (true/false): ");
+            Console.Write("¿Activa? (true/false): ");
             var isActive = bool.Parse(Console.ReadLine() ?? "true");
 
             await _updateUseCase.ExecuteAsync(
@@ -209,36 +178,32 @@ public class AircraftUI : IModuleUI
                 IsActive.Create(isActive)
             );
 
-            Console.WriteLine("Aircraft updated successfully!");
+            Console.WriteLine("Aeronave actualizada correctamente.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task DeleteAircraftAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Delete Aircraft ===");
-
+        SpectreUi.ModuleHeader("Eliminar aeronave", null);
         try
         {
-            Console.Write("Aircraft ID: ");
+            Console.Write("ID de la aeronave: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
             await _deleteUseCase.ExecuteAsync(AircraftId.Create(id));
-            Console.WriteLine("Aircraft deleted successfully!");
+            Console.WriteLine("Aeronave eliminada.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 }

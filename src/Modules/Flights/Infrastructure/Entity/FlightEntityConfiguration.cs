@@ -48,13 +48,13 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
 
         builder
             .Property(x => x.DepartureDate)
-            .HasColumnName("departure_date")
+            .HasColumnName("departure_at")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.EstimatedArrivalDate)
-            .HasColumnName("estimated_arrival_date")
+            .HasColumnName("estimated_arrival_at")
             .HasColumnType("datetime")
             .IsRequired();
 
@@ -96,26 +96,26 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
         builder.HasIndex(x => x.FlightCode).IsUnique();
 
         builder
-            .HasOne<AirlineEntity>()
-            .WithMany()
+            .HasOne<AirlineEntity>(x => x.Airline)
+            .WithMany(a => a.Flights)
             .HasForeignKey(x => x.AirlineId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<RouteEntity>()
-            .WithMany(x => x.Flights)
+            .HasOne<RouteEntity>(x => x.Route)
+            .WithMany(r => r.Flights)
             .HasForeignKey(x => x.RouteId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<AircraftEntity>()
-            .WithMany()
+            .HasOne<AircraftEntity>(x => x.Aircraft)
+            .WithMany(ac => ac.Flights)
             .HasForeignKey(x => x.AircraftId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne<FlightStatusEntity>()
-            .WithMany()
+            .HasOne<FlightStatusEntity>(x => x.FlightStatus)
+            .WithMany(fs => fs.Flights)
             .HasForeignKey(x => x.FlightStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 

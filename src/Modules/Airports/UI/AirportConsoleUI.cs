@@ -1,4 +1,5 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.UI;
@@ -22,36 +23,22 @@ public class AirportConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.WriteLine("Airport Management");
-            Console.WriteLine("1. Create Airport");
-            Console.WriteLine("2. Get Airport by ID");
-            Console.WriteLine("3. Get All Airports");
-            Console.WriteLine("4. Update Airport");
-            Console.WriteLine("5. Delete Airport");
-            Console.WriteLine("0. Back");
-            var choice = Console.ReadLine();
-            switch (choice)
+            SpectreUi.ModuleHeader("Aeropuertos", "IATA / ICAO y ciudad");
+
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    CreateAirport();
-                    break;
-                case "2":
-                    GetAirportById();
-                    break;
-                case "3":
-                    GetAllAirports();
-                    break;
-                case "4":
-                    UpdateAirport();
-                    break;
-                case "5":
-                    DeleteAirport();
-                    break;
-                case "0":
-                    return;
-            }
+                ("Crear aeropuerto", CreateAirport),
+                ("Consultar por ID", GetAirportById),
+                ("Listar todos", GetAllAirports),
+                ("Actualizar", UpdateAirport),
+                ("Eliminar", DeleteAirport),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
@@ -74,30 +61,54 @@ public class AirportConsoleUI : IModuleUI
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+        SpectreUi.Pause();
     }
 
     private void GetAirportById()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        var airport = _getByIdUseCase.ExecuteAsync(id).Result;
-        if (airport != null)
+        try
         {
-            Console.WriteLine($"ID: {airport.Id.Value}, Name: {airport.Name.Value}, IATA: {airport.IataCode.Value}, ICAO: {airport.IcaoCode.Value}");
+            Console.Write("ID: ");
+            var id = int.Parse(Console.ReadLine()!);
+            var airport = _getByIdUseCase.ExecuteAsync(id).Result;
+            if (airport != null)
+            {
+                Console.WriteLine($"ID: {airport.Id.Value}, Name: {airport.Name.Value}, IATA: {airport.IataCode.Value}, ICAO: {airport.IcaoCode.Value}");
+            }
+            else
+            {
+                Console.WriteLine("Not found");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Not found");
+            Console.WriteLine($"Error: {ex.Message}");
         }
+        SpectreUi.Pause();
     }
 
     private void GetAllAirports()
     {
-        var airports = _getAllUseCase.ExecuteAsync().Result;
-        foreach (var a in airports)
+        try
         {
-            Console.WriteLine($"ID: {a.Id.Value}, Name: {a.Name.Value}, IATA: {a.IataCode.Value}, ICAO: {a.IcaoCode.Value}");
+            var airports = _getAllUseCase.ExecuteAsync().Result.ToList();
+            if (airports.Count == 0)
+            {
+                Console.WriteLine("No hay aeropuertos para mostrar.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            foreach (var a in airports)
+            {
+                Console.WriteLine($"ID: {a.Id.Value}, Name: {a.Name.Value}, IATA: {a.IataCode.Value}, ICAO: {a.IcaoCode.Value}");
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        SpectreUi.Pause();
     }
 
     private void UpdateAirport()
@@ -121,13 +132,22 @@ public class AirportConsoleUI : IModuleUI
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
+        SpectreUi.Pause();
     }
 
     private void DeleteAirport()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        _deleteUseCase.ExecuteAsync(id).Wait();
-        Console.WriteLine("Deleted");
+        try
+        {
+            Console.Write("ID: ");
+            var id = int.Parse(Console.ReadLine()!);
+            _deleteUseCase.ExecuteAsync(id).Wait();
+            Console.WriteLine("Deleted");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        SpectreUi.Pause();
     }
 }

@@ -1,11 +1,11 @@
-using Aggregate = sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Domain.ValueObject;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
-namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.UI;
+namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.UI;
 
 public class CabinConfigurationConsoleUI : IModuleUI
 {
@@ -27,70 +27,46 @@ public class CabinConfigurationConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        bool exit = false;
+        while (!exit)
         {
-            Console.Clear();
-            Console.WriteLine("=== Cabin Configuration Management ===");
-            Console.WriteLine("1. Create Cabin Configuration");
-            Console.WriteLine("2. View All Cabin Configurations");
-            Console.WriteLine("3. View Cabin Configuration by ID");
-            Console.WriteLine("4. Update Cabin Configuration");
-            Console.WriteLine("5. Delete Cabin Configuration");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Select an option: ");
+            SpectreUi.ModuleHeader("Configuración de cabina", "Distribución física por aeronave");
 
-            var option = Console.ReadLine();
-
-            switch (option)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateCabinConfigurationAsync();
-                    break;
-                case "2":
-                    await ViewAllCabinConfigurationsAsync();
-                    break;
-                case "3":
-                    await ViewCabinConfigurationByIdAsync();
-                    break;
-                case "4":
-                    await UpdateCabinConfigurationAsync();
-                    break;
-                case "5":
-                    await DeleteCabinConfigurationAsync();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option. Press any key to continue...");
-                    Console.ReadKey();
-                    break;
-            }
+                ("Crear configuración", () => CreateCabinConfigurationAsync().GetAwaiter().GetResult()),
+                ("Listar todas", () => ViewAllCabinConfigurationsAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => ViewCabinConfigurationByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateCabinConfigurationAsync().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteCabinConfigurationAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateCabinConfigurationAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Create Cabin Configuration ===");
-
+        SpectreUi.ModuleHeader("Crear configuración de cabina", null);
         try
         {
-            Console.Write("Aircraft ID: ");
+            Console.Write("ID de la aeronave: ");
             var aircraftId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Cabin Type ID: ");
+            Console.Write("ID del tipo de cabina: ");
             var cabinTypeId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Start Row: ");
+            Console.Write("Fila inicial: ");
             var startRow = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("End Row: ");
+            Console.Write("Fila final: ");
             var endRow = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Seats Per Row: ");
+            Console.Write("Asientos por fila: ");
             var seatsPerRow = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Seat Letters: ");
+            Console.Write("Letras de asiento (p. ej. ABCDEF): ");
             var seatLetters = Console.ReadLine() ?? string.Empty;
 
             var cabinConfiguration = await _createUseCase.ExecuteAsync(
@@ -101,28 +77,25 @@ public class CabinConfigurationConsoleUI : IModuleUI
                 seatsPerRow,
                 seatLetters);
 
-            Console.WriteLine($"Cabin configuration created with ID: {cabinConfiguration.Id.Value}");
+            Console.WriteLine($"Configuración creada con ID: {cabinConfiguration.Id.Value}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task ViewAllCabinConfigurationsAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== All Cabin Configurations ===");
-
+        SpectreUi.ModuleHeader("Configuraciones registradas", null);
         try
         {
             var cabinConfigurations = await _getAllUseCase.ExecuteAsync();
             foreach (var configuration in cabinConfigurations)
             {
-                Console.WriteLine($"ID: {configuration.Id.Value}, Aircraft ID: {configuration.AircraftId.Value}, Cabin Type ID: {configuration.CabinTypeId.Value}, Rows: {configuration.StartRow.Value}-{configuration.EndRow.Value}, Seats/Row: {configuration.SeatsPerRow.Value}, Letters: {configuration.SeatLetters.Value}");
+                Console.WriteLine($"ID: {configuration.Id.Value}, Aeronave: {configuration.AircraftId.Value}, Tipo cabina: {configuration.CabinTypeId.Value}, Filas: {configuration.StartRow.Value}-{configuration.EndRow.Value}");
             }
         }
         catch (Exception ex)
@@ -130,34 +103,31 @@ public class CabinConfigurationConsoleUI : IModuleUI
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task ViewCabinConfigurationByIdAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== View Cabin Configuration by ID ===");
-
+        SpectreUi.ModuleHeader("Consultar configuración", null);
         try
         {
-            Console.Write("Cabin Configuration ID: ");
+            Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
             var configuration = await _getByIdUseCase.ExecuteAsync(CabinConfigurationId.Create(id));
             if (configuration != null)
             {
                 Console.WriteLine($"ID: {configuration.Id.Value}");
-                Console.WriteLine($"Aircraft ID: {configuration.AircraftId.Value}");
-                Console.WriteLine($"Cabin Type ID: {configuration.CabinTypeId.Value}");
-                Console.WriteLine($"Start Row: {configuration.StartRow.Value}");
-                Console.WriteLine($"End Row: {configuration.EndRow.Value}");
-                Console.WriteLine($"Seats Per Row: {configuration.SeatsPerRow.Value}");
-                Console.WriteLine($"Seat Letters: {configuration.SeatLetters.Value}");
+                Console.WriteLine($"Aeronave: {configuration.AircraftId.Value}");
+                Console.WriteLine($"Tipo cabina: {configuration.CabinTypeId.Value}");
+                Console.WriteLine($"Fila inicio: {configuration.StartRow.Value}");
+                Console.WriteLine($"Fila fin: {configuration.EndRow.Value}");
+                Console.WriteLine($"Asientos/fila: {configuration.SeatsPerRow.Value}");
+                Console.WriteLine($"Letras: {configuration.SeatLetters.Value}");
             }
             else
             {
-                Console.WriteLine("Cabin configuration not found.");
+                Console.WriteLine("No encontrada.");
             }
         }
         catch (Exception ex)
@@ -165,36 +135,33 @@ public class CabinConfigurationConsoleUI : IModuleUI
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task UpdateCabinConfigurationAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Update Cabin Configuration ===");
-
+        SpectreUi.ModuleHeader("Actualizar configuración", null);
         try
         {
-            Console.Write("Cabin Configuration ID: ");
+            Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Aircraft ID: ");
+            Console.Write("ID de la aeronave: ");
             var aircraftId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Cabin Type ID: ");
+            Console.Write("ID del tipo de cabina: ");
             var cabinTypeId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Start Row: ");
+            Console.Write("Fila inicial: ");
             var startRow = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("End Row: ");
+            Console.Write("Fila final: ");
             var endRow = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Seats Per Row: ");
+            Console.Write("Asientos por fila: ");
             var seatsPerRow = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Seat Letters: ");
+            Console.Write("Letras de asiento: ");
             var seatLetters = Console.ReadLine() ?? string.Empty;
 
             await _updateUseCase.ExecuteAsync(
@@ -206,36 +173,32 @@ public class CabinConfigurationConsoleUI : IModuleUI
                 seatsPerRow,
                 seatLetters);
 
-            Console.WriteLine("Cabin configuration updated successfully!");
+            Console.WriteLine("Actualizado correctamente.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 
     private async Task DeleteCabinConfigurationAsync()
     {
-        Console.Clear();
-        Console.WriteLine("=== Delete Cabin Configuration ===");
-
+        SpectreUi.ModuleHeader("Eliminar configuración", null);
         try
         {
-            Console.Write("Cabin Configuration ID: ");
+            Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine() ?? "0");
 
             await _deleteUseCase.ExecuteAsync(CabinConfigurationId.Create(id));
-            Console.WriteLine("Cabin configuration deleted successfully!");
+            Console.WriteLine("Eliminada.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
 
-        Console.WriteLine("Press any key to continue...");
-        Console.ReadKey();
+        SpectreUi.Pause();
     }
 }

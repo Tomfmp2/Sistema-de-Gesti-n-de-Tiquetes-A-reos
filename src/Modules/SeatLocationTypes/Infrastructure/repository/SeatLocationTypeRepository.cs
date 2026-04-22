@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Domain.Repositories;
+using AppSeatLoc = sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Application.Interfaces;
+using DomSeatLoc = sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Domain.Aggregate;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Domain.ValueObject;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.Entity;
@@ -10,7 +11,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.repository;
 
-public class SeatLocationTypeRepository : ISeatLocationTypeRepository
+public class SeatLocationTypeRepository : DomSeatLoc.ISeatLocationTypeRepository, AppSeatLoc.ISeatLocationTypeRepository
 {
     private readonly AppDbContext _context;
 

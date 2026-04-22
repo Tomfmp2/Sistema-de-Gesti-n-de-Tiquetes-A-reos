@@ -21,10 +21,17 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.6" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+    <PackageReference Include="Spectre.Console" Version="0.55.2" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tooling projects live under /tools and must not be compiled into the main app -->
+    <Compile Remove="tools\**\*.cs" />
+    <None Remove="tools\**\*" />
   </ItemGroup>
 </Project>
