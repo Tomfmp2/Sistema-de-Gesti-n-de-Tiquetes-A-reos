@@ -21,7 +21,7 @@ public sealed class Route
 
     public static Route Create(OriginAirportId originAirportId, DestinationAirportId destinationAirportId, DistanceKm distanceKm, EstimatedDurationMin estimatedDurationMin)
     {
-        return new Route(null, originAirportId, destinationAirportId, distanceKm, estimatedDurationMin);
+        return new Route(RouteId.Reconstitute(0), originAirportId, destinationAirportId, distanceKm, estimatedDurationMin);
     }
 
     public static Route Reconstitute(RouteId id, OriginAirportId originAirportId, DestinationAirportId destinationAirportId, DistanceKm distanceKm, EstimatedDurationMin estimatedDurationMin)

@@ -106,6 +106,7 @@ e.CreatedAt = entity.CreatedAt.Value;
 
     private static Invoice ToDomain(InvoiceEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Number);
         return Invoice.Create(
             InvoiceId.Create(e.Id),
     InvoiceReservationId.Create(e.ReservationId),

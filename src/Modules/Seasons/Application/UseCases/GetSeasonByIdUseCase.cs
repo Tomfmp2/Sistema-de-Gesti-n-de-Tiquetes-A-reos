@@ -13,7 +13,7 @@ public class GetSeasonByIdUseCase
         _repository = repository;
     }
 
-    public async Task<Season> ExecuteAsync(SeasonId id)
+    public async Task<Season?> ExecuteAsync(SeasonId id)
     {
         return await _repository.GetByIdAsync(id);
     }

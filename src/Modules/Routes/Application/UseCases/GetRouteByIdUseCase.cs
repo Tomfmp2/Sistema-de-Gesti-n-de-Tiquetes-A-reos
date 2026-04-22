@@ -13,7 +13,7 @@ public class GetRouteByIdUseCase
         _repository = repository;
     }
 
-    public async Task<Route> ExecuteAsync(RouteId id)
+    public async Task<Route?> ExecuteAsync(RouteId id)
     {
         return await _repository.GetByIdAsync(id);
     }

@@ -27,7 +27,9 @@ public sealed class CreateInvoiceItemUseCase : ICreateInvoiceItemUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = InvoiceItem.Create(new InvoiceItemId(0), InvoiceItemInvoiceId.Create(request.InvoiceId), InvoiceItemTypeId.Create(request.InvoiceItemTypeId), InvoiceItemDescription.Create(request.Description), InvoiceItemQuantity.Create(request.Quantity), InvoiceItemUnitPrice.Create(request.UnitPrice), InvoiceItemSubtotal.Create(request.Subtotal), InvoiceItemReservationPassengerId.Create(request.ReservationPassengerId));
+        var description = request.Description;
+        ArgumentNullException.ThrowIfNull(description);
+        var x = InvoiceItem.Create(new InvoiceItemId(0), InvoiceItemInvoiceId.Create(request.InvoiceId), InvoiceItemTypeId.Create(request.InvoiceItemTypeId), InvoiceItemDescription.Create(description), InvoiceItemQuantity.Create(request.Quantity), InvoiceItemUnitPrice.Create(request.UnitPrice), InvoiceItemSubtotal.Create(request.Subtotal), InvoiceItemReservationPassengerId.Create(request.ReservationPassengerId));
         return _repository.AddAsync(x, cancellationToken);
     }
 }

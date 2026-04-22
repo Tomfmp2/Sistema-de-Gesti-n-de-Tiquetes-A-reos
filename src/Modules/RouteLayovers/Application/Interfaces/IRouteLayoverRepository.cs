@@ -7,7 +7,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Applicatio
 
 public interface IRouteLayoverRepository
 {
-    Task<RouteLayover> GetByIdAsync(RouteLayoverId id);
+    Task<RouteLayover?> GetByIdAsync(RouteLayoverId id);
     Task<IEnumerable<RouteLayover>> GetAllAsync();
     Task AddAsync(RouteLayover routeLayover);
     Task UpdateAsync(RouteLayover routeLayover);

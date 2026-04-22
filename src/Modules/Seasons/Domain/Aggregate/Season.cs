@@ -19,7 +19,7 @@ public sealed class Season
 
     public static Season Create(SeasonName name, SeasonDescription description, PriceFactor priceFactor)
     {
-        return new Season(null, name, description, priceFactor);
+        return new Season(SeasonId.Reconstitute(0), name, description, priceFactor);
     }
 
     public static Season Reconstitute(SeasonId id, SeasonName name, SeasonDescription description, PriceFactor priceFactor)

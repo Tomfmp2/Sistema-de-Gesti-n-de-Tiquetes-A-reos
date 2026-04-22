@@ -27,7 +27,9 @@ public sealed class UpdateFlightUseCase : IUpdateFlightUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = Flight.Create(FlightId.Create(request.Id), FlightCode.Create(request.FlightCode), FlightAirlineId.Create(request.AirlineId), FlightRouteId.Create(request.RouteId), FlightAircraftId.Create(request.AircraftId), FlightDepartureDate.Create(request.DepartureDate), FlightEstimatedArrivalDate.Create(request.EstimatedArrivalDate), FlightTotalCapacity.Create(request.TotalCapacity), FlightAvailableSeats.Create(request.AvailableSeats), FlightStatusId.Create(request.FlightStatusId), FlightRescheduledAt.Create(request.RescheduledAt), FlightCreatedAt.Create(request.CreatedAt), FlightUpdatedAt.Create(request.UpdatedAt));
+        var flightCode = request.FlightCode;
+        ArgumentNullException.ThrowIfNull(flightCode);
+        var x = Flight.Create(FlightId.Create(request.Id), FlightCode.Create(flightCode), FlightAirlineId.Create(request.AirlineId), FlightRouteId.Create(request.RouteId), FlightAircraftId.Create(request.AircraftId), FlightDepartureDate.Create(request.DepartureDate), FlightEstimatedArrivalDate.Create(request.EstimatedArrivalDate), FlightTotalCapacity.Create(request.TotalCapacity), FlightAvailableSeats.Create(request.AvailableSeats), FlightStatusId.Create(request.FlightStatusId), FlightRescheduledAt.Create(request.RescheduledAt), FlightCreatedAt.Create(request.CreatedAt), FlightUpdatedAt.Create(request.UpdatedAt));
         return _repository.UpdateAsync(x, cancellationToken);
     }
 }

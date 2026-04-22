@@ -94,6 +94,7 @@ public sealed class CardTypeRepository : ICardTypeRepository
 
     private static CardType ToDomain(CardTypeEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return CardType.Create(
             CardTypeId.Create(e.Id),
     CardTypeName.Create(e.Name)

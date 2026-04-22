@@ -13,7 +13,7 @@ public class GetSeatLocationTypeByIdUseCase
         _repository = repository;
     }
 
-    public async Task<SeatLocationType> ExecuteAsync(SeatLocationTypeId id)
+    public async Task<SeatLocationType?> ExecuteAsync(SeatLocationTypeId id)
     {
         return await _repository.GetByIdAsync(id);
     }

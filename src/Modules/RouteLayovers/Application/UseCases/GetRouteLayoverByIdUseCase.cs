@@ -13,7 +13,7 @@ public class GetRouteLayoverByIdUseCase
         _repository = repository;
     }
 
-    public async Task<RouteLayover> ExecuteAsync(RouteLayoverId id)
+    public async Task<RouteLayover?> ExecuteAsync(RouteLayoverId id)
     {
         return await _repository.GetByIdAsync(id);
     }

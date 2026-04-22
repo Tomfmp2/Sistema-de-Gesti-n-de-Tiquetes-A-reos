@@ -27,7 +27,9 @@ public sealed class UpdatePaymentStatusUseCase : IUpdatePaymentStatusUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = PaymentStatus.Create(PaymentStatusId.Create(request.Id), PaymentStatusName.Create(request.Name));
+        var name = request.Name;
+        ArgumentNullException.ThrowIfNull(name);
+        var x = PaymentStatus.Create(PaymentStatusId.Create(request.Id), PaymentStatusName.Create(name));
         return _repository.UpdateAsync(x, cancellationToken);
     }
 }

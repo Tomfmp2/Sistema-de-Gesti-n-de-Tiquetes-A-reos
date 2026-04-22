@@ -13,6 +13,10 @@ public sealed class BaggageType
 
     private BaggageType()
     {
+        Id = null!;
+        Name = null!;
+        MaxWeightKg = null!;
+        BasePrice = null!;
     }
 
     public static BaggageType Create(

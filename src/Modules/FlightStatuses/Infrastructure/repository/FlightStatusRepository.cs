@@ -94,6 +94,7 @@ public sealed class FlightStatusRepository : IFlightStatusRepository
 
     private static FlightStatus ToDomain(FlightStatusEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return FlightStatus.Create(
             FlightStatusId.Create(e.Id),
     FlightStatusName.Create(e.Name)

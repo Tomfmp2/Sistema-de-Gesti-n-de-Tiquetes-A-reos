@@ -27,7 +27,9 @@ public sealed class CreateCheckinUseCase : ICreateCheckinUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = Checkin.Create(new CheckinId(0), CheckinTicketId.Create(request.TicketId), CheckinStaffId.Create(request.StaffId), CheckinFlightSeatId.Create(request.FlightSeatId), CheckinDate.Create(request.CheckinDate), CheckinStatusId.Create(request.CheckinStatusId), CheckinBoardingPassNumber.Create(request.BoardingPassNumber), CheckinHasCheckedBaggage.Create(request.HasCheckedBaggage), CheckinBaggageWeightKg.Create(request.BaggageWeightKg));
+        var boardingPassNumber = request.BoardingPassNumber;
+        ArgumentNullException.ThrowIfNull(boardingPassNumber);
+        var x = Checkin.Create(new CheckinId(0), CheckinTicketId.Create(request.TicketId), CheckinStaffId.Create(request.StaffId), CheckinFlightSeatId.Create(request.FlightSeatId), CheckinDate.Create(request.CheckinDate), CheckinStatusId.Create(request.CheckinStatusId), CheckinBoardingPassNumber.Create(boardingPassNumber), CheckinHasCheckedBaggage.Create(request.HasCheckedBaggage), CheckinBaggageWeightKg.Create(request.BaggageWeightKg));
         return _repository.AddAsync(x, cancellationToken);
     }
 }

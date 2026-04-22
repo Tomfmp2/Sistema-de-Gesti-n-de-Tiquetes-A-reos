@@ -20,7 +20,7 @@ public class RouteRepository : DomRoutes.IRouteRepository, AppRoutes.IRouteRepos
         _context = context;
     }
 
-    public async Task<Route> GetByIdAsync(RouteId id)
+    public async Task<Route?> GetByIdAsync(RouteId id)
     {
         var entity = await _context.Routes.FindAsync(id.Value);
         return entity?.ToDomain();

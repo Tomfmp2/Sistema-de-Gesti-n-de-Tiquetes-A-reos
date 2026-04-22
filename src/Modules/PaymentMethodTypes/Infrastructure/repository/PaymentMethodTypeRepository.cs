@@ -94,6 +94,7 @@ public sealed class PaymentMethodTypeRepository : IPaymentMethodTypeRepository
 
     private static PaymentMethodType ToDomain(PaymentMethodTypeEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return PaymentMethodType.Create(
             PaymentMethodTypeId.Create(e.Id),
     PaymentMethodTypeName.Create(e.Name)

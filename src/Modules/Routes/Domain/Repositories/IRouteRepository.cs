@@ -7,7 +7,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.Repositori
 
 public interface IRouteRepository
 {
-    Task<Route> GetByIdAsync(RouteId id);
+    Task<Route?> GetByIdAsync(RouteId id);
     Task<IEnumerable<Route>> GetAllAsync();
     Task AddAsync(Route route);
     Task UpdateAsync(Route route);

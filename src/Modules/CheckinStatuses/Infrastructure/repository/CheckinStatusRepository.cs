@@ -94,6 +94,7 @@ public sealed class CheckinStatusRepository : ICheckinStatusRepository
 
     private static CheckinStatus ToDomain(CheckinStatusEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return CheckinStatus.Create(
             CheckinStatusId.Create(e.Id),
     CheckinStatusName.Create(e.Name)

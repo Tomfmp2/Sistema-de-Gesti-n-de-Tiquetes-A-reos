@@ -20,7 +20,7 @@ public class RouteLayoverRepository : DomLayovers.IRouteLayoverRepository, AppLa
         _context = context;
     }
 
-    public async Task<RouteLayover> GetByIdAsync(RouteLayoverId id)
+    public async Task<RouteLayover?> GetByIdAsync(RouteLayoverId id)
     {
         var entity = await _context.RouteLayovers.FindAsync(id.Value);
         return entity?.ToDomain();

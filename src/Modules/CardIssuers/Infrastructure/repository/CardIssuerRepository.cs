@@ -94,6 +94,7 @@ public sealed class CardIssuerRepository : ICardIssuerRepository
 
     private static CardIssuer ToDomain(CardIssuerEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return CardIssuer.Create(
             CardIssuerId.Create(e.Id),
     CardIssuerName.Create(e.Name)

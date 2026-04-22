@@ -15,7 +15,7 @@ public sealed class SeatLocationType
 
     public static SeatLocationType Create(SeatLocationTypeName name)
     {
-        return new SeatLocationType(null, name);
+        return new SeatLocationType(SeatLocationTypeId.Reconstitute(0), name);
     }
 
     public static SeatLocationType Reconstitute(SeatLocationTypeId id, SeatLocationTypeName name)

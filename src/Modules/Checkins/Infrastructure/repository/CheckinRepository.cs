@@ -108,6 +108,7 @@ e.BaggageWeightKg = entity.BaggageWeightKg.Value;
 
     private static Checkin ToDomain(CheckinEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.BoardingPassNumber);
         return Checkin.Create(
             CheckinId.Create(e.Id),
     CheckinTicketId.Create(e.TicketId),

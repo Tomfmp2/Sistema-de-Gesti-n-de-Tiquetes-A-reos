@@ -27,7 +27,9 @@ public sealed class UpdateTicketUseCase : IUpdateTicketUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = Ticket.Create(TicketId.Create(request.Id), TicketReservationPassengerId.Create(request.ReservationPassengerId), TicketCode.Create(request.Code), TicketIssueDate.Create(request.IssueDate), TicketStatusId.Create(request.TicketStatusId), TicketCreatedAt.Create(request.CreatedAt), TicketUpdatedAt.Create(request.UpdatedAt));
+        var code = request.Code;
+        ArgumentNullException.ThrowIfNull(code);
+        var x = Ticket.Create(TicketId.Create(request.Id), TicketReservationPassengerId.Create(request.ReservationPassengerId), TicketCode.Create(code), TicketIssueDate.Create(request.IssueDate), TicketStatusId.Create(request.TicketStatusId), TicketCreatedAt.Create(request.CreatedAt), TicketUpdatedAt.Create(request.UpdatedAt));
         return _repository.UpdateAsync(x, cancellationToken);
     }
 }

@@ -27,7 +27,9 @@ public sealed class CreateCardIssuerUseCase : ICreateCardIssuerUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = CardIssuer.Create(new CardIssuerId(0), CardIssuerName.Create(request.Name));
+        var name = request.Name;
+        ArgumentNullException.ThrowIfNull(name);
+        var x = CardIssuer.Create(new CardIssuerId(0), CardIssuerName.Create(name));
         return _repository.AddAsync(x, cancellationToken);
     }
 }

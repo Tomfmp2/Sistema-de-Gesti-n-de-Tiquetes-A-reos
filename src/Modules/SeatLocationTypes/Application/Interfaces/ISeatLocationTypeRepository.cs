@@ -7,7 +7,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Applic
 
 public interface ISeatLocationTypeRepository
 {
-    Task<SeatLocationType> GetByIdAsync(SeatLocationTypeId id);
+    Task<SeatLocationType?> GetByIdAsync(SeatLocationTypeId id);
     Task<IEnumerable<SeatLocationType>> GetAllAsync();
     Task AddAsync(SeatLocationType seatLocationType);
     Task UpdateAsync(SeatLocationType seatLocationType);

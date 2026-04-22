@@ -27,7 +27,9 @@ public sealed class CreateFlightStatusUseCase : ICreateFlightStatusUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = FlightStatus.Create(new FlightStatusId(0), FlightStatusName.Create(request.Name));
+        var name = request.Name;
+        ArgumentNullException.ThrowIfNull(name);
+        var x = FlightStatus.Create(new FlightStatusId(0), FlightStatusName.Create(name));
         return _repository.AddAsync(x, cancellationToken);
     }
 }

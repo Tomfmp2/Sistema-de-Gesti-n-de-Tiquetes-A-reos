@@ -27,7 +27,9 @@ public sealed class UpdateCheckinStatusUseCase : IUpdateCheckinStatusUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = CheckinStatus.Create(CheckinStatusId.Create(request.Id), CheckinStatusName.Create(request.Name));
+        var name = request.Name;
+        ArgumentNullException.ThrowIfNull(name);
+        var x = CheckinStatus.Create(CheckinStatusId.Create(request.Id), CheckinStatusName.Create(name));
         return _repository.UpdateAsync(x, cancellationToken);
     }
 }

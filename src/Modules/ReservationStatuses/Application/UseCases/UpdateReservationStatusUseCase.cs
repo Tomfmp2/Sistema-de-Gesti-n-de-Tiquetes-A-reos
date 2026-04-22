@@ -27,7 +27,9 @@ public sealed class UpdateReservationStatusUseCase : IUpdateReservationStatusUse
         CancellationToken cancellationToken = default
     )
     {
-        var x = ReservationStatus.Create(ReservationStatusId.Create(request.Id), ReservationStatusName.Create(request.Name));
+        var name = request.Name;
+        ArgumentNullException.ThrowIfNull(name);
+        var x = ReservationStatus.Create(ReservationStatusId.Create(request.Id), ReservationStatusName.Create(name));
         return _repository.UpdateAsync(x, cancellationToken);
     }
 }

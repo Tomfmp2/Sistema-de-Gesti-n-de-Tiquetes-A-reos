@@ -94,6 +94,7 @@ public sealed class InvoiceItemTypeRepository : IInvoiceItemTypeRepository
 
     private static InvoiceItemType ToDomain(InvoiceItemTypeEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return InvoiceItemType.Create(
             InvoiceItemTypeId.Create(e.Id),
     InvoiceItemTypeName.Create(e.Name)

@@ -27,7 +27,9 @@ public sealed class UpdateInvoiceItemUseCase : IUpdateInvoiceItemUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = InvoiceItem.Create(InvoiceItemId.Create(request.Id), InvoiceItemInvoiceId.Create(request.InvoiceId), InvoiceItemTypeId.Create(request.InvoiceItemTypeId), InvoiceItemDescription.Create(request.Description), InvoiceItemQuantity.Create(request.Quantity), InvoiceItemUnitPrice.Create(request.UnitPrice), InvoiceItemSubtotal.Create(request.Subtotal), InvoiceItemReservationPassengerId.Create(request.ReservationPassengerId));
+        var description = request.Description;
+        ArgumentNullException.ThrowIfNull(description);
+        var x = InvoiceItem.Create(InvoiceItemId.Create(request.Id), InvoiceItemInvoiceId.Create(request.InvoiceId), InvoiceItemTypeId.Create(request.InvoiceItemTypeId), InvoiceItemDescription.Create(description), InvoiceItemQuantity.Create(request.Quantity), InvoiceItemUnitPrice.Create(request.UnitPrice), InvoiceItemSubtotal.Create(request.Subtotal), InvoiceItemReservationPassengerId.Create(request.ReservationPassengerId));
         return _repository.UpdateAsync(x, cancellationToken);
     }
 }

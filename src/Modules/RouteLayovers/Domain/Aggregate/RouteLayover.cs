@@ -21,7 +21,7 @@ public sealed class RouteLayover
 
     public static RouteLayover Create(RouteId routeId, LayoverAirportId layoverAirportId, SequenceOrder sequenceOrder, LayoverDurationMin layoverDurationMin)
     {
-        return new RouteLayover(null, routeId, layoverAirportId, sequenceOrder, layoverDurationMin);
+        return new RouteLayover(RouteLayoverId.Reconstitute(0), routeId, layoverAirportId, sequenceOrder, layoverDurationMin);
     }
 
     public static RouteLayover Reconstitute(RouteLayoverId id, RouteId routeId, LayoverAirportId layoverAirportId, SequenceOrder sequenceOrder, LayoverDurationMin layoverDurationMin)

@@ -100,6 +100,7 @@ e.CommercialName = entity.CommercialName.Value;
 
     private static PaymentMethod ToDomain(PaymentMethodEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.CommercialName);
         return PaymentMethod.Create(
             PaymentMethodId.Create(e.Id),
     PaymentMethodPaymentMethodTypeId.Create(e.PaymentMethodTypeId),

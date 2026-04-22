@@ -104,6 +104,7 @@ e.UpdatedAt = entity.UpdatedAt.Value;
 
     private static Ticket ToDomain(TicketEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Code);
         return Ticket.Create(
             TicketId.Create(e.Id),
     TicketReservationPassengerId.Create(e.ReservationPassengerId),

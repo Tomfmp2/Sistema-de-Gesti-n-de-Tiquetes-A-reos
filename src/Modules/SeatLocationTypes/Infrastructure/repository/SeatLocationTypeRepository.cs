@@ -20,7 +20,7 @@ public class SeatLocationTypeRepository : DomSeatLoc.ISeatLocationTypeRepository
         _context = context;
     }
 
-    public async Task<SeatLocationType> GetByIdAsync(SeatLocationTypeId id)
+    public async Task<SeatLocationType?> GetByIdAsync(SeatLocationTypeId id)
     {
         var entity = await _context.SeatLocationTypes.FindAsync(id.Value);
         return entity?.ToDomain();

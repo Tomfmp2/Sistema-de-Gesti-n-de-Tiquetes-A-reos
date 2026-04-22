@@ -116,6 +116,7 @@ e.UpdatedAt = entity.UpdatedAt.Value;
 
     private static Flight ToDomain(FlightEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.FlightCode);
         return Flight.Create(
             FlightId.Create(e.Id),
     FlightCode.Create(e.FlightCode),

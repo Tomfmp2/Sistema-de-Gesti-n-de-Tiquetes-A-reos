@@ -20,7 +20,7 @@ public class SeasonRepository : DomSeasons.ISeasonRepository, AppSeasons.ISeason
         _context = context;
     }
 
-    public async Task<Season> GetByIdAsync(SeasonId id)
+    public async Task<Season?> GetByIdAsync(SeasonId id)
     {
         var entity = await _context.Seasons.FindAsync(id.Value);
         return entity?.ToDomain();

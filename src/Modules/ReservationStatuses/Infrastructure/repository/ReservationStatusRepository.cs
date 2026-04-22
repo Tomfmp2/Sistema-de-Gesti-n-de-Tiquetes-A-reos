@@ -94,6 +94,7 @@ public sealed class ReservationStatusRepository : IReservationStatusRepository
 
     private static ReservationStatus ToDomain(ReservationStatusEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return ReservationStatus.Create(
             ReservationStatusId.Create(e.Id),
     ReservationStatusName.Create(e.Name)

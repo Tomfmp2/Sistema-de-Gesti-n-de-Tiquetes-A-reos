@@ -7,7 +7,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Domain.Repositor
 
 public interface ISeasonRepository
 {
-    Task<Season> GetByIdAsync(SeasonId id);
+    Task<Season?> GetByIdAsync(SeasonId id);
     Task<IEnumerable<Season>> GetAllAsync();
     Task AddAsync(Season season);
     Task UpdateAsync(Season season);

@@ -27,7 +27,9 @@ public sealed class UpdateInvoiceItemTypeUseCase : IUpdateInvoiceItemTypeUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = InvoiceItemType.Create(InvoiceItemTypeId.Create(request.Id), InvoiceItemTypeName.Create(request.Name));
+        var name = request.Name;
+        ArgumentNullException.ThrowIfNull(name);
+        var x = InvoiceItemType.Create(InvoiceItemTypeId.Create(request.Id), InvoiceItemTypeName.Create(name));
         return _repository.UpdateAsync(x, cancellationToken);
     }
 }

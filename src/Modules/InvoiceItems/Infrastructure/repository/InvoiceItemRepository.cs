@@ -106,6 +106,7 @@ e.ReservationPassengerId = entity.ReservationPassengerId.Value;
 
     private static InvoiceItem ToDomain(InvoiceItemEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Description);
         return InvoiceItem.Create(
             InvoiceItemId.Create(e.Id),
     InvoiceItemInvoiceId.Create(e.InvoiceId),

@@ -27,7 +27,9 @@ public sealed class CreatePaymentMethodUseCase : ICreatePaymentMethodUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = PaymentMethod.Create(new PaymentMethodId(0), PaymentMethodPaymentMethodTypeId.Create(request.PaymentMethodTypeId), PaymentMethodCardTypeId.Create(request.CardTypeId), PaymentMethodCardIssuerId.Create(request.CardIssuerId), PaymentMethodCommercialName.Create(request.CommercialName));
+        var commercialName = request.CommercialName;
+        ArgumentNullException.ThrowIfNull(commercialName);
+        var x = PaymentMethod.Create(new PaymentMethodId(0), PaymentMethodPaymentMethodTypeId.Create(request.PaymentMethodTypeId), PaymentMethodCardTypeId.Create(request.CardTypeId), PaymentMethodCardIssuerId.Create(request.CardIssuerId), PaymentMethodCommercialName.Create(commercialName));
         return _repository.AddAsync(x, cancellationToken);
     }
 }

@@ -12,7 +12,12 @@ public sealed class BaggageItem
     public DateTime CreatedAt { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
-    private BaggageItem() { }
+    private BaggageItem()
+    {
+        Id = null!;
+        WeightKg = null!;
+        ChargedPrice = null!;
+    }
 
     public static BaggageItem Create(
         int checkinId,

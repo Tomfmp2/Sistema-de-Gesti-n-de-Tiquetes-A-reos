@@ -94,6 +94,7 @@ public sealed class TicketStatusRepository : ITicketStatusRepository
 
     private static TicketStatus ToDomain(TicketStatusEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return TicketStatus.Create(
             TicketStatusId.Create(e.Id),
     TicketStatusName.Create(e.Name)

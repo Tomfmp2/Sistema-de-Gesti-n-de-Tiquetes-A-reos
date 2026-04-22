@@ -94,6 +94,7 @@ public sealed class PaymentStatusRepository : IPaymentStatusRepository
 
     private static PaymentStatus ToDomain(PaymentStatusEntity e)
     {
+        ArgumentNullException.ThrowIfNull(e.Name);
         return PaymentStatus.Create(
             PaymentStatusId.Create(e.Id),
     PaymentStatusName.Create(e.Name)

@@ -27,7 +27,9 @@ public sealed class UpdateCardTypeUseCase : IUpdateCardTypeUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = CardType.Create(CardTypeId.Create(request.Id), CardTypeName.Create(request.Name));
+        var name = request.Name;
+        ArgumentNullException.ThrowIfNull(name);
+        var x = CardType.Create(CardTypeId.Create(request.Id), CardTypeName.Create(name));
         return _repository.UpdateAsync(x, cancellationToken);
     }
 }
