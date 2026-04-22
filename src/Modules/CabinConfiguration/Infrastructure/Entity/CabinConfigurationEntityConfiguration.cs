@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Entity;
 
@@ -55,5 +56,7 @@ public class CabinConfigurationEntityConfiguration : IEntityTypeConfiguration<Ca
             .WithMany()
             .HasForeignKey(x => x.CabinTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(CabinConfigurationDefaultData.CabinConfigurations);
     }
 }
