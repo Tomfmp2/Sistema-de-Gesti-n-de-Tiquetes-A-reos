@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.TicketStatuses.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.TicketStatuses.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.TicketStatuses.Infrastructure.Seed;
 
@@ -9,16 +9,15 @@ public static class CatalogSeed
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        var existing = await context.TicketStatuses.AsNoTracking().ToListAsync();
-        var desired = new[] { "Emitido", "Usado", "Cancelado", "Reembolsado", "No presentado" };
+        var existingIds = await context.TicketStatuses.AsNoTracking().Select(x => x.Id).ToListAsync();
+        var idSet = existingIds.ToHashSet();
 
-        foreach (var name in desired)
+        foreach (var row in TicketStatusDefaultData.TicketStatuses)
         {
-            var norm = SeedHelpers.Normalize(name);
-            if (existing.Any(x => SeedHelpers.Normalize(x.Name) == norm))
+            if (idSet.Contains(row.Id))
                 continue;
 
-            context.TicketStatuses.Add(new TicketStatusEntity { Name = name });
+            context.TicketStatuses.Add(new TicketStatusEntity { Id = row.Id, Name = row.Name });
         }
 
         await context.SaveChangesAsync();

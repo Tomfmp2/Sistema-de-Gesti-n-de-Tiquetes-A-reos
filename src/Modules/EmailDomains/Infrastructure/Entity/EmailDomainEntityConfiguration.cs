@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Entity;
 
@@ -25,7 +24,5 @@ public sealed class EmailDomainEntityConfiguration : IEntityTypeConfiguration<Em
             .IsRequired();
 
         builder.HasIndex(x => x.Domain).IsUnique();
-
-        builder.HasData(EmailDomainDefaultData.EmailDomains);
     }
 }

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.TicketStatuses.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.TicketStatuses.Infrastructure.Entity;
 
@@ -23,7 +22,5 @@ public class TicketStatusEntityConfiguration : IEntityTypeConfiguration<TicketSt
             .HasColumnName("name")
             .HasColumnType("varchar(50)")
             .IsRequired();
-
-        builder.HasData(TicketStatusDefaultData.TicketStatuses);
     }
 }

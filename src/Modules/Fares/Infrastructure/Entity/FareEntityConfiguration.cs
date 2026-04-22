@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.PassengerTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.Entity;
@@ -85,7 +84,5 @@ public class FareEntityConfiguration : IEntityTypeConfiguration<FareEntity>
             .WithMany(s => s.Fares)
             .HasForeignKey(x => x.SeasonId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasData(FareDefaultData.Fares);
     }
 }

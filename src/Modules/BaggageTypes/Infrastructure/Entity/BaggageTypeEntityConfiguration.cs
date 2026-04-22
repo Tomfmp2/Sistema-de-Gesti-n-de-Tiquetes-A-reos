@@ -2,7 +2,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastruct
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastructure.Data;
 
 public class BaggageTypeEntityConfiguration : IEntityTypeConfiguration<BaggageTypeEntity>
 {
@@ -31,7 +30,5 @@ public class BaggageTypeEntityConfiguration : IEntityTypeConfiguration<BaggageTy
             .IsRequired()
             .HasPrecision(18, 2)
             .HasDefaultValue(0);
-
-        builder.HasData(BaggageTypeDefaultData.BaggageTypes);
     }
 }

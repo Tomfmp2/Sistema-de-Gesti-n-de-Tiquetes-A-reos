@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentStatuses.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentStatuses.Infrastructure.Entity;
 
@@ -25,7 +24,5 @@ public class PaymentStatusEntityConfiguration : IEntityTypeConfiguration<Payment
             .IsRequired();
 
         builder.HasIndex(x => x.Name).IsUnique();
-
-        builder.HasData(PaymentStatusDefaultData.PaymentStatuses);
     }
 }

@@ -8,6 +8,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.PhoneCodes.Infrastructure.En
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.Services;
+using UserAggregate = sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Domain.Aggregate.User;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Clients.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
@@ -107,44 +108,52 @@ public sealed class UserConsoleUI : IModuleUI
 
             var isActive = SpectreUi.PromptBool("¿Activo?", defaultValue: true);
 
-            await using var tx = await _ctx.Database.BeginTransactionAsync();
-            var usernameExists = await _ctx.Set<UserEntity>()
-                .AsNoTracking()
-                .AnyAsync(u => u.Username != null && u.Username.ToUpper() == username.ToUpper());
-            if (usernameExists)
-                throw new InvalidOperationException($"Ya existe un usuario con username '{username}'.");
-
-            var personId = await CreatePersonForUserAsync(
-                documentTypeId,
-                documentNumber,
-                firstName,
-                lastName,
-                birthDate,
-                gender
-            );
-
-            await PromptEmailsAndPhonesAsync(personId);
-
-            var created = await _service.CreateAsync(
-                new CreateUserRequest(
-                    Username: username,
-                    PasswordHash: password,
-                    PersonId: personId,
-                    SystemRoleId: roleId,
-                    IsActive: isActive
-                )
-            );
-
+            var strategy = _ctx.Database.CreateExecutionStrategy();
+            UserAggregate? created = null;
             int? clientId = null;
-            if (string.Equals(roleName, "Cliente", StringComparison.OrdinalIgnoreCase))
-            {
-                clientId = await EnsureClientForPersonAsync(personId);
-            }
 
-            await tx.CommitAsync();
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var tx = await _ctx.Database.BeginTransactionAsync();
+
+                var usernameExists = await _ctx.Set<UserEntity>()
+                    .AsNoTracking()
+                    .AnyAsync(u => u.Username != null && u.Username.ToUpper() == username.ToUpper());
+                if (usernameExists)
+                    throw new InvalidOperationException($"Ya existe un usuario con username '{username}'.");
+
+                var personId = await CreatePersonForUserAsync(
+                    documentTypeId,
+                    documentNumber,
+                    firstName,
+                    lastName,
+                    birthDate,
+                    gender
+                );
+
+                await PromptEmailsAndPhonesAsync(personId);
+
+                created = await _service.CreateAsync(
+                    new CreateUserRequest(
+                        Username: username,
+                        PasswordHash: password,
+                        PersonId: personId,
+                        SystemRoleId: roleId,
+                        IsActive: isActive
+                    )
+                );
+
+                clientId = null;
+                if (string.Equals(roleName, "Cliente", StringComparison.OrdinalIgnoreCase))
+                {
+                    clientId = await EnsureClientForPersonAsync(personId);
+                }
+
+                await tx.CommitAsync();
+            });
 
             SpectreUi.MarkupLineOrPlain(
-                $"[green]Usuario creado[/] id={created.Id.Value} username=[bold]{created.Username.Value}[/] role={roleName} persona={firstName} {lastName} ({documentTypeLabel} {documentNumber}){(clientId.HasValue ? $" client_id={clientId.Value}" : "")}.",
+                $"[green]Usuario creado[/] id={created!.Id.Value} username=[bold]{created.Username.Value}[/] role={roleName} persona={firstName} {lastName} ({documentTypeLabel} {documentNumber}){(clientId.HasValue ? $" client_id={clientId.Value}" : "")}.",
                 $"Usuario creado id={created.Id.Value} username={created.Username.Value} role={roleName} persona={firstName} {lastName} ({documentTypeLabel} {documentNumber}){(clientId.HasValue ? $" client_id={clientId.Value}" : "")}."
             );
         }

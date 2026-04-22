@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.PhoneCodes.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.PhoneCodes.Infrastructure.Entity;
 
@@ -31,7 +30,5 @@ public sealed class PhoneCodeEntityConfiguration : IEntityTypeConfiguration<Phon
             .IsRequired();
 
         builder.HasIndex(x => x.CountryDialCode).IsUnique();
-
-        builder.HasData(PhoneCodeDefaultData.PhoneCodes);
     }
 }

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CardTypes.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CardTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CardTypes.Infrastructure.Seed;
 
@@ -9,16 +9,15 @@ public static class CatalogSeed
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        var existing = await context.CardTypes.AsNoTracking().ToListAsync();
-        var desired = new[] { "Credito", "Debito", "Prepago" };
+        var existingIds = await context.CardTypes.AsNoTracking().Select(x => x.Id).ToListAsync();
+        var idSet = existingIds.ToHashSet();
 
-        foreach (var name in desired)
+        foreach (var row in CardTypeDefaultData.CardTypes)
         {
-            var norm = SeedHelpers.Normalize(name);
-            if (existing.Any(x => SeedHelpers.Normalize(x.Name) == norm))
+            if (idSet.Contains(row.Id))
                 continue;
 
-            context.CardTypes.Add(new CardTypeEntity { Name = name });
+            context.CardTypes.Add(new CardTypeEntity { Id = row.Id, Name = row.Name });
         }
 
         await context.SaveChangesAsync();

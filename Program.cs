@@ -163,9 +163,20 @@ static async Task SeedRootUserAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared
     const string username = "ROOT";
     const string passwordHash = "12345"; // LoginShell soporta password plano o SHA-256 hex
 
+    // Preferimos el rol administrador “canónico” del seed (Id=1 / nombre Administrador),
+    // pero mantenemos compatibilidad con BDs que aún usan "admin"/"ROOT".
     var role = await context.Set<SystemRoleEntity>()
         .OrderBy(r => r.Id)
-        .FirstOrDefaultAsync(r => r.Name == "admin" || r.Name == "ADMIN" || r.Name == "root" || r.Name == "ROOT");
+        .FirstOrDefaultAsync(r => r.Id == 1)
+        ?? await context.Set<SystemRoleEntity>()
+            .OrderBy(r => r.Id)
+            .FirstOrDefaultAsync(r =>
+                r.Name == "Administrador"
+                || r.Name == "ADMINISTRADOR"
+                || r.Name == "admin"
+                || r.Name == "ADMIN"
+                || r.Name == "root"
+                || r.Name == "ROOT");
 
     if (role is null)
     {

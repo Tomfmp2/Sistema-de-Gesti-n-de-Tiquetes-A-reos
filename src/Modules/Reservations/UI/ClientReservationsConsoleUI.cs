@@ -1,5 +1,6 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Application.UseCases;
+using ReservationAggregate = sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Domain.Aggregate.Reservation;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.PassengerTypes.Infrastructure.Entity;
@@ -239,74 +240,80 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             await EnsureBillingAddressAsync();
 
             // 2) Crear booking + relaciones en transacción
-            await using var tx = await _ctx.Database.BeginTransactionAsync();
+            var strategy = _ctx.Database.CreateExecutionStrategy();
+            ReservationAggregate? booking = null;
 
-            var booking = await _create.ExecuteAsync(
-                new CreateReservationRequest(
-                    ClientId: _auth.ClientId!.Value,
-                    ReservationDate: utcNow,
-                    ReservationStatusId: pendingStatusId,
-                    TotalValue: 0m,
-                    ExpiresAt: expiresAt,
-                    CreatedAt: utcNow,
-                    UpdatedAt: utcNow
-                )
-            );
-
-            var bookingFlight = await _createReservationFlight.ExecuteAsync(
-                new CreateReservationFlightRequest(
-                    ReservationId: booking.Id.Value,
-                    FlightId: selected.Id,
-                    PartialValue: 0m
-                )
-            );
-
-            var (docTypeId, docTypeLabel) = await PromptDocumentTypeAsync();
-            var passengerTypeId = await PromptPassengerTypeAsync();
-
-            for (var i = 1; i <= paxCount; i++)
+            await strategy.ExecuteAsync(async () =>
             {
-                SpectreUi.MarkupLineOrPlain(
-                    $"[grey]Pasajero {i}/{paxCount}[/]",
-                    $"Pasajero {i}/{paxCount}"
-                );
-                var firstName = SpectreUi.PromptRequiredCancelable("Nombre", "0/c/cancelar para salir").Trim();
-                var lastName = SpectreUi.PromptRequiredCancelable("Apellido", "0/c/cancelar para salir").Trim();
-                if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
-                    throw new InvalidOperationException("Nombre y apellido son obligatorios.");
+                await using var tx = await _ctx.Database.BeginTransactionAsync();
 
-                var docNumber = SpectreUi.PromptRequiredCancelable(
-                    $"Documento ({docTypeLabel}) número",
-                    "0/c/cancelar para salir"
-                ).Trim();
-                if (string.IsNullOrWhiteSpace(docNumber))
-                    throw new InvalidOperationException("Número de documento es obligatorio.");
-
-                var personId = await CreatePersonAsync(docTypeId, docNumber, firstName, lastName);
-                var passenger = await _createPassenger.ExecuteAsync(
-                    new CreatePassengerRequest(PersonId: personId, PassengerTypeId: passengerTypeId)
-                );
-
-                await _createReservationPassenger.ExecuteAsync(
-                    new CreateReservationPassengerRequest(
-                        ReservationFlightId: bookingFlight.Id.Value,
-                        PassengerId: passenger.Id.Value
+                booking = await _create.ExecuteAsync(
+                    new CreateReservationRequest(
+                        ClientId: _auth.ClientId!.Value,
+                        ReservationDate: utcNow,
+                        ReservationStatusId: pendingStatusId,
+                        TotalValue: 0m,
+                        ExpiresAt: expiresAt,
+                        CreatedAt: utcNow,
+                        UpdatedAt: utcNow
                     )
                 );
-            }
 
-            var flightRow = await _ctx.Set<FlightEntity>().FirstOrDefaultAsync(f => f.Id == selected.Id);
-            if (flightRow is null)
-                throw new InvalidOperationException("Vuelo no encontrado al actualizar cupos.");
-            flightRow.AvailableSeats -= paxCount;
-            if (flightRow.AvailableSeats < 0)
-                throw new InvalidOperationException("Cupos negativos (concurrencia).");
-            await _ctx.SaveChangesAsync();
+                var bookingFlight = await _createReservationFlight.ExecuteAsync(
+                    new CreateReservationFlightRequest(
+                        ReservationId: booking.Id.Value,
+                        FlightId: selected.Id,
+                        PartialValue: 0m
+                    )
+                );
 
-            await tx.CommitAsync();
+                var (docTypeId, docTypeLabel) = await PromptDocumentTypeAsync();
+                var passengerTypeId = await PromptPassengerTypeAsync();
+
+                for (var i = 1; i <= paxCount; i++)
+                {
+                    SpectreUi.MarkupLineOrPlain(
+                        $"[grey]Pasajero {i}/{paxCount}[/]",
+                        $"Pasajero {i}/{paxCount}"
+                    );
+                    var firstName = SpectreUi.PromptRequiredCancelable("Nombre", "0/c/cancelar para salir").Trim();
+                    var lastName = SpectreUi.PromptRequiredCancelable("Apellido", "0/c/cancelar para salir").Trim();
+                    if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
+                        throw new InvalidOperationException("Nombre y apellido son obligatorios.");
+
+                    var docNumber = SpectreUi.PromptRequiredCancelable(
+                        $"Documento ({docTypeLabel}) número",
+                        "0/c/cancelar para salir"
+                    ).Trim();
+                    if (string.IsNullOrWhiteSpace(docNumber))
+                        throw new InvalidOperationException("Número de documento es obligatorio.");
+
+                    var personId = await CreatePersonAsync(docTypeId, docNumber, firstName, lastName);
+                    var passenger = await _createPassenger.ExecuteAsync(
+                        new CreatePassengerRequest(PersonId: personId, PassengerTypeId: passengerTypeId)
+                    );
+
+                    await _createReservationPassenger.ExecuteAsync(
+                        new CreateReservationPassengerRequest(
+                            ReservationFlightId: bookingFlight.Id.Value,
+                            PassengerId: passenger.Id.Value
+                        )
+                    );
+                }
+
+                var flightRow = await _ctx.Set<FlightEntity>().FirstOrDefaultAsync(f => f.Id == selected.Id);
+                if (flightRow is null)
+                    throw new InvalidOperationException("Vuelo no encontrado al actualizar cupos.");
+                flightRow.AvailableSeats -= paxCount;
+                if (flightRow.AvailableSeats < 0)
+                    throw new InvalidOperationException("Cupos negativos (concurrencia).");
+                await _ctx.SaveChangesAsync();
+
+                await tx.CommitAsync();
+            });
 
             SpectreUi.MarkupLineOrPlain(
-                $"[green]Reservación creada[/] booking_id={booking.Id.Value} vuelo={selected.FlightCode} pasajeros={paxCount}.",
+                $"[green]Reservación creada[/] booking_id={booking!.Id.Value} vuelo={selected.FlightCode} pasajeros={paxCount}.",
                 $"Reservación creada booking_id={booking.Id.Value} vuelo={selected.FlightCode} pasajeros={paxCount}."
             );
         }
@@ -458,45 +465,49 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 return;
             }
 
-            await using var tx = await _ctx.Database.BeginTransactionAsync();
-
-            // Devolver cupos: contar pasajeros por vuelo dentro de la reserva
-            var bookingFlights = await _ctx.Set<ReservationFlightEntity>()
-                .AsNoTracking()
-                .Where(rf => rf.ReservationId == id)
-                .Select(rf => new { rf.Id, rf.FlightId })
-                .ToListAsync();
-
-            foreach (var bf in bookingFlights)
+            var strategy = _ctx.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                var pax = await _ctx.Set<ReservationPassengerEntity>()
+                await using var tx = await _ctx.Database.BeginTransactionAsync();
+
+                // Devolver cupos: contar pasajeros por vuelo dentro de la reserva
+                var bookingFlights = await _ctx.Set<ReservationFlightEntity>()
                     .AsNoTracking()
-                    .CountAsync(rp => rp.ReservationFlightId == bf.Id);
+                    .Where(rf => rf.ReservationId == id)
+                    .Select(rf => new { rf.Id, rf.FlightId })
+                    .ToListAsync();
 
-                var flight = await _ctx.Set<FlightEntity>().FirstOrDefaultAsync(f => f.Id == bf.FlightId);
-                if (flight is null)
-                    throw new InvalidOperationException($"Vuelo {bf.FlightId} no encontrado al devolver cupos.");
+                foreach (var bf in bookingFlights)
+                {
+                    var pax = await _ctx.Set<ReservationPassengerEntity>()
+                        .AsNoTracking()
+                        .CountAsync(rp => rp.ReservationFlightId == bf.Id);
 
-                flight.AvailableSeats += pax;
-            }
+                    var flight = await _ctx.Set<FlightEntity>().FirstOrDefaultAsync(f => f.Id == bf.FlightId);
+                    if (flight is null)
+                        throw new InvalidOperationException($"Vuelo {bf.FlightId} no encontrado al devolver cupos.");
 
-            // Cambiar estado de la reserva (sin borrar)
-            var utcNow = DateTime.UtcNow;
-            await _update.ExecuteAsync(
-                new UpdateReservationRequest(
-                    Id: current.Id.Value,
-                    ClientId: current.ClientId.Value,
-                    ReservationDate: current.ReservationDate.Value,
-                    ReservationStatusId: cancelledStatusId,
-                    TotalValue: current.TotalValue.Value,
-                    ExpiresAt: current.ExpiresAt.Value,
-                    CreatedAt: current.CreatedAt.Value,
-                    UpdatedAt: utcNow
-                )
-            );
+                    flight.AvailableSeats += pax;
+                }
 
-            await _ctx.SaveChangesAsync();
-            await tx.CommitAsync();
+                // Cambiar estado de la reserva (sin borrar)
+                var utcNow = DateTime.UtcNow;
+                await _update.ExecuteAsync(
+                    new UpdateReservationRequest(
+                        Id: current.Id.Value,
+                        ClientId: current.ClientId.Value,
+                        ReservationDate: current.ReservationDate.Value,
+                        ReservationStatusId: cancelledStatusId,
+                        TotalValue: current.TotalValue.Value,
+                        ExpiresAt: current.ExpiresAt.Value,
+                        CreatedAt: current.CreatedAt.Value,
+                        UpdatedAt: utcNow
+                    )
+                );
+
+                await _ctx.SaveChangesAsync();
+                await tx.CommitAsync();
+            });
 
             Console.WriteLine("Cancelada (cupos devueltos).");
         }
@@ -692,69 +703,73 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         if (reservationFlights.Count == 0)
             throw new InvalidOperationException("La reservación no tiene vuelos asociados.");
 
-        await using var tx = await _ctx.Database.BeginTransactionAsync();
-
-        foreach (var rf in reservationFlights)
+        var strategy = _ctx.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            var reservationPassengers = await _ctx.Set<ReservationPassengerEntity>()
-                .AsNoTracking()
-                .Where(rp => rp.ReservationFlightId == rf.Id)
-                .Select(rp => rp.Id)
-                .ToListAsync();
+            await using var tx = await _ctx.Database.BeginTransactionAsync();
 
-            foreach (var reservationPassengerId in reservationPassengers)
+            foreach (var rf in reservationFlights)
             {
-                var existingTicket = await _ctx.Set<TicketEntity>()
-                    .Include(t => t.Checkin)
-                    .FirstOrDefaultAsync(t => t.ReservationPassengerId == reservationPassengerId);
+                var reservationPassengers = await _ctx.Set<ReservationPassengerEntity>()
+                    .AsNoTracking()
+                    .Where(rp => rp.ReservationFlightId == rf.Id)
+                    .Select(rp => rp.Id)
+                    .ToListAsync();
 
-                if (existingTicket?.Checkin is not null)
+                foreach (var reservationPassengerId in reservationPassengers)
                 {
-                    continue; // ya hizo check-in
+                    var existingTicket = await _ctx.Set<TicketEntity>()
+                        .Include(t => t.Checkin)
+                        .FirstOrDefaultAsync(t => t.ReservationPassengerId == reservationPassengerId);
+
+                    if (existingTicket?.Checkin is not null)
+                    {
+                        continue; // ya hizo check-in
+                    }
+
+                    var ticket = existingTicket ?? new TicketEntity
+                    {
+                        ReservationPassengerId = reservationPassengerId,
+                        Code = $"TKT-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant(),
+                        IssueDate = DateTime.UtcNow,
+                        TicketStatusId = ticketStatusIssued,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    if (existingTicket is null)
+                    {
+                        _ctx.Set<TicketEntity>().Add(ticket);
+                        await _ctx.SaveChangesAsync(); // necesita Id para el boarding pass/checkin
+                    }
+
+                    var seat = await _ctx.Set<FlightSeatEntity>()
+                        .FirstOrDefaultAsync(s => s.FlightId == rf.FlightId && !s.IsOccupied);
+
+                    if (seat is null)
+                        throw new InvalidOperationException($"No hay asientos disponibles para el vuelo {rf.FlightId}.");
+
+                    seat.IsOccupied = true;
+
+                    var checkin = new CheckinEntity
+                    {
+                        TicketId = ticket.Id,
+                        StaffId = staffId,
+                        FlightSeatId = seat.Id,
+                        CheckinDate = DateTime.UtcNow,
+                        CheckinStatusId = checkinStatusDone,
+                        BoardingPassNumber = $"BP-{ticket.Id}-{seat.SeatCode}",
+                        HasCheckedBaggage = false,
+                        BaggageWeightKg = null
+                    };
+
+                    _ctx.Set<CheckinEntity>().Add(checkin);
+                    await _ctx.SaveChangesAsync();
                 }
-
-                var ticket = existingTicket ?? new TicketEntity
-                {
-                    ReservationPassengerId = reservationPassengerId,
-                    Code = $"TKT-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant(),
-                    IssueDate = DateTime.UtcNow,
-                    TicketStatusId = ticketStatusIssued,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                if (existingTicket is null)
-                {
-                    _ctx.Set<TicketEntity>().Add(ticket);
-                    await _ctx.SaveChangesAsync(); // necesita Id para el boarding pass/checkin
-                }
-
-                var seat = await _ctx.Set<FlightSeatEntity>()
-                    .FirstOrDefaultAsync(s => s.FlightId == rf.FlightId && !s.IsOccupied);
-
-                if (seat is null)
-                    throw new InvalidOperationException($"No hay asientos disponibles para el vuelo {rf.FlightId}.");
-
-                seat.IsOccupied = true;
-
-                var checkin = new CheckinEntity
-                {
-                    TicketId = ticket.Id,
-                    StaffId = staffId,
-                    FlightSeatId = seat.Id,
-                    CheckinDate = DateTime.UtcNow,
-                    CheckinStatusId = checkinStatusDone,
-                    BoardingPassNumber = $"BP-{ticket.Id}-{seat.SeatCode}",
-                    HasCheckedBaggage = false,
-                    BaggageWeightKg = null
-                };
-
-                _ctx.Set<CheckinEntity>().Add(checkin);
-                await _ctx.SaveChangesAsync();
             }
-        }
 
-        await tx.CommitAsync();
+            await tx.CommitAsync();
+        });
     }
 
     private async Task EnsureBillingAddressAsync()

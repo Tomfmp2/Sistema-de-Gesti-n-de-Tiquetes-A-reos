@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Entity;
@@ -52,7 +51,5 @@ public class AircraftEntityConfiguration : IEntityTypeConfiguration<AircraftEnti
 
         builder.HasIndex(a => a.Registration)
             .IsUnique();
-
-        builder.HasData(AircraftDefaultData.Aircraft);
     }
 }

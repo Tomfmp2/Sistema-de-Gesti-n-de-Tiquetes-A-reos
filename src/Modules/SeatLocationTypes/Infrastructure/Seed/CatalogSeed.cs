@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.Seed;
 
@@ -9,16 +9,15 @@ public static class CatalogSeed
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        var existing = await context.SeatLocationTypes.AsNoTracking().ToListAsync();
-        var desired = new[] { "Ventana", "Pasillo", "Centro" };
+        var existingIds = await context.SeatLocationTypes.AsNoTracking().Select(x => x.Id).ToListAsync();
+        var idSet = existingIds.ToHashSet();
 
-        foreach (var name in desired)
+        foreach (var row in SeatLocationTypeDefaultData.SeatLocationTypes)
         {
-            var norm = SeedHelpers.Normalize(name);
-            if (existing.Any(x => SeedHelpers.Normalize(x.Name) == norm))
+            if (idSet.Contains(row.Id))
                 continue;
 
-            context.SeatLocationTypes.Add(new SeatLocationTypeEntity { Name = name });
+            context.SeatLocationTypes.Add(new SeatLocationTypeEntity { Id = row.Id, Name = row.Name });
         }
 
         await context.SaveChangesAsync();

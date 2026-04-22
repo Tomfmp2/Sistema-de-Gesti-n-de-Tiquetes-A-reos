@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Seed;
 
@@ -9,23 +9,15 @@ public static class CatalogSeed
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        var existing = await context.DocumentTypes.AsNoTracking().ToListAsync();
-        var desired = new[]
-        {
-            new { Code = "CC", Name = "Cedula de ciudadania" },
-            new { Code = "CE", Name = "Cedula de extranjeria" },
-            new { Code = "PAS", Name = "Pasaporte" },
-            new { Code = "TI", Name = "Tarjeta de identidad" },
-            new { Code = "NIT", Name = "NIT" },
-        };
+        var existingIds = await context.DocumentTypes.AsNoTracking().Select(x => x.Id).ToListAsync();
+        var idSet = existingIds.ToHashSet();
 
-        foreach (var d in desired)
+        foreach (var row in DocumentTypeDefaultData.DocumentTypes)
         {
-            var codeNorm = SeedHelpers.Normalize(d.Code);
-            if (existing.Any(x => SeedHelpers.Normalize(x.Code) == codeNorm))
+            if (idSet.Contains(row.Id))
                 continue;
 
-            context.DocumentTypes.Add(new DocumentTypeEntity { Code = d.Code, Name = d.Name });
+            context.DocumentTypes.Add(new DocumentTypeEntity { Id = row.Id, Code = row.Code, Name = row.Name });
         }
 
         await context.SaveChangesAsync();

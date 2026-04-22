@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.CheckinStatuses.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CheckinStatuses.Infrastructure.Entity;
 
@@ -23,7 +22,5 @@ public class CheckinStatusEntityConfiguration : IEntityTypeConfiguration<Checkin
             .HasColumnName("name")
             .HasColumnType("varchar(50)")
             .IsRequired();
-
-        builder.HasData(CheckinStatusDefaultData.CheckinStatuses);
     }
 }

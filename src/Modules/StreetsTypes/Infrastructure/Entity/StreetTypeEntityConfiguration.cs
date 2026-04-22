@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.StreetsTypes.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.StreetsTypes.Infrastructure.Entity;
 
@@ -23,7 +22,5 @@ public sealed class StreetTypeEntityConfiguration : IEntityTypeConfiguration<Str
             .HasColumnName("name")
             .HasColumnType("varchar(50)")
             .IsRequired();
-
-        builder.HasData(StreetTypeDefaultData.StreetTypes);
     }
 }

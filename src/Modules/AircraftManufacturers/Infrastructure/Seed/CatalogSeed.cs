@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Seed;
 
@@ -9,26 +9,19 @@ public static class CatalogSeed
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        var existing = await context.AircraftManufacturers.AsNoTracking().ToListAsync();
-        var desired = new[]
-        {
-            new { Name = "Airbus", Country = "Francia" },
-            new { Name = "Boeing", Country = "Estados Unidos" },
-            new { Name = "Embraer", Country = "Brasil" },
-            new { Name = "ATR", Country = "Francia" },
-            new { Name = "De Havilland Canada", Country = "Canada" },
-        };
+        var existingIds = await context.AircraftManufacturers.AsNoTracking().Select(x => x.Id).ToListAsync();
+        var idSet = existingIds.ToHashSet();
 
-        foreach (var m in desired)
+        foreach (var row in AircraftManufacturerDefaultData.AircraftManufacturers)
         {
-            var norm = SeedHelpers.Normalize(m.Name);
-            if (existing.Any(x => SeedHelpers.Normalize(x.Name) == norm))
+            if (idSet.Contains(row.Id))
                 continue;
 
             context.AircraftManufacturers.Add(new AircraftManufacturerEntity
             {
-                Name = m.Name,
-                Country = m.Country
+                Id = row.Id,
+                Name = row.Name,
+                Country = row.Country
             });
         }
 

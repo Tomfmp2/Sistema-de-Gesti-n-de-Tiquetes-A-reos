@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Infrastructure.Entity;
 
@@ -44,7 +43,5 @@ public class RegionEntityConfiguration : IEntityTypeConfiguration<RegionEntity>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.CountryId);
-
-        builder.HasData(RegionDefaultData.Regions);
     }
 }

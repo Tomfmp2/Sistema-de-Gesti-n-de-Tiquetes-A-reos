@@ -324,12 +324,6 @@ public static class LoginShell
         var username = SpectreUi.PromptRequiredCancelable("Username", "0/c/cancelar para salir").Trim();
         var password = SpectreUi.PromptRequiredCancelable("Contraseña", "0/c/cancelar para salir");
 
-        var usernameExists = await context.Set<UserEntity>()
-            .AsNoTracking()
-            .AnyAsync(u => u.Username != null && u.Username.ToUpper() == username.ToUpper(), cancellationToken);
-        if (usernameExists)
-            throw new InvalidOperationException($"Ya existe un usuario con username '{username}'.");
-
         var firstName = SpectreUi.PromptRequiredCancelable("Nombre", "0/c/cancelar para salir").Trim();
         var lastName = SpectreUi.PromptRequiredCancelable("Apellido", "0/c/cancelar para salir").Trim();
 
@@ -341,40 +335,50 @@ public static class LoginShell
             $"Documento: {documentTypeLabel} {documentNumber}"
         );
 
-        await using var tx = await context.Database.BeginTransactionAsync(cancellationToken);
-
-        var personId = await EnsurePersonByDocumentAsync(
-            context,
-            documentTypeId,
-            documentNumber,
-            firstName,
-            lastName,
-            cancellationToken
-        );
-
-        await PromptEmailsAndPhonesAsync(context, personId, cancellationToken);
-
-        var roleId = await EnsureClientRoleIdAsync(context, cancellationToken);
-
-        var now = DateTime.UtcNow;
-        var user = new UserEntity
+        var strategy = context.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            Username = username,
-            PasswordHash = password,
-            PersonId = personId,
-            SystemRoleId = roleId,
-            IsActive = true,
-            LastAccessAt = null,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+            await using var tx = await context.Database.BeginTransactionAsync(cancellationToken);
 
-        context.Set<UserEntity>().Add(user);
-        await context.SaveChangesAsync(cancellationToken);
+            var usernameExists = await context.Set<UserEntity>()
+                .AsNoTracking()
+                .AnyAsync(u => u.Username != null && u.Username.ToUpper() == username.ToUpper(), cancellationToken);
+            if (usernameExists)
+                throw new InvalidOperationException($"Ya existe un usuario con username '{username}'.");
 
-        await EnsureClientForPersonAsync(context, personId, cancellationToken);
+            var personId = await EnsurePersonByDocumentAsync(
+                context,
+                documentTypeId,
+                documentNumber,
+                firstName,
+                lastName,
+                cancellationToken
+            );
 
-        await tx.CommitAsync(cancellationToken);
+            await PromptEmailsAndPhonesAsync(context, personId, cancellationToken);
+
+            var roleId = await EnsureClientRoleIdAsync(context, cancellationToken);
+
+            var now = DateTime.UtcNow;
+            var user = new UserEntity
+            {
+                Username = username,
+                PasswordHash = password,
+                PersonId = personId,
+                SystemRoleId = roleId,
+                IsActive = true,
+                LastAccessAt = null,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            context.Set<UserEntity>().Add(user);
+            await context.SaveChangesAsync(cancellationToken);
+
+            await EnsureClientForPersonAsync(context, personId, cancellationToken);
+
+            await tx.CommitAsync(cancellationToken);
+        });
 
         SpectreUi.MarkupLineOrPlain(
             $"[green]Usuario creado[/] username=[bold]{username}[/] persona={firstName} {lastName} ({documentTypeLabel} {documentNumber}).",

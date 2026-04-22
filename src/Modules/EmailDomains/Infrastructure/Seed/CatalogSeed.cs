@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Seed;
 
@@ -9,16 +9,15 @@ public static class CatalogSeed
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        var existing = await context.EmailDomains.AsNoTracking().ToListAsync();
-        var desired = new[] { "gmail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com" };
+        var existingIds = await context.EmailDomains.AsNoTracking().Select(x => x.Id).ToListAsync();
+        var idSet = existingIds.ToHashSet();
 
-        foreach (var domain in desired)
+        foreach (var row in EmailDomainDefaultData.EmailDomains)
         {
-            var norm = SeedHelpers.Normalize(domain);
-            if (existing.Any(x => SeedHelpers.Normalize(x.Domain) == norm))
+            if (idSet.Contains(row.Id))
                 continue;
 
-            context.EmailDomains.Add(new EmailDomainEntity { Domain = domain });
+            context.EmailDomains.Add(new EmailDomainEntity { Id = row.Id, Domain = row.Domain });
         }
 
         await context.SaveChangesAsync();

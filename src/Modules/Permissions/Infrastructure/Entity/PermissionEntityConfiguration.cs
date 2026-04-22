@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Entity;
 
@@ -31,7 +30,5 @@ public sealed class PermissionEntityConfiguration : IEntityTypeConfiguration<Per
             .IsRequired(false);
 
         builder.HasIndex(x => x.Name).IsUnique();
-
-        builder.HasData(PermissionDefaultData.Permissions);
     }
 }

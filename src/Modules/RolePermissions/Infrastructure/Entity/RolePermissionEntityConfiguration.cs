@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Entity;
@@ -47,7 +46,5 @@ public sealed class RolePermissionEntityConfiguration : IEntityTypeConfiguration
 
         builder.HasIndex(x => new { x.RoleId, x.PermissionId }).IsUnique();
         builder.HasIndex(x => x.PermissionId);
-
-        builder.HasData(RolePermissionDefaultData.RolePermissions);
     }
 }

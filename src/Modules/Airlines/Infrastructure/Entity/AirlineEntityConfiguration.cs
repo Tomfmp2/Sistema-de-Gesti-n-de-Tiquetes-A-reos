@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity;
 
@@ -62,7 +61,5 @@ public sealed class AirlineEntityConfiguration : IEntityTypeConfiguration<Airlin
             .WithMany(c => c.Airlines)
             .HasForeignKey(x => x.OriginCountryId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasData(AirlineDefaultData.Airlines);
     }
 }

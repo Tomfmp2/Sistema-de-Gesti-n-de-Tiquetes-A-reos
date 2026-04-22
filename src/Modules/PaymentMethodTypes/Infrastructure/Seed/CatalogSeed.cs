@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentMethodTypes.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentMethodTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentMethodTypes.Infrastructure.Seed;
 
@@ -9,16 +9,15 @@ public static class CatalogSeed
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        var existing = await context.PaymentMethodTypes.AsNoTracking().ToListAsync();
-        var desired = new[] { "Tarjeta", "Efectivo", "Transferencia bancaria", "Billetera digital" };
+        var existingIds = await context.PaymentMethodTypes.AsNoTracking().Select(x => x.Id).ToListAsync();
+        var idSet = existingIds.ToHashSet();
 
-        foreach (var name in desired)
+        foreach (var row in PaymentMethodTypeDefaultData.PaymentMethodTypes)
         {
-            var norm = SeedHelpers.Normalize(name);
-            if (existing.Any(x => SeedHelpers.Normalize(x.Name) == norm))
+            if (idSet.Contains(row.Id))
                 continue;
 
-            context.PaymentMethodTypes.Add(new PaymentMethodTypeEntity { Name = name });
+            context.PaymentMethodTypes.Add(new PaymentMethodTypeEntity { Id = row.Id, Name = row.Name });
         }
 
         await context.SaveChangesAsync();

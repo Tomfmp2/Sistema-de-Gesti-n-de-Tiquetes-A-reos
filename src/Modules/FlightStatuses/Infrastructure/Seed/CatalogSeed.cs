@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Seed;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Seed;
 
@@ -9,16 +9,15 @@ public static class CatalogSeed
 {
     public static async Task SeedAsync(AppDbContext context)
     {
-        var existing = await context.FlightStatuses.AsNoTracking().ToListAsync();
-        var desired = new[] { "Programado", "Abordando", "En vuelo", "Aterrizado", "Retrasado", "Cancelado" };
+        var existingIds = await context.FlightStatuses.AsNoTracking().Select(x => x.Id).ToListAsync();
+        var idSet = existingIds.ToHashSet();
 
-        foreach (var name in desired)
+        foreach (var row in FlightStatusDefaultData.FlightStatuses)
         {
-            var norm = SeedHelpers.Normalize(name);
-            if (existing.Any(x => SeedHelpers.Normalize(x.Name) == norm))
+            if (idSet.Contains(row.Id))
                 continue;
 
-            context.FlightStatuses.Add(new FlightStatusEntity { Name = name });
+            context.FlightStatuses.Add(new FlightStatusEntity { Id = row.Id, Name = row.Name });
         }
 
         await context.SaveChangesAsync();

@@ -16,6 +16,11 @@ public static class CatalogSeed
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
 
+        // Airlines / airports / routes (dependen de ciudades y países)
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+
         // Persons & Related
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
@@ -27,6 +32,7 @@ public static class CatalogSeed
         // Flight pricing / passenger / cabin catalogs
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.PassengerTypes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.Seasons.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
 
@@ -35,6 +41,16 @@ public static class CatalogSeed
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.TicketStatuses.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.CheckinStatuses.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+
+        // Aircraft (modelos dependen de fabricantes; aeronaves dependen de modelos y aerolíneas)
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+
+        // Tarifas y operación (dependen de rutas / cabin / passenger / season / aeronave / estado)
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
 
         // Billing / payments catalogs
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.InvoiceItemTypes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
@@ -49,12 +65,9 @@ public static class CatalogSeed
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
 
-        // Aircraft catalogs
-        await sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
-
-        // Auth catalogs
+        // Auth catalogs (permisos y asignaciones dependen de roles)
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
     }
 }
-

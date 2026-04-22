@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.CardTypes.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CardTypes.Infrastructure.Entity;
 
@@ -25,7 +24,5 @@ public class CardTypeEntityConfiguration : IEntityTypeConfiguration<CardTypeEnti
             .IsRequired();
 
         builder.HasIndex(x => x.Name).IsUnique();
-
-        builder.HasData(CardTypeDefaultData.CardTypes);
     }
 }
