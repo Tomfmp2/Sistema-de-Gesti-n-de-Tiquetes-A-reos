@@ -8,19 +8,19 @@ public class InvoiceItemTypeEntityConfiguration : IEntityTypeConfiguration<Invoi
 {
     public void Configure(EntityTypeBuilder<InvoiceItemTypeEntity> builder)
     {
-        builder.ToTable("InvoiceItemTypes");
+        builder.ToTable("invoice_item_types");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(100)")
             .IsRequired();
 

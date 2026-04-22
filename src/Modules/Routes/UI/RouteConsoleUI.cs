@@ -34,8 +34,8 @@ public class RouteConsoleUI : IModuleUI
             var items = new (string Label, Action Action)[]
             {
                 ("Crear ruta", () => CreateRoute().GetAwaiter().GetResult()),
-                ("Consultar por ID", () => GetRouteById().GetAwaiter().GetResult()),
                 ("Listar todas", () => GetAllRoutes().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetRouteById().GetAwaiter().GetResult()),
                 ("Actualizar", () => UpdateRoute().GetAwaiter().GetResult()),
                 ("Eliminar", () => DeleteRoute().GetAwaiter().GetResult()),
                 ("Volver", () => exit = true),
@@ -49,23 +49,27 @@ public class RouteConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID aeropuerto origen: ");
-            var origin = int.Parse(Console.ReadLine()!);
-            Console.Write("ID aeropuerto destino: ");
-            var dest = int.Parse(Console.ReadLine()!);
-            Console.Write("Distancia km (opcional): ");
-            var distStr = Console.ReadLine();
-            int? dist = string.IsNullOrEmpty(distStr) ? null : int.Parse(distStr!);
-            Console.Write("Duración estimada min (opcional): ");
-            var durStr = Console.ReadLine();
-            int? dur = string.IsNullOrEmpty(durStr) ? null : int.Parse(durStr!);
+            SpectreUi.ModuleHeader("Crear ruta", "Origen → Destino");
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+
+            var origin = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto origen", min: 1);
+            var dest = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto destino", min: 1);
+            var dist = PromptNullableInt("Distancia (km)", "opcional");
+            var dur = PromptNullableInt("Duración estimada (min)", "opcional");
             await _createUseCase.ExecuteAsync(
                 OriginAirportId.Create(origin),
                 DestinationAirportId.Create(dest),
                 DistanceKm.Create(dist),
                 EstimatedDurationMin.Create(dur)
             );
-            Console.WriteLine("Ruta creada");
+            SpectreUi.MarkupLineOrPlain("[green]Ruta creada.[/]", "Ruta creada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -78,17 +82,35 @@ public class RouteConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID ruta: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Consultar ruta", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID ruta", min: 1);
             var route = await _getByIdUseCase.ExecuteAsync(RouteId.Create(id));
             if (route != null)
             {
-                Console.WriteLine($"ID: {route.Id.Value}, Origen: {route.OriginAirportId.Value}, Destino: {route.DestinationAirportId.Value}, Dist. km: {route.DistanceKm.Value}, Dur. min: {route.EstimatedDurationMin.Value}");
+                SpectreUi.ShowTable(
+                    "Ruta",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", route.Id.Value.ToString()],
+                        ["OrigenAirportId", route.OriginAirportId.Value.ToString()],
+                        ["DestinoAirportId", route.DestinationAirportId.Value.ToString()],
+                        ["Distancia (km)", route.DistanceKm.Value?.ToString() ?? ""],
+                        ["Duración (min)", route.EstimatedDurationMin.Value?.ToString() ?? ""],
+                    ]
+                );
             }
             else
             {
                 Console.WriteLine("Ruta no encontrada");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -102,10 +124,30 @@ public class RouteConsoleUI : IModuleUI
         try
         {
             var routes = await _getAllUseCase.ExecuteAsync();
-            foreach (var r in routes)
+            var list = routes.ToList();
+            if (list.Count == 0)
             {
-                Console.WriteLine($"ID: {r.Id.Value}, Origen: {r.OriginAirportId.Value}, Destino: {r.DestinationAirportId.Value}, Dist. km: {r.DistanceKm.Value}, Dur. min: {r.EstimatedDurationMin.Value}");
+                Console.WriteLine("No hay rutas para mostrar.");
+                SpectreUi.Pause();
+                return;
             }
+
+            SpectreUi.ModuleHeader("Rutas", "Listado");
+            SpectreUi.ShowTable(
+                "Rutas",
+                ["ID", "Origen", "Destino", "Km", "Min"],
+                list
+                    .OrderBy(r => r.Id.Value)
+                    .Select(r => (IReadOnlyList<string>)new[]
+                    {
+                        r.Id.Value.ToString(),
+                        r.OriginAirportId.Value.ToString(),
+                        r.DestinationAirportId.Value.ToString(),
+                        r.DistanceKm.Value?.ToString() ?? "",
+                        r.EstimatedDurationMin.Value?.ToString() ?? ""
+                    })
+                    .ToList()
+            );
         }
         catch (Exception ex)
         {
@@ -118,8 +160,12 @@ public class RouteConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID ruta: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Actualizar ruta", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID ruta", min: 1);
             var existing = await _getByIdUseCase.ExecuteAsync(RouteId.Create(id));
             if (existing == null)
             {
@@ -127,16 +173,11 @@ public class RouteConsoleUI : IModuleUI
                 SpectreUi.Pause();
                 return;
             }
-            Console.Write("ID aeropuerto origen: ");
-            var origin = int.Parse(Console.ReadLine()!);
-            Console.Write("ID aeropuerto destino: ");
-            var dest = int.Parse(Console.ReadLine()!);
-            Console.Write("Distancia km (opcional): ");
-            var distStr = Console.ReadLine();
-            int? dist = string.IsNullOrEmpty(distStr) ? null : int.Parse(distStr!);
-            Console.Write("Duración estimada min (opcional): ");
-            var durStr = Console.ReadLine();
-            int? dur = string.IsNullOrEmpty(durStr) ? null : int.Parse(durStr!);
+
+            var origin = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto origen", min: 1);
+            var dest = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto destino", min: 1);
+            var dist = PromptNullableInt("Distancia (km)", "opcional");
+            var dur = PromptNullableInt("Duración estimada (min)", "opcional");
             await _updateUseCase.ExecuteAsync(
                 RouteId.Create(id),
                 OriginAirportId.Create(origin),
@@ -144,7 +185,11 @@ public class RouteConsoleUI : IModuleUI
                 DistanceKm.Create(dist),
                 EstimatedDurationMin.Create(dur)
             );
-            Console.WriteLine("Ruta actualizada");
+            SpectreUi.MarkupLineOrPlain("[green]Ruta actualizada.[/]", "Ruta actualizada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -157,15 +202,37 @@ public class RouteConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID ruta: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Eliminar ruta", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID ruta", min: 1);
             await _deleteUseCase.ExecuteAsync(RouteId.Create(id));
-            Console.WriteLine("Ruta eliminada");
+            SpectreUi.MarkupLineOrPlain("[green]Ruta eliminada.[/]", "Ruta eliminada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
         SpectreUi.Pause();
+    }
+
+    private static int? PromptNullableInt(string label, string? help = null)
+    {
+        while (true)
+        {
+            var raw = SpectreUi.PromptOptionalCancelable(label, help);
+            if (string.IsNullOrWhiteSpace(raw))
+                return null;
+            if (int.TryParse(raw, out var value))
+                return value;
+
+            SpectreUi.MarkupLineOrPlain("[red]Número inválido.[/]", "Número inválido.");
+        }
     }
 }

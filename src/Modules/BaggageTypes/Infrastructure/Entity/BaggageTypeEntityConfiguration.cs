@@ -8,10 +8,13 @@ public class BaggageTypeEntityConfiguration : IEntityTypeConfiguration<BaggageTy
 {
     public void Configure(EntityTypeBuilder<BaggageTypeEntity> builder)
     {
-        builder.Property(x => x.Id).HasColumnName("Id");
+        builder.ToTable("baggage_types");
+
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
 
         builder.Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .IsRequired()
             .HasMaxLength(50);
 
@@ -19,12 +22,12 @@ public class BaggageTypeEntityConfiguration : IEntityTypeConfiguration<BaggageTy
             .IsUnique();
 
         builder.Property(x => x.MaxWeightKg)
-            .HasColumnName("MaxWeightKg")
+            .HasColumnName("max_weight_kg")
             .IsRequired()
             .HasPrecision(5, 2);
 
         builder.Property(x => x.BasePrice)
-            .HasColumnName("BasePrice")
+            .HasColumnName("base_price")
             .IsRequired()
             .HasPrecision(18, 2)
             .HasDefaultValue(0);

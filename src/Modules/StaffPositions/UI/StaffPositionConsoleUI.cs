@@ -29,136 +29,180 @@ public class StaffPositionConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        var exit = false;
+        while (!exit)
         {
-            Console.WriteLine("\nGestión de cargos (posiciones de personal)");
-            Console.WriteLine("1. Crear cargo");
-            Console.WriteLine("2. Consultar cargo por ID");
-            Console.WriteLine("3. Listar todos los cargos");
-            Console.WriteLine("4. Actualizar cargo");
-            Console.WriteLine("5. Eliminar cargo");
-            Console.WriteLine("0. Volver al menú principal");
-            Console.Write("Elija una opción: ");
+            SpectreUi.ModuleHeader("Cargos", "Posiciones del personal");
 
-            var choice = Console.ReadLine();
-            switch (choice)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateStaffPosition();
-                    break;
-                case "2":
-                    await GetStaffPositionById();
-                    break;
-                case "3":
-                    await GetAllStaffPositions();
-                    break;
-                case "4":
-                    await UpdateStaffPosition();
-                    break;
-                case "5":
-                    await DeleteStaffPosition();
-                    break;
-                case "0":
-                    return;
-                default:
-                    Console.WriteLine("Opción no válida. Intente de nuevo.");
-                    break;
-            }
+                ("Crear", () => CreateStaffPosition().GetAwaiter().GetResult()),
+                ("Listar", () => GetAllStaffPositions().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetStaffPositionById().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateStaffPosition().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteStaffPosition().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateStaffPosition()
     {
-        Console.Write("Nombre: ");
-        var name = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(name))
+        try
         {
-            try
-            {
-                var staffPositionName = StaffPositionName.Create(name);
-                await _createUseCase.ExecuteAsync(staffPositionName);
-                Console.WriteLine("Cargo creado correctamente.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+            SpectreUi.ModuleHeader("Crear cargo", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+
+            var name = SpectreUi.PromptRequiredCancelable("Nombre");
+            var staffPositionName = StaffPositionName.Create(name);
+            await _createUseCase.ExecuteAsync(staffPositionName);
+            SpectreUi.MarkupLineOrPlain("[green]Creado.[/]", "Creado.");
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 
     private async Task GetStaffPositionById()
     {
-        Console.Write("ID: ");
-        if (int.TryParse(Console.ReadLine(), out var id))
+        try
         {
-            try
+            SpectreUi.ModuleHeader("Consultar cargo", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
+            var staffPositionId = StaffPositionId.Create(id);
+            var staffPosition = await _getByIdUseCase.ExecuteAsync(staffPositionId);
+            if (staffPosition is null)
             {
-                var staffPositionId = StaffPositionId.Create(id);
-                var staffPosition = await _getByIdUseCase.ExecuteAsync(staffPositionId);
-                if (staffPosition != null)
-                {
-                    Console.WriteLine($"ID: {staffPosition.Id.Value}, Nombre: {staffPosition.Name.Value}");
-                }
-                else
-                {
-                    Console.WriteLine("Cargo no encontrado.");
-                }
+                Console.WriteLine("No encontrado.");
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                SpectreUi.ShowTable(
+                    "Cargo",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", staffPosition.Id.Value.ToString()],
+                        ["Nombre", staffPosition.Name.Value],
+                    ]
+                );
             }
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 
     private async Task GetAllStaffPositions()
     {
-        var staffPositions = await _getAllUseCase.ExecuteAsync();
-        foreach (var sp in staffPositions)
+        try
         {
-            Console.WriteLine($"ID: {sp.Id.Value}, Nombre: {sp.Name.Value}");
+            var staffPositions = (await _getAllUseCase.ExecuteAsync()).ToList();
+            if (staffPositions.Count == 0)
+            {
+                Console.WriteLine("No hay cargos para mostrar.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            SpectreUi.ModuleHeader("Cargos", "Listado");
+            SpectreUi.ShowTable(
+                "Cargos",
+                ["ID", "Nombre"],
+                staffPositions
+                    .OrderBy(x => x.Id.Value)
+                    .Select(x => (IReadOnlyList<string>)new[]
+                    {
+                        x.Id.Value.ToString(),
+                        x.Name.Value
+                    })
+                    .ToList()
+            );
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 
     private async Task UpdateStaffPosition()
     {
-        Console.Write("ID: ");
-        if (int.TryParse(Console.ReadLine(), out var id))
+        try
         {
-            Console.Write("Nuevo nombre: ");
-            var name = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                try
-                {
-                    var staffPositionId = StaffPositionId.Create(id);
-                    var staffPositionName = StaffPositionName.Create(name);
-                    await _updateUseCase.ExecuteAsync(staffPositionId, staffPositionName);
-                    Console.WriteLine("Cargo actualizado correctamente.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error: {ex.Message}");
-                }
-            }
+            SpectreUi.ModuleHeader("Actualizar cargo", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
+            var name = SpectreUi.PromptRequiredCancelable("Nuevo nombre");
+            var staffPositionId = StaffPositionId.Create(id);
+            var staffPositionName = StaffPositionName.Create(name);
+            await _updateUseCase.ExecuteAsync(staffPositionId, staffPositionName);
+            SpectreUi.MarkupLineOrPlain("[green]Actualizado.[/]", "Actualizado.");
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 
     private async Task DeleteStaffPosition()
     {
-        Console.Write("ID: ");
-        if (int.TryParse(Console.ReadLine(), out var id))
+        try
         {
-            try
-            {
-                var staffPositionId = StaffPositionId.Create(id);
-                await _deleteUseCase.ExecuteAsync(staffPositionId);
-                Console.WriteLine("Cargo eliminado correctamente.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+            SpectreUi.ModuleHeader("Eliminar cargo", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
+            var staffPositionId = StaffPositionId.Create(id);
+            await _deleteUseCase.ExecuteAsync(staffPositionId);
+            SpectreUi.MarkupLineOrPlain("[green]Eliminado.[/]", "Eliminado.");
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 }

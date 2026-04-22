@@ -56,6 +56,12 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.UI;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Infrastructure.repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.UI;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Infrastructure.repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.UI;
@@ -321,13 +327,20 @@ public static class ModuleUiFactory
     public static ClientReservationsConsoleUI CreateClientReservationsUi(AppDbContext ctx, AuthContext auth)
     {
         var repo = new ReservationRepository(ctx);
+        var rfRepo = new ReservationFlightRepository(ctx);
+        var rpRepo = new ReservationPassengerRepository(ctx);
+        var passengerRepo = new PassengerRepository(ctx);
         return new ClientReservationsConsoleUI(
             auth,
+            ctx,
             new CreateReservationUseCase(repo),
             new GetReservationsByClientIdUseCase(repo),
             new GetReservationByIdUseCase(repo),
             new UpdateReservationUseCase(repo),
-            new DeleteReservationUseCase(repo)
+            new DeleteReservationUseCase(repo),
+            new CreateReservationFlightUseCase(rfRepo),
+            new CreateReservationPassengerUseCase(rpRepo),
+            new CreatePassengerUseCase(passengerRepo)
         );
     }
 

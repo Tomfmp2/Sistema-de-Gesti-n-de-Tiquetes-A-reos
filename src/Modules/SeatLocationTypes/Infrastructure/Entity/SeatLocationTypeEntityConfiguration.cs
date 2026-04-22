@@ -9,10 +9,10 @@ public class SeatLocationTypeEntityConfiguration : IEntityTypeConfiguration<Seat
 {
     public void Configure(EntityTypeBuilder<SeatLocationTypeEntity> builder)
     {
-        builder.ToTable("SeatLocationTypes");
+        builder.ToTable("seat_location_types");
         builder.HasKey(s => s.Id);
-        builder.Property(s => s.Id).HasColumnName("Id").ValueGeneratedOnAdd();
-        builder.Property(s => s.Name).HasColumnName("Name").IsRequired().HasMaxLength(50);
+        builder.Property(s => s.Id).HasColumnName("id").ValueGeneratedOnAdd();
+        builder.Property(s => s.Name).HasColumnName("name").IsRequired().HasMaxLength(50);
         builder.HasIndex(s => s.Name).IsUnique();
         builder.HasData(SeatLocationTypeDefaultData.SeatLocationTypes);
     }

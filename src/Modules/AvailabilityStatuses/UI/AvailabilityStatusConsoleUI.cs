@@ -37,8 +37,8 @@ public class AvailabilityStatusConsoleUI : IModuleUI
             var items = new (string Label, Action Action)[]
             {
                 ("Crear estado", () => CreateAvailabilityStatus().GetAwaiter().GetResult()),
-                ("Consultar por ID", () => GetAvailabilityStatusById().GetAwaiter().GetResult()),
                 ("Listar todos", () => GetAllAvailabilityStatuses().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetAvailabilityStatusById().GetAwaiter().GetResult()),
                 ("Actualizar", () => UpdateAvailabilityStatus().GetAwaiter().GetResult()),
                 ("Eliminar", () => DeleteAvailabilityStatus().GetAwaiter().GetResult()),
                 ("Volver", () => exit = true),

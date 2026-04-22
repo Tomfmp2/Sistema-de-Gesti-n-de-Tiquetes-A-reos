@@ -144,7 +144,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AircraftManufacturers");
+                    b.ToTable("AircraftManufacturers", (string)null);
 
                     b.HasData(
                         new
@@ -705,7 +705,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("BaggageTypes");
+                    b.ToTable("BaggageTypes", (string)null);
 
                     b.HasData(
                         new
@@ -3973,7 +3973,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("StaffPositions");
+                    b.ToTable("StaffPositions", (string)null);
 
                     b.HasData(
                         new

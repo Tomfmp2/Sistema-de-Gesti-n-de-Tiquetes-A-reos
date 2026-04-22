@@ -13,10 +13,10 @@ public class AircraftManufacturerEntity
     public int Id { get; set; }
 
     [Column("Name")]
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     [Column("Country")]
-    public string Country { get; set; }
+    public string Country { get; set; } = null!;
 
     public ICollection<AircraftModelEntity> Models { get; set; } = new List<AircraftModelEntity>();
 }

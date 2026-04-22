@@ -32,8 +32,8 @@ public sealed class UserConsoleUI : IModuleUI
             var items = new List<(string Label, Action Action)>
             {
                 ("Registrar usuario nuevo", () => CreateUser().GetAwaiter().GetResult()),
-                ("Consultar por ID", () => GetById().GetAwaiter().GetResult()),
                 ("Listar usuarios", () => ListAll().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetById().GetAwaiter().GetResult()),
                 ("Actualizar usuario", () => UpdateUser().GetAwaiter().GetResult()),
                 ("Eliminar usuario", () => DeleteUser().GetAwaiter().GetResult()),
                 ("Volver", () => exit = true),
@@ -155,14 +155,13 @@ public sealed class UserConsoleUI : IModuleUI
         char? gender
     )
     {
-        // La DB actual tiene `persons` con columnas PascalCase (p.ej. DocumentTypeId, FirstName, CreatedAt),
-        // así que insertamos con SQL directo para asegurar compatibilidad inmediata.
+        // Insertamos con SQL directo para no depender de mapeos EF en runtime.
         var utcNow = DateTime.UtcNow;
 
         var inserted = await _ctx.Database.ExecuteSqlRawAsync(
             """
             INSERT INTO persons
-              (DocumentTypeId, DocumentNumber, FirstName, LastName, BirthDate, Gender, address_id, CreatedAt, UpdatedAt)
+              (document_type_id, document_number, first_name, last_name, birth_date, gender, address_id, created_at, updated_at)
             VALUES
               ({0}, {1}, {2}, {3}, {4}, {5}, NULL, {6}, {7})
             """,
@@ -171,7 +170,7 @@ public sealed class UserConsoleUI : IModuleUI
             firstName,
             lastName,
             birthDate,
-            gender.HasValue ? gender.Value.ToString() : null,
+            gender.HasValue ? gender.Value.ToString() : DBNull.Value,
             utcNow,
             utcNow
         );

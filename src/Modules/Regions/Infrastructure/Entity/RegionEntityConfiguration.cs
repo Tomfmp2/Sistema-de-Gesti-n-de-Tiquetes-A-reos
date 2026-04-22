@@ -14,14 +14,14 @@ public class RegionEntityConfiguration : IEntityTypeConfiguration<RegionEntity>
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(100)")
             .IsRequired();
 
@@ -33,7 +33,7 @@ public class RegionEntityConfiguration : IEntityTypeConfiguration<RegionEntity>
 
         builder
             .Property(x => x.CountryId)
-            .HasColumnName("CountryId")
+            .HasColumnName("country_id")
             .HasColumnType("int")
             .IsRequired();
 

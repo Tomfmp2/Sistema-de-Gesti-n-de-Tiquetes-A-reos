@@ -17,49 +17,49 @@ public class FareEntityConfiguration : IEntityTypeConfiguration<FareEntity>
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.RouteId)
-            .HasColumnName("RouteId")
+            .HasColumnName("route_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.CabinTypeId)
-            .HasColumnName("CabinTypeId")
+            .HasColumnName("cabin_type_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.PassengerTypeId)
-            .HasColumnName("PassengerTypeId")
+            .HasColumnName("passenger_type_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.SeasonId)
-            .HasColumnName("SeasonId")
+            .HasColumnName("season_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.BasePrice)
-            .HasColumnName("BasePrice")
+            .HasColumnName("base_price")
             .HasColumnType("decimal(18,2)")
             .IsRequired();
 
         builder
             .Property(x => x.ValidFrom)
-            .HasColumnName("ValidFrom")
+            .HasColumnName("valid_from")
             .HasColumnType("date");
 
         builder
             .Property(x => x.ValidTo)
-            .HasColumnName("ValidTo")
+            .HasColumnName("valid_to")
             .HasColumnType("date");
 
         builder

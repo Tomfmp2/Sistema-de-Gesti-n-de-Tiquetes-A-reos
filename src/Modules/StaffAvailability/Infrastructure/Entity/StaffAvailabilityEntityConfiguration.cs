@@ -29,17 +29,17 @@ public class StaffAvailabilityEntityConfiguration : IEntityTypeConfiguration<Sta
             .IsRequired();
 
         builder.Property(sa => sa.StartsAt)
-            .HasColumnName("starts_at")
+            .HasColumnName("start_date")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder.Property(sa => sa.EndsAt)
-            .HasColumnName("ends_at")
+            .HasColumnName("end_date")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder.Property(sa => sa.Notes)
-            .HasColumnName("notes")
+            .HasColumnName("observation")
             .HasColumnType("varchar(255)");
 
         builder

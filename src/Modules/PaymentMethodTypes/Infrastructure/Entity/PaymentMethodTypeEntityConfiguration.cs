@@ -8,19 +8,19 @@ public class PaymentMethodTypeEntityConfiguration : IEntityTypeConfiguration<Pay
 {
     public void Configure(EntityTypeBuilder<PaymentMethodTypeEntity> builder)
     {
-        builder.ToTable("PaymentMethodTypes");
+        builder.ToTable("payment_method_types");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(50)")
             .IsRequired();
 

@@ -12,18 +12,18 @@ public class FlightSeatEntityConfiguration : IEntityTypeConfiguration<FlightSeat
 {
     public void Configure(EntityTypeBuilder<FlightSeatEntity> builder)
     {
-        builder.ToTable("FlightSeats");
+        builder.ToTable("flight_seats");
 
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder.Property(x => x.FlightId)
-            .HasColumnName("FlightId")
+            .HasColumnName("flight_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -33,12 +33,12 @@ public class FlightSeatEntityConfiguration : IEntityTypeConfiguration<FlightSeat
             .IsRequired();
 
         builder.Property(x => x.CabinTypeId)
-            .HasColumnName("CabinTypeId")
+            .HasColumnName("cabin_type_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder.Property(x => x.LocationTypeId)
-            .HasColumnName("LocationtypeId")
+            .HasColumnName("location_type_id")
             .HasColumnType("int")
             .IsRequired();
 

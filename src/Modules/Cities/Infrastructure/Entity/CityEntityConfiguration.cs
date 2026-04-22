@@ -14,20 +14,20 @@ public sealed class CityEntityConfiguration : IEntityTypeConfiguration<CityEntit
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(100)")
             .IsRequired();
 
         builder
             .Property(x => x.RegionId)
-            .HasColumnName("RegionId")
+            .HasColumnName("region_id")
             .HasColumnType("int")
             .IsRequired();
         builder

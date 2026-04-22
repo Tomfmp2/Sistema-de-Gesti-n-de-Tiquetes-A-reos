@@ -8,7 +8,7 @@ public sealed class PhoneCodeEntityConfiguration : IEntityTypeConfiguration<Phon
 {
     public void Configure(EntityTypeBuilder<PhoneCodeEntity> builder)
     {
-        builder.ToTable("PhoneCodes");
+        builder.ToTable("phone_codes");
 
         builder.HasKey(x => x.Id);
         builder

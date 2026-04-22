@@ -8,7 +8,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.SeatLocationTypes.Infras
 public class SeatLocationTypeEntity
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = null!;
 
     public ICollection<FlightSeatEntity> FlightSeats { get; set; } = new List<FlightSeatEntity>();
 

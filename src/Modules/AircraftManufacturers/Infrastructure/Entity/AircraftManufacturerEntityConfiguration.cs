@@ -9,20 +9,22 @@ public class AircraftManufacturerEntityConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<AircraftManufacturerEntity> builder)
     {
+        builder.ToTable("aircraft_manufacturers");
+
         builder.HasKey(am => am.Id);
 
         builder.Property(am => am.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder.Property(am => am.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasMaxLength(100)
             .IsRequired();
 
         builder.Property(am => am.Country)
-            .HasColumnName("Country")
+            .HasColumnName("country")
             .HasMaxLength(100)
             .IsRequired();
 

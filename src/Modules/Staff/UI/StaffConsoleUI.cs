@@ -37,8 +37,8 @@ public class StaffConsoleUI : IModuleUI
             var items = new (string Label, Action Action)[]
             {
                 ("Registrar personal", () => CreateStaff().GetAwaiter().GetResult()),
-                ("Consultar por ID", () => GetStaffById().GetAwaiter().GetResult()),
                 ("Listar todo el personal", () => GetAllStaff().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetStaffById().GetAwaiter().GetResult()),
                 ("Actualizar", () => UpdateStaff().GetAwaiter().GetResult()),
                 ("Eliminar", () => DeleteStaff().GetAwaiter().GetResult()),
                 ("Volver", () => exit = true),

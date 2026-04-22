@@ -31,8 +31,8 @@ public class AirportConsoleUI : IModuleUI
             var items = new (string Label, Action Action)[]
             {
                 ("Crear aeropuerto", CreateAirport),
-                ("Consultar por ID", GetAirportById),
                 ("Listar todos", GetAllAirports),
+                ("Consultar por ID", GetAirportById),
                 ("Actualizar", UpdateAirport),
                 ("Eliminar", DeleteAirport),
                 ("Volver", () => exit = true),
@@ -44,18 +44,25 @@ public class AirportConsoleUI : IModuleUI
 
     private void CreateAirport()
     {
-        Console.Write("Nombre: ");
-        var name = Console.ReadLine();
-        Console.Write("Código IATA: ");
-        var iata = Console.ReadLine();
-        Console.Write("Código ICAO (opcional): ");
-        var icao = Console.ReadLine();
-        Console.Write("ID ciudad: ");
-        var cityId = int.Parse(Console.ReadLine()!);
         try
         {
-            var airport = _createUseCase.ExecuteAsync(name!, iata!, string.IsNullOrWhiteSpace(icao) ? null : icao, cityId).Result;
-            Console.WriteLine($"Aeropuerto creado: {airport.Name.Value}");
+            SpectreUi.ModuleHeader("Crear aeropuerto", "Datos básicos");
+            var name = SpectreUi.PromptRequired("Nombre");
+            var iata = SpectreUi.PromptRequired("Código IATA", "3 letras (p.ej. BOG)");
+            var icao = SpectreUi.PromptOptional("Código ICAO", "opcional (p.ej. SKBO)");
+            var cityId = SpectreUi.PromptIntRequired("ID ciudad", min: 1);
+
+            var airport = _createUseCase.ExecuteAsync(
+                name,
+                iata,
+                string.IsNullOrWhiteSpace(icao) ? null : icao,
+                cityId
+            ).Result;
+
+            SpectreUi.MarkupLineOrPlain(
+                $"[green]Aeropuerto creado[/] id={airport.Id.Value} · [bold]{airport.Name.Value}[/] ({airport.IataCode.Value})",
+                $"Aeropuerto creado id={airport.Id.Value} · {airport.Name.Value} ({airport.IataCode.Value})"
+            );
         }
         catch (Exception ex)
         {
@@ -68,12 +75,21 @@ public class AirportConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Consultar aeropuerto", null);
+            var id = SpectreUi.PromptIntRequired("ID", min: 1);
             var airport = _getByIdUseCase.ExecuteAsync(id).Result;
             if (airport != null)
             {
-                Console.WriteLine($"ID: {airport.Id.Value}, Nombre: {airport.Name.Value}, IATA: {airport.IataCode.Value}, ICAO: {airport.IcaoCode.Value}");
+                SpectreUi.ShowTable(
+                    "Aeropuerto",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", airport.Id.Value.ToString()],
+                        ["Nombre", airport.Name.Value],
+                        ["IATA", airport.IataCode.Value],
+                        ["ICAO", airport.IcaoCode.Value ?? ""],
+                    ]
+                );
             }
             else
             {
@@ -99,10 +115,21 @@ public class AirportConsoleUI : IModuleUI
                 return;
             }
 
-            foreach (var a in airports)
-            {
-                Console.WriteLine($"ID: {a.Id.Value}, Nombre: {a.Name.Value}, IATA: {a.IataCode.Value}, ICAO: {a.IcaoCode.Value}");
-            }
+            SpectreUi.ModuleHeader("Aeropuertos", "Listado");
+            SpectreUi.ShowTable(
+                "Aeropuertos",
+                ["ID", "Nombre", "IATA", "ICAO"],
+                airports
+                    .OrderBy(a => a.Id.Value)
+                    .Select(a => (IReadOnlyList<string>)new[]
+                    {
+                        a.Id.Value.ToString(),
+                        a.Name.Value,
+                        a.IataCode.Value,
+                        a.IcaoCode.Value ?? ""
+                    })
+                    .ToList()
+            );
         }
         catch (Exception ex)
         {
@@ -113,20 +140,24 @@ public class AirportConsoleUI : IModuleUI
 
     private void UpdateAirport()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        Console.Write("Nombre: ");
-        var name = Console.ReadLine();
-        Console.Write("Código IATA: ");
-        var iata = Console.ReadLine();
-        Console.Write("Código ICAO (opcional): ");
-        var icao = Console.ReadLine();
-        Console.Write("ID ciudad: ");
-        var cityId = int.Parse(Console.ReadLine()!);
         try
         {
-            _updateUseCase.ExecuteAsync(id, name!, iata!, string.IsNullOrWhiteSpace(icao) ? null : icao, cityId).Wait();
-            Console.WriteLine("Actualizado");
+            SpectreUi.ModuleHeader("Actualizar aeropuerto", null);
+            var id = SpectreUi.PromptIntRequired("ID", min: 1);
+            var name = SpectreUi.PromptRequired("Nombre");
+            var iata = SpectreUi.PromptRequired("Código IATA", "3 letras (p.ej. BOG)");
+            var icao = SpectreUi.PromptOptional("Código ICAO", "opcional (p.ej. SKBO)");
+            var cityId = SpectreUi.PromptIntRequired("ID ciudad", min: 1);
+
+            _updateUseCase.ExecuteAsync(
+                id,
+                name,
+                iata,
+                string.IsNullOrWhiteSpace(icao) ? null : icao,
+                cityId
+            ).Wait();
+
+            SpectreUi.MarkupLineOrPlain("[green]Actualizado.[/]", "Actualizado.");
         }
         catch (Exception ex)
         {
@@ -139,10 +170,10 @@ public class AirportConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Eliminar aeropuerto", null);
+            var id = SpectreUi.PromptIntRequired("ID", min: 1);
             _deleteUseCase.ExecuteAsync(id).Wait();
-            Console.WriteLine("Eliminado");
+            SpectreUi.MarkupLineOrPlain("[green]Eliminado.[/]", "Eliminado.");
         }
         catch (Exception ex)
         {

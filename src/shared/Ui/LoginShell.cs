@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using Spectre.Console;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Clients.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Sessions.Infrastructure.Entity;
@@ -67,6 +68,7 @@ public static class LoginShell
 
                 var normalizedUsername = username.Trim().ToUpperInvariant();
                 var user = await context.Set<UserEntity>()
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(
                         u => u.Username != null
                              && u.Username.ToUpper() == normalizedUsername
@@ -94,12 +96,17 @@ public static class LoginShell
                     continue;
                 }
 
-                user.LastAccessAt = DateTime.UtcNow;
+                // Actualizamos LastAccessAt sin depender de tracking del query AsNoTracking.
+                var utcNow = DateTime.UtcNow;
+                var stub = new UserEntity { Id = user.Id };
+                context.Attach(stub);
+                stub.LastAccessAt = utcNow;
+                context.Entry(stub).Property(x => x.LastAccessAt).IsModified = true;
 
                 var session = new SessionEntity
                 {
                     UserId = user.Id,
-                    StartedAt = DateTime.UtcNow,
+                    StartedAt = utcNow,
                     ClosedAt = null,
                     OriginIp = null,
                     IsActive = true
@@ -136,6 +143,18 @@ public static class LoginShell
                     roleName,
                     clientId
                 );
+            }
+            catch (Exception ex) when (IsTransientConnectionError(ex))
+            {
+                SpectreUi.MarkupLineOrPlain(
+                    "[red]No se pudo conectar a la base de datos.[/] Verifica que MySQL esté encendido y la conexión/SSL.",
+                    "No se pudo conectar a la base de datos. Verifica que MySQL esté encendido y la conexión/SSL."
+                );
+                SpectreUi.MarkupLineOrPlain(
+                    $"[grey]{ExceptionFormatting.GetDiagnosticMessage(ex)}[/]",
+                    ExceptionFormatting.GetDiagnosticMessage(ex)
+                );
+                SpectreUi.Pause("Pulse una tecla para reintentar…");
             }
             catch (Exception ex)
             {
@@ -196,5 +215,22 @@ public static class LoginShell
         }
 
         return sb.ToString();
+    }
+
+    private static bool IsTransientConnectionError(Exception ex)
+    {
+        // EF Core suele envolver como InvalidOperationException cuando falla la estrategia de ejecución.
+        if (ex is InvalidOperationException ioe &&
+            ioe.Message.Contains("transient failure", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // MySqlConnector errores de conexión típicos.
+        if (ex is MySqlException)
+            return true;
+
+        var msg = ex.ToString();
+        return msg.Contains("Couldn't connect to server", StringComparison.OrdinalIgnoreCase)
+               || msg.Contains("Unable to read data from the transport connection", StringComparison.OrdinalIgnoreCase)
+               || msg.Contains("SocketException", StringComparison.OrdinalIgnoreCase);
     }
 }

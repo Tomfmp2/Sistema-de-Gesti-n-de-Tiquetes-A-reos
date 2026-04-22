@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.UI;
@@ -25,86 +26,171 @@ public class FlightStatusConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        var exit = false;
+        while (!exit)
         {
-            Console.WriteLine("Gestión de estados de vuelo");
-            Console.WriteLine("1. Crear estado de vuelo");
-            Console.WriteLine("2. Consultar estado por ID");
-            Console.WriteLine("3. Listar todos los estados");
-            Console.WriteLine("4. Actualizar estado");
-            Console.WriteLine("5. Eliminar estado");
-            Console.WriteLine("0. Volver");
-            var choice = Console.ReadLine();
-            switch (choice)
+            SpectreUi.ModuleHeader("Estados de vuelo", "Programado / En vuelo / Retrasado…");
+
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateFlightStatus();
-                    break;
-                case "2":
-                    await GetFlightStatusById();
-                    break;
-                case "3":
-                    await GetAllFlightStatuses();
-                    break;
-                case "4":
-                    await UpdateFlightStatus();
-                    break;
-                case "5":
-                    await DeleteFlightStatus();
-                    break;
-                case "0":
-                    return;
-            }
+                ("Crear", () => CreateFlightStatus().GetAwaiter().GetResult()),
+                ("Listar", () => GetAllFlightStatuses().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetFlightStatusById().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateFlightStatus().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteFlightStatus().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateFlightStatus()
     {
-        Console.Write("Nombre: ");
-        var name = Console.ReadLine();
-        await _createUseCase.ExecuteAsync(new CreateFlightStatusRequest(name));
-        Console.WriteLine("Estado de vuelo creado");
+        try
+        {
+            SpectreUi.ModuleHeader("Crear estado", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+            var name = SpectreUi.PromptRequiredCancelable("Nombre");
+            await _createUseCase.ExecuteAsync(new CreateFlightStatusRequest(name));
+            SpectreUi.MarkupLineOrPlain("[green]Creado.[/]", "Creado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 
     private async Task GetFlightStatusById()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        var flightStatus = await _getByIdUseCase.ExecuteAsync(id);
-        if (flightStatus != null)
+        try
         {
-            Console.WriteLine($"ID: {flightStatus.Id.Value}, Nombre: {flightStatus.Name.Value}");
+            SpectreUi.ModuleHeader("Consultar estado", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
+            var flightStatus = await _getByIdUseCase.ExecuteAsync(id);
+            if (flightStatus is null)
+            {
+                Console.WriteLine("No encontrado.");
+            }
+            else
+            {
+                SpectreUi.ShowTable(
+                    "Estado de vuelo",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", flightStatus.Id.Value.ToString()],
+                        ["Nombre", flightStatus.Name.Value],
+                    ]
+                );
+            }
         }
-        else
+        catch (OperationCanceledException)
         {
-            Console.WriteLine("Estado de vuelo no encontrado");
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 
     private async Task GetAllFlightStatuses()
     {
-        var statuses = await _getAllUseCase.ExecuteAsync();
-        foreach (var s in statuses)
+        try
         {
-            Console.WriteLine($"ID: {s.Id.Value}, Nombre: {s.Name.Value}");
+            var statuses = (await _getAllUseCase.ExecuteAsync()).ToList();
+            if (statuses.Count == 0)
+            {
+                Console.WriteLine("No hay estados para mostrar.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            SpectreUi.ModuleHeader("Estados de vuelo", "Listado");
+            SpectreUi.ShowTable(
+                "Estados",
+                ["ID", "Nombre"],
+                statuses
+                    .OrderBy(x => x.Id.Value)
+                    .Select(x => (IReadOnlyList<string>)new[]
+                    {
+                        x.Id.Value.ToString(),
+                        x.Name.Value
+                    })
+                    .ToList()
+            );
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 
     private async Task UpdateFlightStatus()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        Console.Write("Nombre: ");
-        var name = Console.ReadLine();
-        await _updateUseCase.ExecuteAsync(new UpdateFlightStatusRequest(id, name));
-        Console.WriteLine("Estado de vuelo actualizado");
+        try
+        {
+            SpectreUi.ModuleHeader("Actualizar estado", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
+            var name = SpectreUi.PromptRequiredCancelable("Nombre");
+            await _updateUseCase.ExecuteAsync(new UpdateFlightStatusRequest(id, name));
+            SpectreUi.MarkupLineOrPlain("[green]Actualizado.[/]", "Actualizado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 
     private async Task DeleteFlightStatus()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        await _deleteUseCase.ExecuteAsync(id);
-        Console.WriteLine("Estado de vuelo eliminado");
+        try
+        {
+            SpectreUi.ModuleHeader("Eliminar estado", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
+            await _deleteUseCase.ExecuteAsync(id);
+            SpectreUi.MarkupLineOrPlain("[green]Eliminado.[/]", "Eliminado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+
+        SpectreUi.Pause();
     }
 }

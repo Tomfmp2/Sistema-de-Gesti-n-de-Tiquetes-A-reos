@@ -32,7 +32,20 @@ public class DbContextFactory
             );
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseMySql(ConnectionString, new MySqlServerVersion(detectedVersion))
+            .UseMySql(
+                ConnectionString,
+                new MySqlServerVersion(detectedVersion),
+                mySqlOptions =>
+                {
+                    // Resiliencia ante fallos transitorios de red/conexión (muy común en MySQL local/SSL).
+                    mySqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(2),
+                        errorNumbersToAdd: null
+                    );
+                    mySqlOptions.CommandTimeout(10);
+                }
+            )
             .Options;
         return new AppDbContext(options);
     }

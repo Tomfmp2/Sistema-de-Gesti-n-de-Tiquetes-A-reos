@@ -8,19 +8,19 @@ public class PaymentStatusEntityConfiguration : IEntityTypeConfiguration<Payment
 {
     public void Configure(EntityTypeBuilder<PaymentStatusEntity> builder)
     {
-        builder.ToTable("PaymentStatuses");
+        builder.ToTable("payment_statuses");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(50)")
             .IsRequired();
 

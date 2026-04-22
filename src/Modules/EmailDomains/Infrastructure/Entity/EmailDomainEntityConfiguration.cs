@@ -8,12 +8,12 @@ public sealed class EmailDomainEntityConfiguration : IEntityTypeConfiguration<Em
 {
     public void Configure(EntityTypeBuilder<EmailDomainEntity> builder)
     {
-        builder.ToTable("EmailDomains");
+        builder.ToTable("email_domains");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();

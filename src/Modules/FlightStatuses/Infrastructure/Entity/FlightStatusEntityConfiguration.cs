@@ -8,19 +8,19 @@ public class FlightStatusEntityConfiguration : IEntityTypeConfiguration<FlightSt
 {
     public void Configure(EntityTypeBuilder<FlightStatusEntity> builder)
     {
-        builder.ToTable("FlightStatuses");
+        builder.ToTable("flight_statuses");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(50)")
             .IsRequired();
 

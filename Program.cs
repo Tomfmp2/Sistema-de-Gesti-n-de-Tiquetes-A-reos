@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Data;
 
 try
 {
@@ -42,9 +43,10 @@ try
 
         if (args.Any(a => string.Equals(a, "--seed-defaults", StringComparison.OrdinalIgnoreCase)))
         {
-            // Los "defaults" se cargan vía migraciones (InsertData/HasData). Este flag asegura que se apliquen.
-            context.Database.Migrate();
-            Console.WriteLine("Seed por defecto aplicado (vía migraciones).");
+            // En este proyecto la DB puede venir de un SQL legacy, así que hacemos seed "seguro"
+            // vía INSERTs idempotentes (sin depender de migraciones / nombres de FK).
+            await EnsureDefaultsAsync(context);
+            Console.WriteLine("Seed por defecto aplicado.");
             return;
         }
 
@@ -53,6 +55,19 @@ try
             // Asegura que el catálogo mínimo exista antes de crear usuario ROOT.
             context.Database.Migrate();
             await SeedRootUserAsync(context);
+            return;
+        }
+
+        if (args.Any(a => string.Equals(a, "--normalize-persons", StringComparison.OrdinalIgnoreCase)))
+        {
+            await NormalizePersonsColumnsAsync(context);
+            Console.WriteLine("Normalización de `persons` completada.");
+            return;
+        }
+
+        if (args.Any(a => string.Equals(a, "--debug-root", StringComparison.OrdinalIgnoreCase)))
+        {
+            await DebugRootAsync(context);
             return;
         }
 
@@ -193,4 +208,116 @@ static async Task ValidateMappingsAsync(sistema_gestor_de_tiquetes_aereos.Src.Sh
     }
 
     Console.WriteLine("Validación terminada.");
+}
+
+static async Task NormalizePersonsColumnsAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context)
+{
+    // Normaliza nombres de columnas de `persons` (PascalCase -> snake_case) cuando la BD fue creada
+    // desde un script legacy. Evita depender de nombres de foreign keys.
+    var cols = await context.Database.SqlQueryRaw<string>(
+        "SELECT COLUMN_NAME AS Value FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'persons'"
+    ).ToListAsync();
+
+    if (cols.Count == 0)
+    {
+        Console.WriteLine("Tabla `persons` no existe.");
+        return;
+    }
+
+    var set = new HashSet<string>(cols, StringComparer.OrdinalIgnoreCase);
+
+    async Task RenameIfExistsAsync(string from, string to)
+    {
+        if (!set.Contains(from) || set.Contains(to))
+            return;
+        // Column names are internal constants (not user input). Suppress EF1002 for this safe use.
+#pragma warning disable EF1002
+        await context.Database.ExecuteSqlRawAsync($"ALTER TABLE `persons` RENAME COLUMN `{from}` TO `{to}`;");
+#pragma warning restore EF1002
+        set.Remove(from);
+        set.Add(to);
+    }
+
+    await RenameIfExistsAsync("Id", "id");
+    await RenameIfExistsAsync("DocumentTypeId", "document_type_id");
+    await RenameIfExistsAsync("DocumentNumber", "document_number");
+    await RenameIfExistsAsync("FirstName", "first_name");
+    await RenameIfExistsAsync("LastName", "last_name");
+    await RenameIfExistsAsync("BirthDate", "birth_date");
+    await RenameIfExistsAsync("Gender", "gender");
+    await RenameIfExistsAsync("CreatedAt", "created_at");
+    await RenameIfExistsAsync("UpdatedAt", "updated_at");
+}
+
+static async Task EnsureDefaultsAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context)
+{
+    await ReservationStatusSeeder.EnsureAsync(context);
+}
+
+static async Task DebugRootAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context)
+{
+    Console.WriteLine("== Debug ROOT (smoke checks) ==");
+
+    // 0) Infra: mappings + connection
+    await ValidateMappingsAsync(context);
+
+    // 1) Login: verify ROOT exists & password
+    var root = await context.Set<UserEntity>()
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u => u.Username != null && u.Username.ToUpper() == "ROOT");
+    Console.WriteLine(root is null ? "[FAIL] ROOT no existe" : $"[OK] ROOT existe (id={root.Id}, role_id={root.SystemRoleId})");
+
+    // 2) Catálogos base (should exist / be queryable)
+    async Task PrintCountAsync<T>(string label) where T : class
+    {
+        try
+        {
+            var count = await context.Set<T>().AsNoTracking().CountAsync();
+            Console.WriteLine($"[OK] {label}: {count}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[FAIL] {label}: {ex.Message}");
+        }
+    }
+
+    await PrintCountAsync<sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity.AirlineEntity>("Aerolíneas");
+    await PrintCountAsync<sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity.AirportEntity>("Aeropuertos");
+    await PrintCountAsync<sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity.RouteEntity>("Rutas");
+    await PrintCountAsync<sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity.FlightEntity>("Vuelos");
+    await PrintCountAsync<sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Entity.ReservationStatusEntity>("Estados de reserva");
+
+    // 3) Business checks: flights have seats > 0 and can be listed
+    try
+    {
+        var flights = await context.Set<sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity.FlightEntity>()
+            .AsNoTracking()
+            .OrderBy(f => f.DepartureDate)
+            .Take(5)
+            .Select(f => new { f.Id, f.FlightCode, f.AvailableSeats, f.DepartureDate })
+            .ToListAsync();
+        Console.WriteLine(flights.Count == 0
+            ? "[WARN] No hay vuelos para probar reservas"
+            : $"[OK] Vuelos consultables (top5): {string.Join(", ", flights.Select(f => $"{f.FlightCode}#{f.Id}({f.AvailableSeats})"))}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[FAIL] Consulta de vuelos: {ex.Message}");
+    }
+
+    // 4) Reservation flow sanity: ensure booking_statuses has Pendiente(1)
+    try
+    {
+        await ReservationStatusSeeder.EnsureAsync(context);
+        var pending = await context.Database.SqlQueryRaw<int>(
+            "SELECT id AS Value FROM booking_statuses WHERE id = 1"
+        ).ToListAsync();
+        Console.WriteLine(pending.Count == 1 ? "[OK] booking_statuses contiene Pendiente (1)" : "[FAIL] booking_statuses sigue sin Pendiente(1)");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[FAIL] booking_statuses: {ex.Message}");
+    }
+
+    Console.WriteLine("== Fin debug ==");
 }

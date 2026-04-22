@@ -17,7 +17,7 @@ public class AircraftModelEntity
     public int ManufacturerId { get; set; }
 
     [Column("ModelName")]
-    public string ModelName { get; set; }
+    public string ModelName { get; set; } = null!;
 
     [Column("MaxCapacity")]
     public int MaxCapacity { get; set; }

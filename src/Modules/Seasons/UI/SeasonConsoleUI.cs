@@ -34,8 +34,8 @@ public class SeasonConsoleUI : IModuleUI
             var items = new (string Label, Action Action)[]
             {
                 ("Crear temporada", () => CreateSeason().GetAwaiter().GetResult()),
-                ("Consultar por ID", () => GetSeasonById().GetAwaiter().GetResult()),
                 ("Listar todas", () => GetAllSeasons().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetSeasonById().GetAwaiter().GetResult()),
                 ("Actualizar", () => UpdateSeason().GetAwaiter().GetResult()),
                 ("Eliminar", () => DeleteSeason().GetAwaiter().GetResult()),
                 ("Volver", () => exit = true),
@@ -49,18 +49,25 @@ public class SeasonConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("Nombre: ");
-            var name = Console.ReadLine();
-            Console.Write("Descripción (opcional): ");
-            var description = Console.ReadLine();
-            Console.Write("Factor de precio: ");
-            var priceFactor = decimal.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Crear temporada", "Nombre y factor");
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+
+            var name = SpectreUi.PromptRequiredCancelable("Nombre");
+            var description = SpectreUi.PromptOptionalCancelable("Descripción", "opcional");
+            var priceFactor = PromptDecimalRequired("Factor de precio", "p.ej. 1.10");
             await _createUseCase.ExecuteAsync(
                 SeasonName.Create(name),
                 SeasonDescription.Create(description),
                 PriceFactor.Create(priceFactor)
             );
-            Console.WriteLine("Temporada creada");
+            SpectreUi.MarkupLineOrPlain("[green]Temporada creada.[/]", "Temporada creada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -73,17 +80,34 @@ public class SeasonConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID temporada: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Consultar temporada", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID temporada", min: 1);
             var season = await _getByIdUseCase.ExecuteAsync(SeasonId.Create(id));
             if (season != null)
             {
-                Console.WriteLine($"ID: {season.Id.Value}, Nombre: {season.Name.Value}, Descripción: {season.Description.Value}, Factor precio: {season.PriceFactor.Value}");
+                SpectreUi.ShowTable(
+                    "Temporada",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", season.Id.Value.ToString()],
+                        ["Nombre", season.Name.Value],
+                        ["Descripción", season.Description.Value ?? ""],
+                        ["Factor", season.PriceFactor.Value.ToString()],
+                    ]
+                );
             }
             else
             {
                 Console.WriteLine("Temporada no encontrada");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -97,10 +121,29 @@ public class SeasonConsoleUI : IModuleUI
         try
         {
             var seasons = await _getAllUseCase.ExecuteAsync();
-            foreach (var s in seasons)
+            var list = seasons.ToList();
+            if (list.Count == 0)
             {
-                Console.WriteLine($"ID: {s.Id.Value}, Nombre: {s.Name.Value}, Descripción: {s.Description.Value}, Factor precio: {s.PriceFactor.Value}");
+                Console.WriteLine("No hay temporadas para mostrar.");
+                SpectreUi.Pause();
+                return;
             }
+
+            SpectreUi.ModuleHeader("Temporadas", "Listado");
+            SpectreUi.ShowTable(
+                "Temporadas",
+                ["ID", "Nombre", "Factor", "Descripción"],
+                list
+                    .OrderBy(s => s.Id.Value)
+                    .Select(s => (IReadOnlyList<string>)new[]
+                    {
+                        s.Id.Value.ToString(),
+                        s.Name.Value,
+                        s.PriceFactor.Value.ToString(),
+                        s.Description.Value ?? ""
+                    })
+                    .ToList()
+            );
         }
         catch (Exception ex)
         {
@@ -113,8 +156,12 @@ public class SeasonConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID temporada: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Actualizar temporada", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID temporada", min: 1);
             var existing = await _getByIdUseCase.ExecuteAsync(SeasonId.Create(id));
             if (existing == null)
             {
@@ -122,19 +169,21 @@ public class SeasonConsoleUI : IModuleUI
                 SpectreUi.Pause();
                 return;
             }
-            Console.Write("Nombre: ");
-            var name = Console.ReadLine();
-            Console.Write("Descripción (opcional): ");
-            var description = Console.ReadLine();
-            Console.Write("Factor de precio: ");
-            var priceFactor = decimal.Parse(Console.ReadLine()!);
+
+            var name = SpectreUi.PromptRequiredCancelable("Nombre");
+            var description = SpectreUi.PromptOptionalCancelable("Descripción", "opcional");
+            var priceFactor = PromptDecimalRequired("Factor de precio", "p.ej. 1.10");
             await _updateUseCase.ExecuteAsync(
                 SeasonId.Create(id),
                 SeasonName.Create(name),
                 SeasonDescription.Create(description),
                 PriceFactor.Create(priceFactor)
             );
-            Console.WriteLine("Temporada actualizada");
+            SpectreUi.MarkupLineOrPlain("[green]Temporada actualizada.[/]", "Temporada actualizada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -147,15 +196,35 @@ public class SeasonConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID temporada: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Eliminar temporada", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID temporada", min: 1);
             await _deleteUseCase.ExecuteAsync(SeasonId.Create(id));
-            Console.WriteLine("Temporada eliminada");
+            SpectreUi.MarkupLineOrPlain("[green]Temporada eliminada.[/]", "Temporada eliminada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
         SpectreUi.Pause();
+    }
+
+    private static decimal PromptDecimalRequired(string label, string? help = null)
+    {
+        while (true)
+        {
+            var raw = SpectreUi.PromptRequiredCancelable(label, help);
+            if (decimal.TryParse(raw, out var value))
+                return value;
+
+            SpectreUi.MarkupLineOrPlain("[red]Número decimal inválido.[/]", "Número decimal inválido.");
+        }
     }
 }

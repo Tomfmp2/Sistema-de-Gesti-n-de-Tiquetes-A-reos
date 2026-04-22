@@ -10,6 +10,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 public static class SpectreUi
 {
     private readonly record struct MenuEntry(string Key, string Label);
+    private static readonly string[] CancelTokens = ["0", "c", "cancelar", "cancel"];
 
     /// <summary>
     /// Si es false, no se usan prompts interactivos de Spectre (evita IOException / “Controlador no válido” en Windows).
@@ -267,6 +268,175 @@ public static class SpectreUi
             DisableRichConsole();
             Console.WriteLine(ex.ToString());
             Pause();
+        }
+    }
+
+    public static string PromptRequired(string label, string? help = null)
+    {
+        while (true)
+        {
+            var value = PromptOptional(label, help)?.Trim();
+            if (!string.IsNullOrWhiteSpace(value))
+                return value;
+
+            MarkupLineOrPlain("[red]Este campo es obligatorio.[/]", "Este campo es obligatorio.");
+        }
+    }
+
+    public static string? PromptOptional(string label, string? help = null)
+    {
+        if (!CanUseAnsiPrompts)
+        {
+            Console.Write(help is null ? $"{label}: " : $"{label} ({help}): ");
+            var line = Console.ReadLine();
+            return string.IsNullOrWhiteSpace(line) ? null : line.Trim();
+        }
+
+        try
+        {
+            var shown = string.IsNullOrWhiteSpace(help) ? label : $"{label} ({help})";
+            var prompt = new TextPrompt<string>($"[yellow]{shown}[/]:").AllowEmpty();
+
+            var raw = AnsiConsole.Prompt(prompt);
+            return string.IsNullOrWhiteSpace(raw) ? null : raw.Trim();
+        }
+        catch
+        {
+            DisableRichConsole();
+            Console.Write(help is null ? $"{label}: " : $"{label} ({help}): ");
+            var line = Console.ReadLine();
+            return string.IsNullOrWhiteSpace(line) ? null : line.Trim();
+        }
+    }
+
+    public static string PromptRequiredCancelable(string label, string? help = null)
+    {
+        while (true)
+        {
+            var raw = PromptOptionalCancelable(label, help);
+            if (!string.IsNullOrWhiteSpace(raw))
+                return raw;
+
+            MarkupLineOrPlain("[red]Este campo es obligatorio.[/]", "Este campo es obligatorio.");
+        }
+    }
+
+    public static string? PromptOptionalCancelable(string label, string? help = null)
+    {
+        var raw = PromptOptional(label, help);
+        if (raw is null)
+            return null;
+
+        var t = raw.Trim();
+        if (CancelTokens.Any(x => string.Equals(x, t, StringComparison.OrdinalIgnoreCase)))
+            throw new OperationCanceledException("Operación cancelada por el usuario.");
+
+        return t;
+    }
+
+    public static int PromptIntRequired(string label, string? help = null, int? min = null)
+    {
+        while (true)
+        {
+            var raw = PromptOptional(label, help);
+            if (int.TryParse(raw, out var value))
+            {
+                if (min.HasValue && value < min.Value)
+                {
+                    MarkupLineOrPlain($"[red]Debe ser ≥ {min.Value}.[/]", $"Debe ser ≥ {min.Value}.");
+                    continue;
+                }
+
+                return value;
+            }
+
+            MarkupLineOrPlain("[red]Número inválido.[/]", "Número inválido.");
+        }
+    }
+
+    public static int PromptIntRequiredCancelable(string label, string? help = null, int? min = null)
+    {
+        while (true)
+        {
+            var raw = PromptOptionalCancelable(label, help);
+            if (int.TryParse(raw, out var value))
+            {
+                if (min.HasValue && value < min.Value)
+                {
+                    MarkupLineOrPlain($"[red]Debe ser ≥ {min.Value}.[/]", $"Debe ser ≥ {min.Value}.");
+                    continue;
+                }
+
+                return value;
+            }
+
+            MarkupLineOrPlain("[red]Número inválido.[/]", "Número inválido.");
+        }
+    }
+
+    public static bool PromptBool(string label, bool defaultValue = true)
+    {
+        if (!CanUseAnsiPrompts)
+        {
+            Console.Write($"{label} (true/false, default={(defaultValue ? "true" : "false")}): ");
+            var raw = (Console.ReadLine() ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(raw))
+                return defaultValue;
+            return bool.TryParse(raw, out var v) ? v : defaultValue;
+        }
+
+        try
+        {
+            return AnsiConsole.Confirm($"[yellow]{label}[/]?", defaultValue);
+        }
+        catch
+        {
+            DisableRichConsole();
+            Console.Write($"{label} (true/false, default={(defaultValue ? "true" : "false")}): ");
+            var raw = (Console.ReadLine() ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(raw))
+                return defaultValue;
+            return bool.TryParse(raw, out var v) ? v : defaultValue;
+        }
+    }
+
+    public static void ShowTable(
+        string title,
+        IReadOnlyList<string> columns,
+        IReadOnlyList<IReadOnlyList<string>> rows
+    )
+    {
+        if (!CanUseAnsiPrompts)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"=== {title} ===");
+            Console.WriteLine(string.Join(" | ", columns));
+            Console.WriteLine(new string('-', Math.Min(120, string.Join(" | ", columns).Length)));
+            foreach (var r in rows)
+                Console.WriteLine(string.Join(" | ", r));
+            Console.WriteLine();
+            return;
+        }
+
+        try
+        {
+            var table = new Table().Border(TableBorder.Rounded).BorderColor(Color.Grey);
+            table.Title($"[bold]{title}[/]");
+            foreach (var c in columns)
+                table.AddColumn($"[grey]{c}[/]");
+            foreach (var r in rows)
+                table.AddRow(r.Select(x => x ?? string.Empty).ToArray());
+            AnsiConsole.Write(table);
+        }
+        catch
+        {
+            DisableRichConsole();
+            Console.WriteLine();
+            Console.WriteLine($"=== {title} ===");
+            Console.WriteLine(string.Join(" | ", columns));
+            foreach (var r in rows)
+                Console.WriteLine(string.Join(" | ", r));
+            Console.WriteLine();
         }
     }
 }

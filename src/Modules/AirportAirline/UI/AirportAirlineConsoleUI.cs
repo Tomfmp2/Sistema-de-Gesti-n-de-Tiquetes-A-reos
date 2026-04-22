@@ -31,8 +31,8 @@ public class AirportAirlineConsoleUI : IModuleUI
             var items = new (string Label, Action Action)[]
             {
                 ("Crear relación", CreateAirportAirline),
-                ("Consultar por ID", GetAirportAirlineById),
                 ("Listar todas", GetAllAirportAirlines),
+                ("Consultar por ID", GetAirportAirlineById),
                 ("Actualizar", UpdateAirportAirline),
                 ("Eliminar", DeleteAirportAirline),
                 ("Volver", () => exit = true),
@@ -44,21 +44,39 @@ public class AirportAirlineConsoleUI : IModuleUI
 
     private void CreateAirportAirline()
     {
-        Console.Write("ID aeropuerto: ");
-        var airportId = int.Parse(Console.ReadLine()!);
-        Console.Write("ID aerolínea: ");
-        var airlineId = int.Parse(Console.ReadLine()!);
-        Console.Write("Terminal (opcional): ");
-        var terminal = Console.ReadLine();
-        Console.Write("Fecha inicio (yyyy-MM-dd): ");
-        var startDate = DateOnly.Parse(Console.ReadLine()!);
-        Console.Write("Fecha fin (yyyy-MM-dd o vacío): ");
-        var endDateStr = Console.ReadLine();
-        DateOnly? endDate = string.IsNullOrWhiteSpace(endDateStr) ? null : DateOnly.Parse(endDateStr);
         try
         {
-            var airportAirline = _createUseCase.ExecuteAsync(airportId, airlineId, string.IsNullOrWhiteSpace(terminal) ? null : terminal, startDate, endDate).Result;
-            Console.WriteLine($"Relación aeropuerto-aerolínea creada (ID: {airportAirline.Id.Value})");
+            SpectreUi.ModuleHeader("Crear relación", "Aeropuerto ↔ Aerolínea");
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+
+            var airportId = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto", min: 1);
+            var airlineId = SpectreUi.PromptIntRequiredCancelable("ID aerolínea", min: 1);
+            var terminal = SpectreUi.PromptOptionalCancelable("Terminal", "opcional");
+
+            var startDate = PromptDateOnlyRequired("Fecha inicio", "yyyy-MM-dd");
+            var endDate = PromptDateOnlyOptional("Fecha fin", "yyyy-MM-dd (opcional)");
+
+            var airportAirline = _createUseCase
+                .ExecuteAsync(
+                    airportId,
+                    airlineId,
+                    string.IsNullOrWhiteSpace(terminal) ? null : terminal,
+                    startDate,
+                    endDate
+                )
+                .Result;
+
+            SpectreUi.MarkupLineOrPlain(
+                $"[green]Relación creada[/] id={airportAirline.Id.Value} aeropuerto={airportAirline.AirportId} aerolínea={airportAirline.AirlineId}.",
+                $"Relación creada id={airportAirline.Id.Value} aeropuerto={airportAirline.AirportId} aerolínea={airportAirline.AirlineId}."
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -71,17 +89,34 @@ public class AirportAirlineConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Consultar relación", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
             var airportAirline = _getByIdUseCase.ExecuteAsync(id).Result;
             if (airportAirline != null)
             {
-                Console.WriteLine($"ID: {airportAirline.Id.Value}, Aeropuerto: {airportAirline.AirportId}, Aerolínea: {airportAirline.AirlineId}, Terminal: {airportAirline.Terminal.Value}");
+                SpectreUi.ShowTable(
+                    "Relación Aeropuerto ↔ Aerolínea",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", airportAirline.Id.Value.ToString()],
+                        ["AeropuertoId", airportAirline.AirportId.ToString()],
+                        ["AerolíneaId", airportAirline.AirlineId.ToString()],
+                        ["Terminal", airportAirline.Terminal.Value ?? ""],
+                    ]
+                );
             }
             else
             {
                 Console.WriteLine("No encontrado");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -102,10 +137,21 @@ public class AirportAirlineConsoleUI : IModuleUI
                 return;
             }
 
-            foreach (var aa in airportAirlines)
-            {
-                Console.WriteLine($"ID: {aa.Id.Value}, Aeropuerto: {aa.AirportId}, Aerolínea: {aa.AirlineId}, Terminal: {aa.Terminal.Value}");
-            }
+            SpectreUi.ModuleHeader("Aeropuerto ↔ Aerolínea", "Listado");
+            SpectreUi.ShowTable(
+                "Relaciones",
+                ["ID", "Aeropuerto", "Aerolínea", "Terminal"],
+                airportAirlines
+                    .OrderBy(x => x.Id.Value)
+                    .Select(x => (IReadOnlyList<string>)new[]
+                    {
+                        x.Id.Value.ToString(),
+                        x.AirportId.ToString(),
+                        x.AirlineId.ToString(),
+                        x.Terminal.Value ?? ""
+                    })
+                    .ToList()
+            );
         }
         catch (Exception ex)
         {
@@ -116,25 +162,38 @@ public class AirportAirlineConsoleUI : IModuleUI
 
     private void UpdateAirportAirline()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        Console.Write("ID aeropuerto: ");
-        var airportId = int.Parse(Console.ReadLine()!);
-        Console.Write("ID aerolínea: ");
-        var airlineId = int.Parse(Console.ReadLine()!);
-        Console.Write("Terminal (opcional): ");
-        var terminal = Console.ReadLine();
-        Console.Write("Fecha inicio (yyyy-MM-dd): ");
-        var startDate = DateOnly.Parse(Console.ReadLine()!);
-        Console.Write("Fecha fin (yyyy-MM-dd o vacío): ");
-        var endDateStr = Console.ReadLine();
-        DateOnly? endDate = string.IsNullOrWhiteSpace(endDateStr) ? null : DateOnly.Parse(endDateStr);
-        Console.Write("¿Activa? (true/false): ");
-        var isActive = bool.Parse(Console.ReadLine()!);
         try
         {
-            _updateUseCase.ExecuteAsync(id, airportId, airlineId, string.IsNullOrWhiteSpace(terminal) ? null : terminal, startDate, endDate, isActive).Wait();
-            Console.WriteLine("Actualizado");
+            SpectreUi.ModuleHeader("Actualizar relación", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
+            var airportId = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto", min: 1);
+            var airlineId = SpectreUi.PromptIntRequiredCancelable("ID aerolínea", min: 1);
+            var terminal = SpectreUi.PromptOptionalCancelable("Terminal", "opcional");
+            var startDate = PromptDateOnlyRequired("Fecha inicio", "yyyy-MM-dd");
+            var endDate = PromptDateOnlyOptional("Fecha fin", "yyyy-MM-dd (opcional)");
+            var isActive = SpectreUi.PromptBool("¿Activa?", defaultValue: true);
+
+            _updateUseCase.ExecuteAsync(
+                    id,
+                    airportId,
+                    airlineId,
+                    string.IsNullOrWhiteSpace(terminal) ? null : terminal,
+                    startDate,
+                    endDate,
+                    isActive
+                )
+                .Wait();
+
+            SpectreUi.MarkupLineOrPlain("[green]Actualizado.[/]", "Actualizado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -147,15 +206,49 @@ public class AirportAirlineConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Eliminar relación", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
             _deleteUseCase.ExecuteAsync(id).Wait();
-            Console.WriteLine("Eliminado");
+            SpectreUi.MarkupLineOrPlain("[green]Eliminado.[/]", "Eliminado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
         SpectreUi.Pause();
+    }
+
+    private static DateOnly PromptDateOnlyRequired(string label, string formatHint)
+    {
+        while (true)
+        {
+            var raw = SpectreUi.PromptRequiredCancelable(label, formatHint);
+            if (DateOnly.TryParse(raw, out var date))
+                return date;
+
+            SpectreUi.MarkupLineOrPlain("[red]Fecha inválida.[/]", "Fecha inválida.");
+        }
+    }
+
+    private static DateOnly? PromptDateOnlyOptional(string label, string formatHint)
+    {
+        while (true)
+        {
+            var raw = SpectreUi.PromptOptionalCancelable(label, formatHint);
+            if (string.IsNullOrWhiteSpace(raw))
+                return null;
+            if (DateOnly.TryParse(raw, out var date))
+                return date;
+
+            SpectreUi.MarkupLineOrPlain("[red]Fecha inválida.[/]", "Fecha inválida.");
+        }
     }
 }

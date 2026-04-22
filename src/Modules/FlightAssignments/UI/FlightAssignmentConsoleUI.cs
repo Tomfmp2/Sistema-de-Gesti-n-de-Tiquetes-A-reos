@@ -1,4 +1,5 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.UI;
 
@@ -26,107 +27,97 @@ public sealed class FlightAssignmentConsoleUI
 
     public async Task RunAsync()
     {
-        while (true)
+        var exit = false;
+        while (!exit)
         {
-            Console.WriteLine("\n=== Asignaciones de tripulación ===");
-            Console.WriteLine("1. Crear asignación");
-            Console.WriteLine("2. Consultar asignación por ID");
-            Console.WriteLine("3. Listar todas las asignaciones");
-            Console.WriteLine("4. Actualizar asignación");
-            Console.WriteLine("5. Eliminar asignación");
-            Console.WriteLine("6. Salir");
-            Console.Write("Elija una opción: ");
+            SpectreUi.ModuleHeader("Asignaciones de tripulación", "Vuelo ↔ Personal ↔ Rol");
 
-            string? choice = Console.ReadLine();
-
-            switch (choice)
+            var items = new (string Label, Action Action)[]
             {
-                case "1":
-                    await CreateFlightAssignmentAsync();
-                    break;
-                case "2":
-                    await GetFlightAssignmentByIdAsync();
-                    break;
-                case "3":
-                    await GetAllFlightAssignmentsAsync();
-                    break;
-                case "4":
-                    await UpdateFlightAssignmentAsync();
-                    break;
-                case "5":
-                    await DeleteFlightAssignmentAsync();
-                    break;
-                case "6":
-                    return;
-                default:
-                    Console.WriteLine("Opción no válida. Intente de nuevo.");
-                    break;
-            }
+                ("Crear", () => CreateFlightAssignmentAsync().GetAwaiter().GetResult()),
+                ("Listar", () => GetAllFlightAssignmentsAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetFlightAssignmentByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateFlightAssignmentAsync().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteFlightAssignmentAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
         }
     }
 
     private async Task CreateFlightAssignmentAsync()
     {
-        Console.Write("ID vuelo: ");
-        if (!int.TryParse(Console.ReadLine(), out int flightId) || flightId <= 0)
-        {
-            Console.WriteLine("ID de vuelo no válido.");
-            return;
-        }
-
-        Console.Write("ID personal: ");
-        if (!int.TryParse(Console.ReadLine(), out int staffId) || staffId <= 0)
-        {
-            Console.WriteLine("ID de personal no válido.");
-            return;
-        }
-
-        Console.Write("ID rol de vuelo: ");
-        if (!int.TryParse(Console.ReadLine(), out int flightRoleId) || flightRoleId <= 0)
-        {
-            Console.WriteLine("ID de rol de vuelo no válido.");
-            return;
-        }
-
         try
         {
-            var flightAssignment = await _createUseCase.ExecuteAsync(flightId, staffId, flightRoleId);
-            Console.WriteLine($"Asignación creada correctamente (ID: {flightAssignment.Id.Value})");
+            SpectreUi.ModuleHeader("Crear asignación", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+
+            var flightId = SpectreUi.PromptIntRequiredCancelable("ID vuelo", min: 1);
+            var staffId = SpectreUi.PromptIntRequiredCancelable("ID personal", min: 1);
+            var flightRoleId = SpectreUi.PromptIntRequiredCancelable("ID rol de vuelo", min: 1);
+
+            var created = await _createUseCase.ExecuteAsync(flightId, staffId, flightRoleId);
+            SpectreUi.MarkupLineOrPlain(
+                $"[green]Asignación creada[/] id={created.Id.Value}.",
+                $"Asignación creada id={created.Id.Value}."
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task GetFlightAssignmentByIdAsync()
     {
-        Console.Write("ID asignación: ");
-        if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
-        {
-            Console.WriteLine("ID no válido.");
-            return;
-        }
-
         try
         {
-            var flightAssignment = await _getByIdUseCase.ExecuteAsync(id);
-            
-            if (flightAssignment == null)
-            {
-                Console.WriteLine("Asignación no encontrada.");
-                return;
-            }
+            SpectreUi.ModuleHeader("Consultar asignación", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
 
-            Console.WriteLine($"\nID: {flightAssignment.Id.Value}");
-            Console.WriteLine($"ID vuelo: {flightAssignment.FlightId.Value}");
-            Console.WriteLine($"ID personal: {flightAssignment.StaffId.Value}");
-            Console.WriteLine($"ID rol de vuelo: {flightAssignment.FlightRoleId.Value}");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID asignación", min: 1);
+            var found = await _getByIdUseCase.ExecuteAsync(id);
+            if (found is null)
+            {
+                Console.WriteLine("No encontrado.");
+            }
+            else
+            {
+                SpectreUi.ShowTable(
+                    "Asignación",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", found.Id.Value.ToString()],
+                        ["VueloId", found.FlightId.Value.ToString()],
+                        ["PersonalId", found.StaffId.Value.ToString()],
+                        ["RolVueloId", found.FlightRoleId.Value.ToString()],
+                    ]
+                );
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task GetAllFlightAssignmentsAsync()
@@ -139,90 +130,111 @@ public sealed class FlightAssignmentConsoleUI
             if (!list.Any())
             {
                 Console.WriteLine("No hay asignaciones registradas.");
+                SpectreUi.Pause();
                 return;
             }
-
-            Console.WriteLine("\n=== Asignaciones ===");
-            foreach (var fa in list)
-            {
-                Console.WriteLine($"ID: {fa.Id.Value} | Vuelo: {fa.FlightId.Value} | Personal: {fa.StaffId.Value} | Rol: {fa.FlightRoleId.Value}");
-            }
+            SpectreUi.ModuleHeader("Asignaciones de tripulación", "Listado");
+            SpectreUi.ShowTable(
+                "Asignaciones",
+                ["ID", "Vuelo", "Personal", "Rol"],
+                list
+                    .OrderBy(x => x.Id.Value)
+                    .Select(x => (IReadOnlyList<string>)new[]
+                    {
+                        x.Id.Value.ToString(),
+                        x.FlightId.Value.ToString(),
+                        x.StaffId.Value.ToString(),
+                        x.FlightRoleId.Value.ToString()
+                    })
+                    .ToList()
+            );
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task UpdateFlightAssignmentAsync()
     {
-        Console.Write("ID asignación: ");
-        if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
-        {
-            Console.WriteLine("ID no válido.");
-            return;
-        }
-
-        Console.Write("Nuevo ID vuelo (Enter para omitir): ");
-        int? newFlightId = null;
-        string? flightInput = Console.ReadLine();
-        if (!string.IsNullOrEmpty(flightInput) && int.TryParse(flightInput, out int fid) && fid > 0)
-            newFlightId = fid;
-
-        Console.Write("Nuevo ID personal (Enter para omitir): ");
-        int? newStaffId = null;
-        string? staffInput = Console.ReadLine();
-        if (!string.IsNullOrEmpty(staffInput) && int.TryParse(staffInput, out int sid) && sid > 0)
-            newStaffId = sid;
-
-        Console.Write("Nuevo ID rol de vuelo (Enter para omitir): ");
-        int? newFlightRoleId = null;
-        string? roleInput = Console.ReadLine();
-        if (!string.IsNullOrEmpty(roleInput) && int.TryParse(roleInput, out int rid) && rid > 0)
-            newFlightRoleId = rid;
-
         try
         {
-            var flightAssignment = await _updateUseCase.ExecuteAsync(id, newFlightId, newStaffId, newFlightRoleId);
-            
-            if (flightAssignment == null)
-            {
-                Console.WriteLine("Asignación no encontrada.");
-                return;
-            }
+            SpectreUi.ModuleHeader("Actualizar asignación", "Deja vacío para mantener");
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
 
-            Console.WriteLine("Asignación actualizada correctamente.");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID asignación", min: 1);
+
+            int? newFlightId = null;
+            var flightInput = SpectreUi.PromptOptionalCancelable("Nuevo ID vuelo", "Enter = mantener");
+            if (!string.IsNullOrWhiteSpace(flightInput))
+                newFlightId = int.Parse(flightInput);
+
+            int? newStaffId = null;
+            var staffInput = SpectreUi.PromptOptionalCancelable("Nuevo ID personal", "Enter = mantener");
+            if (!string.IsNullOrWhiteSpace(staffInput))
+                newStaffId = int.Parse(staffInput);
+
+            int? newFlightRoleId = null;
+            var roleInput = SpectreUi.PromptOptionalCancelable("Nuevo ID rol de vuelo", "Enter = mantener");
+            if (!string.IsNullOrWhiteSpace(roleInput))
+                newFlightRoleId = int.Parse(roleInput);
+
+            var updated = await _updateUseCase.ExecuteAsync(id, newFlightId, newStaffId, newFlightRoleId);
+            if (updated is null)
+            {
+                Console.WriteLine("No encontrado.");
+            }
+            else
+            {
+                SpectreUi.MarkupLineOrPlain("[green]Actualizado.[/]", "Actualizado.");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
+
+        SpectreUi.Pause();
     }
 
     private async Task DeleteFlightAssignmentAsync()
     {
-        Console.Write("ID asignación a eliminar: ");
-        if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
-        {
-            Console.WriteLine("ID no válido.");
-            return;
-        }
-
         try
         {
-            bool deleted = await _deleteUseCase.ExecuteAsync(id);
-            
+            SpectreUi.ModuleHeader("Eliminar asignación", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID asignación", min: 1);
+            var deleted = await _deleteUseCase.ExecuteAsync(id);
             if (!deleted)
             {
-                Console.WriteLine("Asignación no encontrada.");
-                return;
+                Console.WriteLine("No encontrado.");
             }
-
-            Console.WriteLine("Asignación eliminada correctamente.");
+            else
+            {
+                SpectreUi.MarkupLineOrPlain("[green]Eliminado.[/]", "Eliminado.");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
+
+        SpectreUi.Pause();
     }
 }

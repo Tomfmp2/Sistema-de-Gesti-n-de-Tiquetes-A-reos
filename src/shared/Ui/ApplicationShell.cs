@@ -62,18 +62,7 @@ public static class ApplicationShell
                 $"Sesión: {auth.Username} (rol={auth.RoleName}, user_id={auth.UserId}, session_id={auth.SessionId})"
             );
 
-            var items = new List<(string Label, Action Action)>
-            {
-                (
-                    "Cerrar sesión",
-                    () =>
-                    {
-                        LoginShell.LogoutAsync(context, auth).GetAwaiter().GetResult();
-                        SpectreUi.MarkupLineOrPlain("[grey]Sesión cerrada.[/]", "Sesión cerrada.");
-                        shouldLogout = true;
-                    }
-                )
-            };
+            var items = new List<(string Label, Action Action)>();
 
             // - ROOT: mismos módulos de administración + "Mis reservaciones"
             // - admin: todos los módulos de administración/operación disponibles en consola
@@ -83,8 +72,8 @@ public static class ApplicationShell
 
             if (isRoot)
             {
-                AppendAdministrationModules(items, context);
                 items.Add(("Usuarios", () => ModuleUiFactory.CreateUserUi(context).RunAsync().GetAwaiter().GetResult()));
+                AppendAdministrationModules(items, context);
                 items.Add((
                     "Mis reservaciones",
                     () => ModuleUiFactory.CreateMyReservationsUi(context, auth).RunAsync().GetAwaiter().GetResult()
@@ -92,8 +81,8 @@ public static class ApplicationShell
             }
             else if (isAdmin)
             {
-                AppendAdministrationModules(items, context);
                 items.Add(("Usuarios", () => ModuleUiFactory.CreateUserUi(context).RunAsync().GetAwaiter().GetResult()));
+                AppendAdministrationModules(items, context);
             }
             else
             {
@@ -102,6 +91,16 @@ public static class ApplicationShell
                     () => ModuleUiFactory.CreateClientReservationsUi(context, auth).RunAsync().GetAwaiter().GetResult()
                 ));
             }
+
+            items.Add((
+                "Cerrar sesión",
+                () =>
+                {
+                    LoginShell.LogoutAsync(context, auth).GetAwaiter().GetResult();
+                    SpectreUi.MarkupLineOrPlain("[grey]Sesión cerrada.[/]", "Sesión cerrada.");
+                    shouldLogout = true;
+                }
+            ));
 
             items.Add((
                 "Salir",

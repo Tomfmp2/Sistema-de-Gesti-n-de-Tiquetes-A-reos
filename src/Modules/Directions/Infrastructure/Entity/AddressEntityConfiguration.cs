@@ -14,14 +14,14 @@ public sealed class AddressEntityConfiguration : IEntityTypeConfiguration<Addres
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.StreetTypeId)
-            .HasColumnName("Street_typeId")
+            .HasColumnName("street_type_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -33,7 +33,7 @@ public sealed class AddressEntityConfiguration : IEntityTypeConfiguration<Addres
 
         builder
             .Property(x => x.StreetNumber)
-            .HasColumnName("number")
+            .HasColumnName("street_number")
             .HasColumnType("varchar(20)")
             .IsRequired(false);
 
@@ -45,7 +45,7 @@ public sealed class AddressEntityConfiguration : IEntityTypeConfiguration<Addres
 
         builder
             .Property(x => x.CityId)
-            .HasColumnName("CityId")
+            .HasColumnName("city_id")
             .HasColumnType("int")
             .IsRequired();
 

@@ -9,19 +9,19 @@ public sealed class PersonEmailEntityConfiguration : IEntityTypeConfiguration<Pe
 {
     public void Configure(EntityTypeBuilder<PersonEmailEntity> builder)
     {
-        builder.ToTable("PersonEmails");
+        builder.ToTable("person_emails");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.PersonId)
-            .HasColumnName("PersonId")
+            .HasColumnName("person_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -33,7 +33,7 @@ public sealed class PersonEmailEntityConfiguration : IEntityTypeConfiguration<Pe
 
         builder
             .Property(x => x.EmailDomainId)
-            .HasColumnName("Email_domainId")
+            .HasColumnName("email_domain_id")
             .HasColumnType("int")
             .IsRequired();
 

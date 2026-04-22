@@ -33,7 +33,7 @@ public class InvoiceEntityConfiguration : IEntityTypeConfiguration<InvoiceEntity
 
         builder
             .Property(x => x.IssueDate)
-            .HasColumnName("issued_at")
+            .HasColumnName("issue_date")
             .HasColumnType("datetime")
             .IsRequired();
 

@@ -31,8 +31,8 @@ public class AirlineConsoleUI : IModuleUI
             var items = new (string Label, Action Action)[]
             {
                 ("Crear aerolínea", CreateAirline),
-                ("Consultar por ID", GetAirlineById),
                 ("Listar todas", GetAllAirlines),
+                ("Consultar por ID", GetAirlineById),
                 ("Actualizar", UpdateAirline),
                 ("Eliminar", DeleteAirline),
                 ("Volver", () => exit = true),
@@ -44,16 +44,23 @@ public class AirlineConsoleUI : IModuleUI
 
     private void CreateAirline()
     {
-        Console.Write("Nombre: ");
-        var name = Console.ReadLine();
-        Console.Write("Código IATA: ");
-        var iata = Console.ReadLine();
-        Console.Write("ID país de origen: ");
-        var countryId = int.Parse(Console.ReadLine()!);
         try
         {
-            var airline = _createUseCase.ExecuteAsync(name!, iata!, countryId).Result;
-            Console.WriteLine($"Aerolínea creada: {airline.Name.Value}");
+            SpectreUi.ModuleHeader("Crear aerolínea", "Datos básicos");
+            SpectreUi.MarkupLineOrPlain("[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]", "Tip: escriba 0 / c / cancelar para salir sin guardar.");
+            var name = SpectreUi.PromptRequiredCancelable("Nombre");
+            var iata = SpectreUi.PromptRequiredCancelable("Código IATA", "2-3 letras (p.ej. AV)");
+            var countryId = SpectreUi.PromptIntRequiredCancelable("ID país de origen", min: 1);
+
+            var airline = _createUseCase.ExecuteAsync(name, iata, countryId).Result;
+            SpectreUi.MarkupLineOrPlain(
+                $"[green]Aerolínea creada[/] id={airline.Id.Value} · [bold]{airline.Name.Value}[/] ({airline.IataCode.Value})",
+                $"Aerolínea creada id={airline.Id.Value} · {airline.Name.Value} ({airline.IataCode.Value})"
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -66,17 +73,31 @@ public class AirlineConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Consultar aerolínea", null);
+            SpectreUi.MarkupLineOrPlain("[grey]Tip: escriba 0 / c / cancelar para volver.[/]", "Tip: escriba 0 / c / cancelar para volver.");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
             var airline = _getByIdUseCase.ExecuteAsync(id).Result;
             if (airline != null)
             {
-                Console.WriteLine($"ID: {airline.Id.Value}, Nombre: {airline.Name.Value}, IATA: {airline.IataCode.Value}");
+                SpectreUi.ShowTable(
+                    "Aerolínea",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", airline.Id.Value.ToString()],
+                        ["Nombre", airline.Name.Value],
+                        ["IATA", airline.IataCode.Value],
+                        ["Activa", airline.IsActive ? "Sí" : "No"],
+                    ]
+                );
             }
             else
             {
                 Console.WriteLine("No encontrado");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -98,10 +119,21 @@ public class AirlineConsoleUI : IModuleUI
                 return;
             }
 
-            foreach (var a in airlines)
-            {
-                Console.WriteLine($"ID: {a.Id.Value}, Nombre: {a.Name.Value}, IATA: {a.IataCode.Value}");
-            }
+            SpectreUi.ModuleHeader("Aerolíneas", "Listado");
+            SpectreUi.ShowTable(
+                "Aerolíneas",
+                ["ID", "Nombre", "IATA", "Activa"],
+                airlines
+                    .OrderBy(a => a.Id.Value)
+                    .Select(a => (IReadOnlyList<string>)new[]
+                    {
+                        a.Id.Value.ToString(),
+                        a.Name.Value,
+                        a.IataCode.Value,
+                        a.IsActive ? "Sí" : "No"
+                    })
+                    .ToList()
+            );
 
             SpectreUi.Pause();
         }
@@ -114,20 +146,22 @@ public class AirlineConsoleUI : IModuleUI
 
     private void UpdateAirline()
     {
-        Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine()!);
-        Console.Write("Nombre: ");
-        var name = Console.ReadLine();
-        Console.Write("Código IATA: ");
-        var iata = Console.ReadLine();
-        Console.Write("ID país de origen: ");
-        var countryId = int.Parse(Console.ReadLine()!);
-        Console.Write("¿Activa? (true/false): ");
-        var isActive = bool.Parse(Console.ReadLine()!);
         try
         {
-            _updateUseCase.ExecuteAsync(id, name!, iata!, countryId, isActive).Wait();
-            Console.WriteLine("Actualizado");
+            SpectreUi.ModuleHeader("Actualizar aerolínea", null);
+            SpectreUi.MarkupLineOrPlain("[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]", "Tip: escriba 0 / c / cancelar para salir sin guardar.");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
+            var name = SpectreUi.PromptRequiredCancelable("Nombre");
+            var iata = SpectreUi.PromptRequiredCancelable("Código IATA", "2-3 letras (p.ej. AV)");
+            var countryId = SpectreUi.PromptIntRequiredCancelable("ID país de origen", min: 1);
+            var isActive = SpectreUi.PromptBool("¿Activa?", defaultValue: true);
+
+            _updateUseCase.ExecuteAsync(id, name, iata, countryId, isActive).Wait();
+            SpectreUi.MarkupLineOrPlain("[green]Actualizado.[/]", "Actualizado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -140,10 +174,15 @@ public class AirlineConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Eliminar aerolínea", null);
+            SpectreUi.MarkupLineOrPlain("[grey]Tip: escriba 0 / c / cancelar para volver.[/]", "Tip: escriba 0 / c / cancelar para volver.");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
             _deleteUseCase.ExecuteAsync(id).Wait();
-            Console.WriteLine("Eliminado");
+            SpectreUi.MarkupLineOrPlain("[green]Eliminado.[/]", "Eliminado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {

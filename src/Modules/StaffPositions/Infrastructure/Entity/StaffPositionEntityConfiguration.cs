@@ -9,6 +9,7 @@ public class StaffPositionEntityConfiguration : IEntityTypeConfiguration<StaffPo
 {
     public void Configure(EntityTypeBuilder<StaffPositionEntity> builder)
     {
+        builder.ToTable("staff_positions");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).HasColumnName("Id").ValueGeneratedOnAdd();
         builder.Property(e => e.Name).HasColumnName("Name").HasMaxLength(100).IsRequired();

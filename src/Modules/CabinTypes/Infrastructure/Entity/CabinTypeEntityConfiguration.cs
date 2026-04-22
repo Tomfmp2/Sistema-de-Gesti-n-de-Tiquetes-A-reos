@@ -9,16 +9,16 @@ public class CabinTypeEntityConfiguration : IEntityTypeConfiguration<CabinTypeEn
 {
     public void Configure(EntityTypeBuilder<CabinTypeEntity> builder)
     {
-        builder.ToTable("CabinTypes");
+        builder.ToTable("cabin_types");
 
         builder.HasKey(ct => ct.Id);
 
         builder.Property(ct => ct.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .ValueGeneratedOnAdd();
 
         builder.Property(ct => ct.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasMaxLength(50)
             .IsRequired();
 

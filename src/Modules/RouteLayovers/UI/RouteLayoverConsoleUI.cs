@@ -34,8 +34,8 @@ public class RouteLayoverConsoleUI : IModuleUI
             var items = new (string Label, Action Action)[]
             {
                 ("Crear escala", () => CreateRouteLayover().GetAwaiter().GetResult()),
-                ("Consultar por ID", () => GetRouteLayoverById().GetAwaiter().GetResult()),
                 ("Listar todas", () => GetAllRouteLayovers().GetAwaiter().GetResult()),
+                ("Consultar por ID", () => GetRouteLayoverById().GetAwaiter().GetResult()),
                 ("Actualizar", () => UpdateRouteLayover().GetAwaiter().GetResult()),
                 ("Eliminar", () => DeleteRouteLayover().GetAwaiter().GetResult()),
                 ("Volver", () => exit = true),
@@ -49,21 +49,27 @@ public class RouteLayoverConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID ruta: ");
-            var routeId = int.Parse(Console.ReadLine()!);
-            Console.Write("ID aeropuerto de escala: ");
-            var layoverAirportId = int.Parse(Console.ReadLine()!);
-            Console.Write("Orden en la secuencia: ");
-            var sequenceOrder = int.Parse(Console.ReadLine()!);
-            Console.Write("Duración de escala (min): ");
-            var layoverDurationMin = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Crear escala", "Ruta y tiempos");
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+
+            var routeId = SpectreUi.PromptIntRequiredCancelable("ID ruta", min: 1);
+            var layoverAirportId = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto de escala", min: 1);
+            var sequenceOrder = SpectreUi.PromptIntRequiredCancelable("Orden en la secuencia", min: 1);
+            var layoverDurationMin = SpectreUi.PromptIntRequiredCancelable("Duración de escala (min)", min: 1);
             await _createUseCase.ExecuteAsync(
                 RouteId.Create(routeId),
                 LayoverAirportId.Create(layoverAirportId),
                 SequenceOrder.Create(sequenceOrder),
                 LayoverDurationMin.Create(layoverDurationMin)
             );
-            Console.WriteLine("Escala creada");
+            SpectreUi.MarkupLineOrPlain("[green]Escala creada.[/]", "Escala creada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -76,17 +82,35 @@ public class RouteLayoverConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID escala: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Consultar escala", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID escala", min: 1);
             var routeLayover = await _getByIdUseCase.ExecuteAsync(RouteLayoverId.Create(id));
             if (routeLayover != null)
             {
-                Console.WriteLine($"ID: {routeLayover.Id.Value}, Ruta: {routeLayover.RouteId.Value}, Aeropuerto escala: {routeLayover.LayoverAirportId.Value}, Orden: {routeLayover.SequenceOrder.Value}, Duración min: {routeLayover.LayoverDurationMin.Value}");
+                SpectreUi.ShowTable(
+                    "Escala de ruta",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", routeLayover.Id.Value.ToString()],
+                        ["RutaId", routeLayover.RouteId.Value.ToString()],
+                        ["AeropuertoEscalaId", routeLayover.LayoverAirportId.Value.ToString()],
+                        ["Orden", routeLayover.SequenceOrder.Value.ToString()],
+                        ["Duración (min)", routeLayover.LayoverDurationMin.Value.ToString()],
+                    ]
+                );
             }
             else
             {
                 Console.WriteLine("Escala no encontrada");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -100,10 +124,30 @@ public class RouteLayoverConsoleUI : IModuleUI
         try
         {
             var routeLayovers = await _getAllUseCase.ExecuteAsync();
-            foreach (var rl in routeLayovers)
+            var list = routeLayovers.ToList();
+            if (list.Count == 0)
             {
-                Console.WriteLine($"ID: {rl.Id.Value}, Ruta: {rl.RouteId.Value}, Aeropuerto escala: {rl.LayoverAirportId.Value}, Orden: {rl.SequenceOrder.Value}, Duración min: {rl.LayoverDurationMin.Value}");
+                Console.WriteLine("No hay escalas para mostrar.");
+                SpectreUi.Pause();
+                return;
             }
+
+            SpectreUi.ModuleHeader("Escalas de ruta", "Listado");
+            SpectreUi.ShowTable(
+                "Escalas",
+                ["ID", "Ruta", "Aeropuerto", "Orden", "Min"],
+                list
+                    .OrderBy(x => x.Id.Value)
+                    .Select(x => (IReadOnlyList<string>)new[]
+                    {
+                        x.Id.Value.ToString(),
+                        x.RouteId.Value.ToString(),
+                        x.LayoverAirportId.Value.ToString(),
+                        x.SequenceOrder.Value.ToString(),
+                        x.LayoverDurationMin.Value.ToString()
+                    })
+                    .ToList()
+            );
         }
         catch (Exception ex)
         {
@@ -116,8 +160,12 @@ public class RouteLayoverConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID escala: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Actualizar escala", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]",
+                "Tip: escriba 0 / c / cancelar para salir sin guardar."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID escala", min: 1);
             var existing = await _getByIdUseCase.ExecuteAsync(RouteLayoverId.Create(id));
             if (existing == null)
             {
@@ -125,14 +173,11 @@ public class RouteLayoverConsoleUI : IModuleUI
                 SpectreUi.Pause();
                 return;
             }
-            Console.Write("ID ruta: ");
-            var routeId = int.Parse(Console.ReadLine()!);
-            Console.Write("ID aeropuerto de escala: ");
-            var layoverAirportId = int.Parse(Console.ReadLine()!);
-            Console.Write("Orden en la secuencia: ");
-            var sequenceOrder = int.Parse(Console.ReadLine()!);
-            Console.Write("Duración de escala (min): ");
-            var layoverDurationMin = int.Parse(Console.ReadLine()!);
+
+            var routeId = SpectreUi.PromptIntRequiredCancelable("ID ruta", min: 1);
+            var layoverAirportId = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto de escala", min: 1);
+            var sequenceOrder = SpectreUi.PromptIntRequiredCancelable("Orden en la secuencia", min: 1);
+            var layoverDurationMin = SpectreUi.PromptIntRequiredCancelable("Duración de escala (min)", min: 1);
             await _updateUseCase.ExecuteAsync(
                 RouteLayoverId.Create(id),
                 RouteId.Create(routeId),
@@ -140,7 +185,11 @@ public class RouteLayoverConsoleUI : IModuleUI
                 SequenceOrder.Create(sequenceOrder),
                 LayoverDurationMin.Create(layoverDurationMin)
             );
-            Console.WriteLine("Escala actualizada");
+            SpectreUi.MarkupLineOrPlain("[green]Escala actualizada.[/]", "Escala actualizada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
@@ -153,10 +202,18 @@ public class RouteLayoverConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID escala: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Eliminar escala", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
+            var id = SpectreUi.PromptIntRequiredCancelable("ID escala", min: 1);
             await _deleteUseCase.ExecuteAsync(RouteLayoverId.Create(id));
-            Console.WriteLine("Escala eliminada");
+            SpectreUi.MarkupLineOrPlain("[green]Escala eliminada.[/]", "Escala eliminada.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {

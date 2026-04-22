@@ -8,19 +8,19 @@ public class CheckinStatusEntityConfiguration : IEntityTypeConfiguration<Checkin
 {
     public void Configure(EntityTypeBuilder<CheckinStatusEntity> builder)
     {
-        builder.ToTable("CheckinStatuses");
+        builder.ToTable("checkin_statuses");
 
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(50)")
             .IsRequired();
 

@@ -10,26 +10,26 @@ public sealed class RolePermissionEntityConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<RolePermissionEntity> builder)
     {
-        builder.ToTable("RolePermissions");
+        builder.ToTable("role_permissions");
 
         builder.HasKey(x => x.Id);
 
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.RoleId)
-            .HasColumnName("RoleId")
+            .HasColumnName("role_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.PermissionId)
-            .HasColumnName("PermissionId")
+            .HasColumnName("permission_id")
             .HasColumnType("int")
             .IsRequired();
 

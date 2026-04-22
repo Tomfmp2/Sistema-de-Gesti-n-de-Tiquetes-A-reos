@@ -58,7 +58,7 @@ public class InvoiceItemEntityConfiguration : IEntityTypeConfiguration<InvoiceIt
 
         builder
             .Property(x => x.ReservationPassengerId)
-            .HasColumnName("booking_passenger_id")
+            .HasColumnName("reservation_passenger_id")
             .HasColumnType("int");
 
         builder
