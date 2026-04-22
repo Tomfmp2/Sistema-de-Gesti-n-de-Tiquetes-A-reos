@@ -3,6 +3,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Configuration;
+using MySqlConnector;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
@@ -15,9 +17,27 @@ try
 
     var context = DbContextFactory.Create();
 
+    if (!context.Database.CanConnect())
+    {
+        // Si el servidor MySQL está accesible pero la base de datos aún no existe,
+        // intentamos crearla (CREATE DATABASE IF NOT EXISTS) y luego reintentamos.
+        await TryCreateDatabaseIfMissingAsync();
+        context = DbContextFactory.Create();
+    }
+
     if (context.Database.CanConnect())
     {
         Console.WriteLine("Conexión exitosa");
+
+        // Bootstrap automático (sin flags):
+        // - Asegura que el esquema esté actualizado (migraciones)
+        // - Carga catálogos mínimos para que el sistema funcione
+        // - Garantiza usuario ROOT (admin) con permisos base
+        //
+        // Todo es idempotente: se puede ejecutar en cada arranque sin duplicar datos.
+        context.Database.Migrate();
+        await EnsureDefaultsAsync(context);
+        await SeedRootUserAsync(context);
 
         var migrateRequested =
             args.Any(a => string.Equals(a, "--migrate", StringComparison.OrdinalIgnoreCase))
@@ -85,7 +105,8 @@ try
     }
     else
     {
-        Console.WriteLine("No se pudo conectar a la base de datos");
+        Console.WriteLine("No se pudo conectar a la base de datos.");
+        Console.WriteLine("Verifica que MySQL esté instalado/encendido y que la cadena de conexión sea válida (MYSQL_CONNECTION o appsettings.json).");
     }
 }
 catch (Exception ex)
@@ -94,6 +115,44 @@ catch (Exception ex)
     if (ex.InnerException != null)
     {
         Console.Error.WriteLine($"Detalle: {ex.InnerException.Message}");
+    }
+}
+
+static async Task TryCreateDatabaseIfMissingAsync()
+{
+    var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+        .AddJsonFile("appsettings.json", optional: true)
+        .AddEnvironmentVariables()
+        .Build();
+
+    var cs =
+        Environment.GetEnvironmentVariable("MYSQL_CONNECTION")
+        ?? config.GetConnectionString("MySqlDB");
+
+    if (string.IsNullOrWhiteSpace(cs))
+        return;
+
+    // Si falta el parámetro Database, no hay nada que crear automáticamente.
+    var builder = new MySqlConnectionStringBuilder(cs);
+    var dbName = builder.Database;
+    if (string.IsNullOrWhiteSpace(dbName))
+        return;
+
+    // Conectamos al servidor sin especificar base de datos.
+    builder.Database = string.Empty;
+
+    try
+    {
+        await using var conn = new MySqlConnection(builder.ConnectionString);
+        await conn.OpenAsync();
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = $"CREATE DATABASE IF NOT EXISTS `{dbName}`;";
+        await cmd.ExecuteNonQueryAsync();
+    }
+    catch
+    {
+        // Silencioso: si falla (servidor caído, credenciales, permisos),
+        // el flujo principal mostrará el mensaje de conexión fallida.
     }
 }
 

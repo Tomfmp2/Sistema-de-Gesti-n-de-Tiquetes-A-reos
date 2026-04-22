@@ -11,7 +11,7 @@ public class DbContextFactory
     public static AppDbContext Create()
     {
         var config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
 
