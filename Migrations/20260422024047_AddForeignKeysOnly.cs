@@ -8,6 +8,226 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
     /// <inheritdoc />
     public partial class AddForeignKeysOnly : Migration
     {
+        /// <summary>
+        /// Alinea nombres creados por CreateReservations / CreateReservationAndTicketBaseModules (reservation_*)
+        /// con el modelo actual (booking_*). Idempotente: no hace nada si <c>booking_flights</c> ya existe.
+        /// </summary>
+        private const string AlignLegacyReservationNamesToBookingSql = """
+            SET @need_reservation_to_booking = (
+                SELECT IF(
+                    NOT EXISTS (
+                        SELECT 1 FROM information_schema.TABLES
+                        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_flights'
+                    )
+                    AND EXISTS (
+                        SELECT 1 FROM information_schema.TABLES
+                        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_flights'
+                    ),
+                    1, 0
+                )
+            );
+
+            SET @cn = NULL;
+            SET @q = 'SELECT 1';
+
+            /* 1) Quitar FKs (orden: hijos primero) */
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'tickets'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservation_passengers' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `tickets` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'invoice_items'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservation_passengers' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `invoice_items` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'reservation_passengers'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservation_flights' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `reservation_passengers` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'reservation_flights'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservations' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `reservation_flights` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'invoices'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservations' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `invoices` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'payments'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservations' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `payments` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'reservations'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservation_statuses' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `reservations` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'reservation_status_transitions'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservation_statuses' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `reservation_status_transitions` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @cn = IF(@need_reservation_to_booking = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'reservation_status_transitions'
+                   AND rc.REFERENCED_TABLE_NAME = 'reservation_statuses' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `reservation_status_transitions` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            /* 2) Tablas de catálogo de estado: reservation_statuses -> booking_statuses */
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_statuses')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_statuses'),
+                'RENAME TABLE `reservation_statuses` TO `booking_statuses`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            /* 3) Transiciones: columnas y nombre de tabla */
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_status_transitions' AND COLUMN_NAME = 'origin_status_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_status_transitions' AND COLUMN_NAME = 'from_status_id'),
+                'ALTER TABLE `reservation_status_transitions` RENAME COLUMN `origin_status_id` TO `from_status_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_status_transitions' AND COLUMN_NAME = 'destination_status_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_status_transitions' AND COLUMN_NAME = 'to_status_id'),
+                'ALTER TABLE `reservation_status_transitions` RENAME COLUMN `destination_status_id` TO `to_status_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_status_transitions')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_status_transitions'),
+                'RENAME TABLE `reservation_status_transitions` TO `booking_status_transitions`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            /* 4) Reservas -> bookings + columnas */
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservations')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings'),
+                'RENAME TABLE `reservations` TO `bookings`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'reservation_status_id'),
+                'ALTER TABLE `bookings` RENAME COLUMN `reservation_status_id` TO `booking_status_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'reservation_date'),
+                'ALTER TABLE `bookings` RENAME COLUMN `reservation_date` TO `booked_at`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'bookings' AND COLUMN_NAME = 'total_value'),
+                'ALTER TABLE `bookings` RENAME COLUMN `total_value` TO `total_amount`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            /* 5) Vuelos de reserva */
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_flights')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_flights'),
+                'RENAME TABLE `reservation_flights` TO `booking_flights`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_flights' AND COLUMN_NAME = 'reservation_id'),
+                'ALTER TABLE `booking_flights` RENAME COLUMN `reservation_id` TO `booking_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_flights' AND COLUMN_NAME = 'partial_value'),
+                'ALTER TABLE `booking_flights` RENAME COLUMN `partial_value` TO `partial_amount`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            /* 6) Pasajeros de reserva */
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'reservation_passengers')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_passengers'),
+                'RENAME TABLE `reservation_passengers` TO `booking_passengers`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'booking_passengers' AND COLUMN_NAME = 'reservation_flight_id'),
+                'ALTER TABLE `booking_passengers` RENAME COLUMN `reservation_flight_id` TO `booking_flight_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            /* 7) facturas, pagos, tiquetes, items */
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'invoices' AND COLUMN_NAME = 'reservation_id'),
+                'ALTER TABLE `invoices` RENAME COLUMN `reservation_id` TO `booking_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'payments' AND COLUMN_NAME = 'reservation_id'),
+                'ALTER TABLE `payments` RENAME COLUMN `reservation_id` TO `booking_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tickets' AND COLUMN_NAME = 'reservation_passenger_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tickets' AND COLUMN_NAME = 'booking_passenger_id'),
+                'ALTER TABLE `tickets` RENAME COLUMN `reservation_passenger_id` TO `booking_passenger_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tickets' AND COLUMN_NAME = 'issue_date')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'tickets' AND COLUMN_NAME = 'issued_at'),
+                'ALTER TABLE `tickets` RENAME COLUMN `issue_date` TO `issued_at`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_reservation_to_booking = 1
+                AND EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'invoice_items' AND COLUMN_NAME = 'reservation_passenger_id')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'invoice_items' AND COLUMN_NAME = 'booking_passenger_id'),
+                'ALTER TABLE `invoice_items` RENAME COLUMN `reservation_passenger_id` TO `booking_passenger_id`', 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+            """;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -167,6 +387,10 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
             RenameColumnIfExists("flight_status_transitions", "origin_status_id", "from_status_id");
             RenameColumnIfExists("flight_status_transitions", "destination_status_id", "to_status_id");
+
+            // Las migraciones antiguas (CreateReservations, etc.) usan nombres reservation_*. El modelo y este archivo usan booking_*.
+            // Sin este bloque, en una BD nueva no existen booking_flights, bookings, etc.
+            migrationBuilder.Sql(AlignLegacyReservationNamesToBookingSql);
 
             // Note: some base FKs already exist in the DB (e.g., addresses -> cities/street_types, aircraft -> models/airlines, etc.)
 
