@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CardIssuers.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.CardIssuers.Infrastructure.Entity;
 
@@ -24,5 +25,7 @@ public class CardIssuerEntityConfiguration : IEntityTypeConfiguration<CardIssuer
             .IsRequired();
 
         builder.HasIndex(x => x.Name).IsUnique();
+
+        builder.HasData(CardIssuerDefaultData.CardIssuers);
     }
 }

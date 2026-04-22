@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity;
 
@@ -44,5 +45,7 @@ public class CountryEntityConfiguration : IEntityTypeConfiguration<CountryEntity
 
         builder.HasIndex(x => x.CodeIso).IsUnique();
         builder.HasIndex(x => x.ContinentId);
+
+        builder.HasData(CountryDefaultData.Countries);
     }
 }

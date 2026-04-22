@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Entity;
@@ -24,5 +25,7 @@ public class AircraftManufacturerEntityConfiguration : IEntityTypeConfiguration<
             .HasColumnName("Country")
             .HasMaxLength(100)
             .IsRequired();
+
+        builder.HasData(AircraftManufacturerDefaultData.AircraftManufacturers);
     }
 }

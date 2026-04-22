@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Entity;
 
@@ -30,5 +31,7 @@ public sealed class DocumentTypeEntityConfiguration : IEntityTypeConfiguration<D
             .IsRequired();
 
         builder.HasIndex(x => x.Code).IsUnique();
+
+        builder.HasData(DocumentTypeDefaultData.DocumentTypes);
     }
 }
