@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.PassengerTypes.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.PassengerTypes.Infrastructure.Entity;
 
@@ -36,5 +37,7 @@ public sealed class PassengerTypeEntityConfiguration : IEntityTypeConfiguration<
             .IsRequired(false);
 
         builder.HasIndex(x => x.Name).IsUnique();
+
+        builder.HasData(PassengerTypeDefaultData.PassengerTypes);
     }
 }

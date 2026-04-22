@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Entity;
@@ -31,5 +32,7 @@ public class FlightRoleEntityConfiguration : IEntityTypeConfiguration<FlightRole
             .WithOne()
             .HasForeignKey("flight_role_id")
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(FlightRoleDefaultData.FlightRoles);
     }
 }
