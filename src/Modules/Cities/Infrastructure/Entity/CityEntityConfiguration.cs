@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Regions.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Infrastructure.Entity;
@@ -36,5 +37,7 @@ public sealed class CityEntityConfiguration : IEntityTypeConfiguration<CityEntit
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(x => x.RegionId);
+
+        builder.HasData(CityDefaultData.Cities);
     }
 }
