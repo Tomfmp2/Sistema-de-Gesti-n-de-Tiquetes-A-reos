@@ -44,16 +44,16 @@ public class AirlineConsoleUI : IModuleUI
 
     private void CreateAirline()
     {
-        Console.Write("Name: ");
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
-        Console.Write("IATA Code: ");
+        Console.Write("Código IATA: ");
         var iata = Console.ReadLine();
-        Console.Write("Origin Country ID: ");
+        Console.Write("ID país de origen: ");
         var countryId = int.Parse(Console.ReadLine()!);
         try
         {
             var airline = _createUseCase.ExecuteAsync(name!, iata!, countryId).Result;
-            Console.WriteLine($"Created Airline: {airline.Name.Value}");
+            Console.WriteLine($"Aerolínea creada: {airline.Name.Value}");
         }
         catch (Exception ex)
         {
@@ -71,11 +71,11 @@ public class AirlineConsoleUI : IModuleUI
             var airline = _getByIdUseCase.ExecuteAsync(id).Result;
             if (airline != null)
             {
-                Console.WriteLine($"ID: {airline.Id.Value}, Name: {airline.Name.Value}, IATA: {airline.IataCode.Value}");
+                Console.WriteLine($"ID: {airline.Id.Value}, Nombre: {airline.Name.Value}, IATA: {airline.IataCode.Value}");
             }
             else
             {
-                Console.WriteLine("Not found");
+                Console.WriteLine("No encontrado");
             }
         }
         catch (Exception ex)
@@ -100,7 +100,7 @@ public class AirlineConsoleUI : IModuleUI
 
             foreach (var a in airlines)
             {
-                Console.WriteLine($"ID: {a.Id.Value}, Name: {a.Name.Value}, IATA: {a.IataCode.Value}");
+                Console.WriteLine($"ID: {a.Id.Value}, Nombre: {a.Name.Value}, IATA: {a.IataCode.Value}");
             }
 
             SpectreUi.Pause();
@@ -116,18 +116,18 @@ public class AirlineConsoleUI : IModuleUI
     {
         Console.Write("ID: ");
         var id = int.Parse(Console.ReadLine()!);
-        Console.Write("Name: ");
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
-        Console.Write("IATA Code: ");
+        Console.Write("Código IATA: ");
         var iata = Console.ReadLine();
-        Console.Write("Origin Country ID: ");
+        Console.Write("ID país de origen: ");
         var countryId = int.Parse(Console.ReadLine()!);
-        Console.Write("Is Active (true/false): ");
+        Console.Write("¿Activa? (true/false): ");
         var isActive = bool.Parse(Console.ReadLine()!);
         try
         {
             _updateUseCase.ExecuteAsync(id, name!, iata!, countryId, isActive).Wait();
-            Console.WriteLine("Updated");
+            Console.WriteLine("Actualizado");
         }
         catch (Exception ex)
         {
@@ -143,7 +143,7 @@ public class AirlineConsoleUI : IModuleUI
             Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine()!);
             _deleteUseCase.ExecuteAsync(id).Wait();
-            Console.WriteLine("Deleted");
+            Console.WriteLine("Eliminado");
         }
         catch (Exception ex)
         {

@@ -44,21 +44,21 @@ public class AirportAirlineConsoleUI : IModuleUI
 
     private void CreateAirportAirline()
     {
-        Console.Write("Airport ID: ");
+        Console.Write("ID aeropuerto: ");
         var airportId = int.Parse(Console.ReadLine()!);
-        Console.Write("Airline ID: ");
+        Console.Write("ID aerolínea: ");
         var airlineId = int.Parse(Console.ReadLine()!);
-        Console.Write("Terminal (optional): ");
+        Console.Write("Terminal (opcional): ");
         var terminal = Console.ReadLine();
-        Console.Write("Start Date (yyyy-MM-dd): ");
+        Console.Write("Fecha inicio (yyyy-MM-dd): ");
         var startDate = DateOnly.Parse(Console.ReadLine()!);
-        Console.Write("End Date (yyyy-MM-dd or empty): ");
+        Console.Write("Fecha fin (yyyy-MM-dd o vacío): ");
         var endDateStr = Console.ReadLine();
         DateOnly? endDate = string.IsNullOrWhiteSpace(endDateStr) ? null : DateOnly.Parse(endDateStr);
         try
         {
             var airportAirline = _createUseCase.ExecuteAsync(airportId, airlineId, string.IsNullOrWhiteSpace(terminal) ? null : terminal, startDate, endDate).Result;
-            Console.WriteLine($"Created Airport-Airline: {airportAirline.Id.Value}");
+            Console.WriteLine($"Relación aeropuerto-aerolínea creada (ID: {airportAirline.Id.Value})");
         }
         catch (Exception ex)
         {
@@ -76,11 +76,11 @@ public class AirportAirlineConsoleUI : IModuleUI
             var airportAirline = _getByIdUseCase.ExecuteAsync(id).Result;
             if (airportAirline != null)
             {
-                Console.WriteLine($"ID: {airportAirline.Id.Value}, Airport: {airportAirline.AirportId}, Airline: {airportAirline.AirlineId}, Terminal: {airportAirline.Terminal.Value}");
+                Console.WriteLine($"ID: {airportAirline.Id.Value}, Aeropuerto: {airportAirline.AirportId}, Aerolínea: {airportAirline.AirlineId}, Terminal: {airportAirline.Terminal.Value}");
             }
             else
             {
-                Console.WriteLine("Not found");
+                Console.WriteLine("No encontrado");
             }
         }
         catch (Exception ex)
@@ -104,7 +104,7 @@ public class AirportAirlineConsoleUI : IModuleUI
 
             foreach (var aa in airportAirlines)
             {
-                Console.WriteLine($"ID: {aa.Id.Value}, Airport: {aa.AirportId}, Airline: {aa.AirlineId}, Terminal: {aa.Terminal.Value}");
+                Console.WriteLine($"ID: {aa.Id.Value}, Aeropuerto: {aa.AirportId}, Aerolínea: {aa.AirlineId}, Terminal: {aa.Terminal.Value}");
             }
         }
         catch (Exception ex)
@@ -118,23 +118,23 @@ public class AirportAirlineConsoleUI : IModuleUI
     {
         Console.Write("ID: ");
         var id = int.Parse(Console.ReadLine()!);
-        Console.Write("Airport ID: ");
+        Console.Write("ID aeropuerto: ");
         var airportId = int.Parse(Console.ReadLine()!);
-        Console.Write("Airline ID: ");
+        Console.Write("ID aerolínea: ");
         var airlineId = int.Parse(Console.ReadLine()!);
-        Console.Write("Terminal (optional): ");
+        Console.Write("Terminal (opcional): ");
         var terminal = Console.ReadLine();
-        Console.Write("Start Date (yyyy-MM-dd): ");
+        Console.Write("Fecha inicio (yyyy-MM-dd): ");
         var startDate = DateOnly.Parse(Console.ReadLine()!);
-        Console.Write("End Date (yyyy-MM-dd or empty): ");
+        Console.Write("Fecha fin (yyyy-MM-dd o vacío): ");
         var endDateStr = Console.ReadLine();
         DateOnly? endDate = string.IsNullOrWhiteSpace(endDateStr) ? null : DateOnly.Parse(endDateStr);
-        Console.Write("Is Active (true/false): ");
+        Console.Write("¿Activa? (true/false): ");
         var isActive = bool.Parse(Console.ReadLine()!);
         try
         {
             _updateUseCase.ExecuteAsync(id, airportId, airlineId, string.IsNullOrWhiteSpace(terminal) ? null : terminal, startDate, endDate, isActive).Wait();
-            Console.WriteLine("Updated");
+            Console.WriteLine("Actualizado");
         }
         catch (Exception ex)
         {
@@ -150,7 +150,7 @@ public class AirportAirlineConsoleUI : IModuleUI
             Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine()!);
             _deleteUseCase.ExecuteAsync(id).Wait();
-            Console.WriteLine("Deleted");
+            Console.WriteLine("Eliminado");
         }
         catch (Exception ex)
         {

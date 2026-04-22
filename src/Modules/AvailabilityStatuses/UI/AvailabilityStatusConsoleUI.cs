@@ -50,7 +50,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
 
     private async Task CreateAvailabilityStatus()
     {
-        Console.Write("Enter name: ");
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(name))
         {
@@ -58,7 +58,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
             {
                 var availabilityStatusName = AvailabilityStatusName.Create(name);
                 await _createUseCase.ExecuteAsync(availabilityStatusName);
-                Console.WriteLine("Availability Status created successfully.");
+                Console.WriteLine("Estado de disponibilidad creado correctamente.");
             }
             catch (Exception ex)
             {
@@ -70,7 +70,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
 
     private async Task GetAvailabilityStatusById()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
             try
@@ -79,11 +79,11 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                 var availabilityStatus = await _getByIdUseCase.ExecuteAsync(availabilityStatusId);
                 if (availabilityStatus != null)
                 {
-                    Console.WriteLine($"ID: {availabilityStatus.Id.Value}, Name: {availabilityStatus.Name.Value}");
+                    Console.WriteLine($"ID: {availabilityStatus.Id.Value}, Nombre: {availabilityStatus.Name.Value}");
                 }
                 else
                 {
-                    Console.WriteLine("Availability Status not found.");
+                    Console.WriteLine("Estado de disponibilidad no encontrado.");
                 }
             }
             catch (Exception ex)
@@ -108,7 +108,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
 
             foreach (var as_ in availabilityStatuses)
             {
-                Console.WriteLine($"ID: {as_.Id.Value}, Name: {as_.Name.Value}");
+                Console.WriteLine($"ID: {as_.Id.Value}, Nombre: {as_.Name.Value}");
             }
         }
         catch (Exception ex)
@@ -120,10 +120,10 @@ public class AvailabilityStatusConsoleUI : IModuleUI
 
     private async Task UpdateAvailabilityStatus()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
-            Console.Write("Enter new name: ");
+            Console.Write("Nuevo nombre: ");
             var name = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -132,7 +132,7 @@ public class AvailabilityStatusConsoleUI : IModuleUI
                     var availabilityStatusId = AvailabilityStatusId.Create(id);
                     var availabilityStatusName = AvailabilityStatusName.Create(name);
                     await _updateUseCase.ExecuteAsync(availabilityStatusId, availabilityStatusName);
-                    Console.WriteLine("Availability Status updated successfully.");
+                    Console.WriteLine("Estado de disponibilidad actualizado correctamente.");
                 }
                 catch (Exception ex)
                 {
@@ -145,14 +145,14 @@ public class AvailabilityStatusConsoleUI : IModuleUI
 
     private async Task DeleteAvailabilityStatus()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
             try
             {
                 var availabilityStatusId = AvailabilityStatusId.Create(id);
                 await _deleteUseCase.ExecuteAsync(availabilityStatusId);
-                Console.WriteLine("Availability Status deleted successfully.");
+                Console.WriteLine("Estado de disponibilidad eliminado correctamente.");
             }
             catch (Exception ex)
             {

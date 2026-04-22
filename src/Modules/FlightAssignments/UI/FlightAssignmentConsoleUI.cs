@@ -28,14 +28,14 @@ public sealed class FlightAssignmentConsoleUI
     {
         while (true)
         {
-            Console.WriteLine("\n=== Flight Assignment Management ===");
-            Console.WriteLine("1. Create Flight Assignment");
-            Console.WriteLine("2. Get Flight Assignment by ID");
-            Console.WriteLine("3. Get All Flight Assignments");
-            Console.WriteLine("4. Update Flight Assignment");
-            Console.WriteLine("5. Delete Flight Assignment");
-            Console.WriteLine("6. Exit");
-            Console.Write("Choose an option: ");
+            Console.WriteLine("\n=== Asignaciones de tripulación ===");
+            Console.WriteLine("1. Crear asignación");
+            Console.WriteLine("2. Consultar asignación por ID");
+            Console.WriteLine("3. Listar todas las asignaciones");
+            Console.WriteLine("4. Actualizar asignación");
+            Console.WriteLine("5. Eliminar asignación");
+            Console.WriteLine("6. Salir");
+            Console.Write("Elija una opción: ");
 
             string? choice = Console.ReadLine();
 
@@ -59,7 +59,7 @@ public sealed class FlightAssignmentConsoleUI
                 case "6":
                     return;
                 default:
-                    Console.WriteLine("Invalid option. Please try again.");
+                    Console.WriteLine("Opción no válida. Intente de nuevo.");
                     break;
             }
         }
@@ -67,31 +67,31 @@ public sealed class FlightAssignmentConsoleUI
 
     private async Task CreateFlightAssignmentAsync()
     {
-        Console.Write("Enter Flight ID: ");
+        Console.Write("ID vuelo: ");
         if (!int.TryParse(Console.ReadLine(), out int flightId) || flightId <= 0)
         {
-            Console.WriteLine("Invalid Flight ID.");
+            Console.WriteLine("ID de vuelo no válido.");
             return;
         }
 
-        Console.Write("Enter Staff ID: ");
+        Console.Write("ID personal: ");
         if (!int.TryParse(Console.ReadLine(), out int staffId) || staffId <= 0)
         {
-            Console.WriteLine("Invalid Staff ID.");
+            Console.WriteLine("ID de personal no válido.");
             return;
         }
 
-        Console.Write("Enter Flight Role ID: ");
+        Console.Write("ID rol de vuelo: ");
         if (!int.TryParse(Console.ReadLine(), out int flightRoleId) || flightRoleId <= 0)
         {
-            Console.WriteLine("Invalid Flight Role ID.");
+            Console.WriteLine("ID de rol de vuelo no válido.");
             return;
         }
 
         try
         {
             var flightAssignment = await _createUseCase.ExecuteAsync(flightId, staffId, flightRoleId);
-            Console.WriteLine($"Flight Assignment created successfully with ID: {flightAssignment.Id.Value}");
+            Console.WriteLine($"Asignación creada correctamente (ID: {flightAssignment.Id.Value})");
         }
         catch (Exception ex)
         {
@@ -101,10 +101,10 @@ public sealed class FlightAssignmentConsoleUI
 
     private async Task GetFlightAssignmentByIdAsync()
     {
-        Console.Write("Enter Flight Assignment ID: ");
+        Console.Write("ID asignación: ");
         if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
         {
-            Console.WriteLine("Invalid ID.");
+            Console.WriteLine("ID no válido.");
             return;
         }
 
@@ -114,14 +114,14 @@ public sealed class FlightAssignmentConsoleUI
             
             if (flightAssignment == null)
             {
-                Console.WriteLine("Flight Assignment not found.");
+                Console.WriteLine("Asignación no encontrada.");
                 return;
             }
 
             Console.WriteLine($"\nID: {flightAssignment.Id.Value}");
-            Console.WriteLine($"Flight ID: {flightAssignment.FlightId.Value}");
-            Console.WriteLine($"Staff ID: {flightAssignment.StaffId.Value}");
-            Console.WriteLine($"Flight Role ID: {flightAssignment.FlightRoleId.Value}");
+            Console.WriteLine($"ID vuelo: {flightAssignment.FlightId.Value}");
+            Console.WriteLine($"ID personal: {flightAssignment.StaffId.Value}");
+            Console.WriteLine($"ID rol de vuelo: {flightAssignment.FlightRoleId.Value}");
         }
         catch (Exception ex)
         {
@@ -138,14 +138,14 @@ public sealed class FlightAssignmentConsoleUI
             var list = flightAssignments.ToList();
             if (!list.Any())
             {
-                Console.WriteLine("No flight assignments found.");
+                Console.WriteLine("No hay asignaciones registradas.");
                 return;
             }
 
-            Console.WriteLine("\n=== Flight Assignments ===");
+            Console.WriteLine("\n=== Asignaciones ===");
             foreach (var fa in list)
             {
-                Console.WriteLine($"ID: {fa.Id.Value} | Flight: {fa.FlightId.Value} | Staff: {fa.StaffId.Value} | Role: {fa.FlightRoleId.Value}");
+                Console.WriteLine($"ID: {fa.Id.Value} | Vuelo: {fa.FlightId.Value} | Personal: {fa.StaffId.Value} | Rol: {fa.FlightRoleId.Value}");
             }
         }
         catch (Exception ex)
@@ -156,26 +156,26 @@ public sealed class FlightAssignmentConsoleUI
 
     private async Task UpdateFlightAssignmentAsync()
     {
-        Console.Write("Enter Flight Assignment ID: ");
+        Console.Write("ID asignación: ");
         if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
         {
-            Console.WriteLine("Invalid ID.");
+            Console.WriteLine("ID no válido.");
             return;
         }
 
-        Console.Write("Enter new Flight ID (or press Enter to skip): ");
+        Console.Write("Nuevo ID vuelo (Enter para omitir): ");
         int? newFlightId = null;
         string? flightInput = Console.ReadLine();
         if (!string.IsNullOrEmpty(flightInput) && int.TryParse(flightInput, out int fid) && fid > 0)
             newFlightId = fid;
 
-        Console.Write("Enter new Staff ID (or press Enter to skip): ");
+        Console.Write("Nuevo ID personal (Enter para omitir): ");
         int? newStaffId = null;
         string? staffInput = Console.ReadLine();
         if (!string.IsNullOrEmpty(staffInput) && int.TryParse(staffInput, out int sid) && sid > 0)
             newStaffId = sid;
 
-        Console.Write("Enter new Flight Role ID (or press Enter to skip): ");
+        Console.Write("Nuevo ID rol de vuelo (Enter para omitir): ");
         int? newFlightRoleId = null;
         string? roleInput = Console.ReadLine();
         if (!string.IsNullOrEmpty(roleInput) && int.TryParse(roleInput, out int rid) && rid > 0)
@@ -187,11 +187,11 @@ public sealed class FlightAssignmentConsoleUI
             
             if (flightAssignment == null)
             {
-                Console.WriteLine("Flight Assignment not found.");
+                Console.WriteLine("Asignación no encontrada.");
                 return;
             }
 
-            Console.WriteLine("Flight Assignment updated successfully.");
+            Console.WriteLine("Asignación actualizada correctamente.");
         }
         catch (Exception ex)
         {
@@ -201,10 +201,10 @@ public sealed class FlightAssignmentConsoleUI
 
     private async Task DeleteFlightAssignmentAsync()
     {
-        Console.Write("Enter Flight Assignment ID to delete: ");
+        Console.Write("ID asignación a eliminar: ");
         if (!int.TryParse(Console.ReadLine(), out int id) || id <= 0)
         {
-            Console.WriteLine("Invalid ID.");
+            Console.WriteLine("ID no válido.");
             return;
         }
 
@@ -214,11 +214,11 @@ public sealed class FlightAssignmentConsoleUI
             
             if (!deleted)
             {
-                Console.WriteLine("Flight Assignment not found.");
+                Console.WriteLine("Asignación no encontrada.");
                 return;
             }
 
-            Console.WriteLine("Flight Assignment deleted successfully.");
+            Console.WriteLine("Asignación eliminada correctamente.");
         }
         catch (Exception ex)
         {

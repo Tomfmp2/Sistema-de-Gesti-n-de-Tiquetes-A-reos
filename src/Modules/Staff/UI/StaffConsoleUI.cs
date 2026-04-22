@@ -52,19 +52,19 @@ public class StaffConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("Enter Person ID: ");
+            Console.Write("ID persona: ");
             var personId = int.Parse(Console.ReadLine()!);
-            Console.Write("Enter Position ID: ");
+            Console.Write("ID cargo (posición): ");
             var positionId = int.Parse(Console.ReadLine()!);
-            Console.Write("Enter Airline ID (optional): ");
+            Console.Write("ID aerolínea (opcional): ");
             var airlineIdInput = Console.ReadLine();
             int? airlineId = string.IsNullOrWhiteSpace(airlineIdInput) ? null : int.Parse(airlineIdInput);
-            Console.Write("Enter Airport ID (optional): ");
+            Console.Write("ID aeropuerto (opcional): ");
             var airportIdInput = Console.ReadLine();
             int? airportId = string.IsNullOrWhiteSpace(airportIdInput) ? null : int.Parse(airportIdInput);
-            Console.Write("Enter Hire Date (YYYY-MM-DD): ");
+            Console.Write("Fecha de contratación (AAAA-MM-DD): ");
             var hireDate = DateOnly.Parse(Console.ReadLine()!);
-            Console.Write("Is Active (true/false): ");
+            Console.Write("¿Activo? (true/false): ");
             var isActive = bool.Parse(Console.ReadLine()!);
 
             var personIdVo = PersonId.Create(personId);
@@ -75,7 +75,7 @@ public class StaffConsoleUI : IModuleUI
             var isActiveVo = IsActive.Create(isActive);
 
             await _createUseCase.ExecuteAsync(personIdVo, positionIdVo, airlineIdVo, airportIdVo, hireDateVo, isActiveVo);
-            Console.WriteLine("Staff created successfully.");
+            Console.WriteLine("Personal registrado correctamente.");
         }
         catch (Exception ex)
         {
@@ -85,7 +85,7 @@ public class StaffConsoleUI : IModuleUI
 
     private async Task GetStaffById()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
             try
@@ -94,11 +94,11 @@ public class StaffConsoleUI : IModuleUI
                 var staff = await _getByIdUseCase.ExecuteAsync(staffId);
                 if (staff != null)
                 {
-                    Console.WriteLine($"ID: {staff.Id.Value}, Person ID: {staff.PersonId.Value}, Position ID: {staff.PositionId.Value}, Airline ID: {staff.AirlineId?.Value}, Airport ID: {staff.AirportId?.Value}, Hire Date: {staff.HireDate.Value}, Is Active: {staff.IsActive.Value}");
+                    Console.WriteLine($"ID: {staff.Id.Value}, ID persona: {staff.PersonId.Value}, ID cargo: {staff.PositionId.Value}, ID aerolínea: {staff.AirlineId?.Value}, ID aeropuerto: {staff.AirportId?.Value}, Contratación: {staff.HireDate.Value}, Activo: {staff.IsActive.Value}");
                 }
                 else
                 {
-                    Console.WriteLine("Staff not found.");
+                    Console.WriteLine("Personal no encontrado.");
                 }
             }
             catch (Exception ex)
@@ -113,29 +113,29 @@ public class StaffConsoleUI : IModuleUI
         var staffList = await _getAllUseCase.ExecuteAsync();
         foreach (var s in staffList)
         {
-            Console.WriteLine($"ID: {s.Id.Value}, Person ID: {s.PersonId.Value}, Position ID: {s.PositionId.Value}, Airline ID: {s.AirlineId?.Value}, Airport ID: {s.AirportId?.Value}, Hire Date: {s.HireDate.Value}, Is Active: {s.IsActive.Value}");
+            Console.WriteLine($"ID: {s.Id.Value}, ID persona: {s.PersonId.Value}, ID cargo: {s.PositionId.Value}, ID aerolínea: {s.AirlineId?.Value}, ID aeropuerto: {s.AirportId?.Value}, Contratación: {s.HireDate.Value}, Activo: {s.IsActive.Value}");
         }
     }
 
     private async Task UpdateStaff()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
             try
             {
                 var staffId = StaffId.Create(id);
                 // For simplicity, update position and is active
-                Console.Write("Enter new Position ID: ");
+                Console.Write("Nuevo ID cargo: ");
                 var positionId = int.Parse(Console.ReadLine()!);
-                Console.Write("Is Active (true/false): ");
+                Console.Write("¿Activo? (true/false): ");
                 var isActive = bool.Parse(Console.ReadLine()!);
 
                 var positionIdVo = PositionId.Create(positionId);
                 var isActiveVo = IsActive.Create(isActive);
 
                 await _updateUseCase.ExecuteAsync(staffId, positionId: positionIdVo, isActive: isActiveVo);
-                Console.WriteLine("Staff updated successfully.");
+                Console.WriteLine("Personal actualizado correctamente.");
             }
             catch (Exception ex)
             {
@@ -146,14 +146,14 @@ public class StaffConsoleUI : IModuleUI
 
     private async Task DeleteStaff()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
             try
             {
                 var staffId = StaffId.Create(id);
                 await _deleteUseCase.ExecuteAsync(staffId);
-                Console.WriteLine("Staff deleted successfully.");
+                Console.WriteLine("Personal eliminado correctamente.");
             }
             catch (Exception ex)
             {

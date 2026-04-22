@@ -53,7 +53,7 @@ public class StaffAvailabilityUI : IModuleUI
         SpectreUi.ModuleHeader("Registrar disponibilidad", null);
         try
         {
-            Console.Write("ID del empleado (staff): ");
+            Console.Write("ID del empleado: ");
             var staffIdValue = int.Parse(Console.ReadLine()!);
             var staffId = StaffId.Create(staffIdValue);
 

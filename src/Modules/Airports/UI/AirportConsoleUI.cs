@@ -44,18 +44,18 @@ public class AirportConsoleUI : IModuleUI
 
     private void CreateAirport()
     {
-        Console.Write("Name: ");
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
-        Console.Write("IATA Code: ");
+        Console.Write("Código IATA: ");
         var iata = Console.ReadLine();
-        Console.Write("ICAO Code (optional): ");
+        Console.Write("Código ICAO (opcional): ");
         var icao = Console.ReadLine();
-        Console.Write("City ID: ");
+        Console.Write("ID ciudad: ");
         var cityId = int.Parse(Console.ReadLine()!);
         try
         {
             var airport = _createUseCase.ExecuteAsync(name!, iata!, string.IsNullOrWhiteSpace(icao) ? null : icao, cityId).Result;
-            Console.WriteLine($"Created Airport: {airport.Name.Value}");
+            Console.WriteLine($"Aeropuerto creado: {airport.Name.Value}");
         }
         catch (Exception ex)
         {
@@ -73,11 +73,11 @@ public class AirportConsoleUI : IModuleUI
             var airport = _getByIdUseCase.ExecuteAsync(id).Result;
             if (airport != null)
             {
-                Console.WriteLine($"ID: {airport.Id.Value}, Name: {airport.Name.Value}, IATA: {airport.IataCode.Value}, ICAO: {airport.IcaoCode.Value}");
+                Console.WriteLine($"ID: {airport.Id.Value}, Nombre: {airport.Name.Value}, IATA: {airport.IataCode.Value}, ICAO: {airport.IcaoCode.Value}");
             }
             else
             {
-                Console.WriteLine("Not found");
+                Console.WriteLine("No encontrado");
             }
         }
         catch (Exception ex)
@@ -101,7 +101,7 @@ public class AirportConsoleUI : IModuleUI
 
             foreach (var a in airports)
             {
-                Console.WriteLine($"ID: {a.Id.Value}, Name: {a.Name.Value}, IATA: {a.IataCode.Value}, ICAO: {a.IcaoCode.Value}");
+                Console.WriteLine($"ID: {a.Id.Value}, Nombre: {a.Name.Value}, IATA: {a.IataCode.Value}, ICAO: {a.IcaoCode.Value}");
             }
         }
         catch (Exception ex)
@@ -115,18 +115,18 @@ public class AirportConsoleUI : IModuleUI
     {
         Console.Write("ID: ");
         var id = int.Parse(Console.ReadLine()!);
-        Console.Write("Name: ");
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
-        Console.Write("IATA Code: ");
+        Console.Write("Código IATA: ");
         var iata = Console.ReadLine();
-        Console.Write("ICAO Code (optional): ");
+        Console.Write("Código ICAO (opcional): ");
         var icao = Console.ReadLine();
-        Console.Write("City ID: ");
+        Console.Write("ID ciudad: ");
         var cityId = int.Parse(Console.ReadLine()!);
         try
         {
             _updateUseCase.ExecuteAsync(id, name!, iata!, string.IsNullOrWhiteSpace(icao) ? null : icao, cityId).Wait();
-            Console.WriteLine("Updated");
+            Console.WriteLine("Actualizado");
         }
         catch (Exception ex)
         {
@@ -142,7 +142,7 @@ public class AirportConsoleUI : IModuleUI
             Console.Write("ID: ");
             var id = int.Parse(Console.ReadLine()!);
             _deleteUseCase.ExecuteAsync(id).Wait();
-            Console.WriteLine("Deleted");
+            Console.WriteLine("Eliminado");
         }
         catch (Exception ex)
         {
