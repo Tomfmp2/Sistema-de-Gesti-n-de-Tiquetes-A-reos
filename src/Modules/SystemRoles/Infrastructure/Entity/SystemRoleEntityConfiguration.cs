@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
 
@@ -30,5 +31,7 @@ public sealed class SystemRoleEntityConfiguration : IEntityTypeConfiguration<Sys
             .IsRequired(false);
 
         builder.HasIndex(x => x.Name).IsUnique();
+
+        builder.HasData(SystemRoleDefaultData.SystemRoles);
     }
 }
