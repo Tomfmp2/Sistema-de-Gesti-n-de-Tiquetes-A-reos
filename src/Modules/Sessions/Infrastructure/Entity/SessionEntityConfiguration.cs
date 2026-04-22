@@ -13,14 +13,14 @@ public sealed class SessionEntityConfiguration : IEntityTypeConfiguration<Sessio
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.UserId)
-            .HasColumnName("UserId")
+            .HasColumnName("user_id")
             .HasColumnType("int")
             .IsRequired();
 
