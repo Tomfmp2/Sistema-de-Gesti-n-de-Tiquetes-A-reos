@@ -92,7 +92,7 @@ public static class LoginShell
                 var roleName = await context.Set<SystemRoleEntity>()
                     .Where(r => r.Id == user.SystemRoleId)
                     .Select(r => r.Name!)
-                    .FirstOrDefaultAsync(cancellationToken) ?? "unknown";
+                    .FirstOrDefaultAsync(cancellationToken) ?? "desconocido";
 
                 int? clientId = null;
                 if (user.PersonId.HasValue)

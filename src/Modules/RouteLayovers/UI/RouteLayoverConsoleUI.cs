@@ -27,13 +27,13 @@ public class RouteLayoverConsoleUI : IModuleUI
     {
         while (true)
         {
-            Console.WriteLine("Route Layover Management");
-            Console.WriteLine("1. Create Route Layover");
-            Console.WriteLine("2. Get Route Layover by ID");
-            Console.WriteLine("3. Get All Route Layovers");
-            Console.WriteLine("4. Update Route Layover");
-            Console.WriteLine("5. Delete Route Layover");
-            Console.WriteLine("0. Back");
+            Console.WriteLine("Gestión de escalas en ruta");
+            Console.WriteLine("1. Crear escala");
+            Console.WriteLine("2. Consultar escala por ID");
+            Console.WriteLine("3. Listar todas las escalas");
+            Console.WriteLine("4. Actualizar escala");
+            Console.WriteLine("5. Eliminar escala");
+            Console.WriteLine("0. Volver");
             var choice = Console.ReadLine();
             switch (choice)
             {
@@ -60,35 +60,35 @@ public class RouteLayoverConsoleUI : IModuleUI
 
     private async Task CreateRouteLayover()
     {
-        Console.Write("Route ID: ");
-        var routeId = int.Parse(Console.ReadLine());
-        Console.Write("Layover Airport ID: ");
-        var layoverAirportId = int.Parse(Console.ReadLine());
-        Console.Write("Sequence Order: ");
-        var sequenceOrder = int.Parse(Console.ReadLine());
-        Console.Write("Layover Duration Min: ");
-        var layoverDurationMin = int.Parse(Console.ReadLine());
+        Console.Write("ID ruta: ");
+        var routeId = int.Parse(Console.ReadLine()!);
+        Console.Write("ID aeropuerto de escala: ");
+        var layoverAirportId = int.Parse(Console.ReadLine()!);
+        Console.Write("Orden en la secuencia: ");
+        var sequenceOrder = int.Parse(Console.ReadLine()!);
+        Console.Write("Duración de escala (min): ");
+        var layoverDurationMin = int.Parse(Console.ReadLine()!);
         await _createUseCase.ExecuteAsync(
             RouteId.Create(routeId),
             LayoverAirportId.Create(layoverAirportId),
             SequenceOrder.Create(sequenceOrder),
             LayoverDurationMin.Create(layoverDurationMin)
         );
-        Console.WriteLine("Route Layover created");
+        Console.WriteLine("Escala creada");
     }
 
     private async Task GetRouteLayoverById()
     {
-        Console.Write("Route Layover ID: ");
-        var id = int.Parse(Console.ReadLine());
+        Console.Write("ID escala: ");
+        var id = int.Parse(Console.ReadLine()!);
         var routeLayover = await _getByIdUseCase.ExecuteAsync(RouteLayoverId.Create(id));
         if (routeLayover != null)
         {
-            Console.WriteLine($"ID: {routeLayover.Id.Value}, Route: {routeLayover.RouteId.Value}, Layover Airport: {routeLayover.LayoverAirportId.Value}, Sequence: {routeLayover.SequenceOrder.Value}, Duration: {routeLayover.LayoverDurationMin.Value}");
+            Console.WriteLine($"ID: {routeLayover.Id.Value}, Ruta: {routeLayover.RouteId.Value}, Aeropuerto escala: {routeLayover.LayoverAirportId.Value}, Orden: {routeLayover.SequenceOrder.Value}, Duración min: {routeLayover.LayoverDurationMin.Value}");
         }
         else
         {
-            Console.WriteLine("Route Layover not found");
+            Console.WriteLine("Escala no encontrada");
         }
     }
 
@@ -97,28 +97,28 @@ public class RouteLayoverConsoleUI : IModuleUI
         var routeLayovers = await _getAllUseCase.ExecuteAsync();
         foreach (var rl in routeLayovers)
         {
-            Console.WriteLine($"ID: {rl.Id.Value}, Route: {rl.RouteId.Value}, Layover Airport: {rl.LayoverAirportId.Value}, Sequence: {rl.SequenceOrder.Value}, Duration: {rl.LayoverDurationMin.Value}");
+            Console.WriteLine($"ID: {rl.Id.Value}, Ruta: {rl.RouteId.Value}, Aeropuerto escala: {rl.LayoverAirportId.Value}, Orden: {rl.SequenceOrder.Value}, Duración min: {rl.LayoverDurationMin.Value}");
         }
     }
 
     private async Task UpdateRouteLayover()
     {
-        Console.Write("Route Layover ID: ");
-        var id = int.Parse(Console.ReadLine());
+        Console.Write("ID escala: ");
+        var id = int.Parse(Console.ReadLine()!);
         var existing = await _getByIdUseCase.ExecuteAsync(RouteLayoverId.Create(id));
         if (existing == null)
         {
-            Console.WriteLine("Route Layover not found");
+            Console.WriteLine("Escala no encontrada");
             return;
         }
-        Console.Write("Route ID: ");
-        var routeId = int.Parse(Console.ReadLine());
-        Console.Write("Layover Airport ID: ");
-        var layoverAirportId = int.Parse(Console.ReadLine());
-        Console.Write("Sequence Order: ");
-        var sequenceOrder = int.Parse(Console.ReadLine());
-        Console.Write("Layover Duration Min: ");
-        var layoverDurationMin = int.Parse(Console.ReadLine());
+        Console.Write("ID ruta: ");
+        var routeId = int.Parse(Console.ReadLine()!);
+        Console.Write("ID aeropuerto de escala: ");
+        var layoverAirportId = int.Parse(Console.ReadLine()!);
+        Console.Write("Orden en la secuencia: ");
+        var sequenceOrder = int.Parse(Console.ReadLine()!);
+        Console.Write("Duración de escala (min): ");
+        var layoverDurationMin = int.Parse(Console.ReadLine()!);
         await _updateUseCase.ExecuteAsync(
             RouteLayoverId.Create(id),
             RouteId.Create(routeId),
@@ -126,14 +126,14 @@ public class RouteLayoverConsoleUI : IModuleUI
             SequenceOrder.Create(sequenceOrder),
             LayoverDurationMin.Create(layoverDurationMin)
         );
-        Console.WriteLine("Route Layover updated");
+        Console.WriteLine("Escala actualizada");
     }
 
     private async Task DeleteRouteLayover()
     {
-        Console.Write("Route Layover ID: ");
-        var id = int.Parse(Console.ReadLine());
+        Console.Write("ID escala: ");
+        var id = int.Parse(Console.ReadLine()!);
         await _deleteUseCase.ExecuteAsync(RouteLayoverId.Create(id));
-        Console.WriteLine("Route Layover deleted");
+        Console.WriteLine("Escala eliminada");
     }
 }

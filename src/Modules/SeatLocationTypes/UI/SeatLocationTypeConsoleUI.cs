@@ -27,13 +27,13 @@ public class SeatLocationTypeConsoleUI : IModuleUI
     {
         while (true)
         {
-            Console.WriteLine("Seat Location Type Management");
-            Console.WriteLine("1. Create Seat Location Type");
-            Console.WriteLine("2. Get Seat Location Type by ID");
-            Console.WriteLine("3. Get All Seat Location Types");
-            Console.WriteLine("4. Update Seat Location Type");
-            Console.WriteLine("5. Delete Seat Location Type");
-            Console.WriteLine("0. Back");
+            Console.WriteLine("Gestión de tipos de ubicación de asiento");
+            Console.WriteLine("1. Crear tipo de ubicación");
+            Console.WriteLine("2. Consultar tipo por ID");
+            Console.WriteLine("3. Listar todos los tipos");
+            Console.WriteLine("4. Actualizar tipo");
+            Console.WriteLine("5. Eliminar tipo");
+            Console.WriteLine("0. Volver");
             var choice = Console.ReadLine();
             switch (choice)
             {
@@ -60,24 +60,24 @@ public class SeatLocationTypeConsoleUI : IModuleUI
 
     private async Task CreateSeatLocationType()
     {
-        Console.Write("Name: ");
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
         await _createUseCase.ExecuteAsync(SeatLocationTypeName.Create(name));
-        Console.WriteLine("Seat Location Type created");
+        Console.WriteLine("Tipo de ubicación creado");
     }
 
     private async Task GetSeatLocationTypeById()
     {
         Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine());
+        var id = int.Parse(Console.ReadLine()!);
         var seatLocationType = await _getByIdUseCase.ExecuteAsync(SeatLocationTypeId.Create(id));
         if (seatLocationType != null)
         {
-            Console.WriteLine($"ID: {seatLocationType.Id.Value}, Name: {seatLocationType.Name.Value}");
+            Console.WriteLine($"ID: {seatLocationType.Id.Value}, Nombre: {seatLocationType.Name.Value}");
         }
         else
         {
-            Console.WriteLine("Seat Location Type not found");
+            Console.WriteLine("Tipo de ubicación no encontrado");
         }
     }
 
@@ -93,18 +93,18 @@ public class SeatLocationTypeConsoleUI : IModuleUI
     private async Task UpdateSeatLocationType()
     {
         Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine());
-        Console.Write("Name: ");
+        var id = int.Parse(Console.ReadLine()!);
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
         await _updateUseCase.ExecuteAsync(SeatLocationTypeId.Create(id), SeatLocationTypeName.Create(name));
-        Console.WriteLine("Seat Location Type updated");
+        Console.WriteLine("Tipo de ubicación actualizado");
     }
 
     private async Task DeleteSeatLocationType()
     {
         Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine());
+        var id = int.Parse(Console.ReadLine()!);
         await _deleteUseCase.ExecuteAsync(SeatLocationTypeId.Create(id));
-        Console.WriteLine("Seat Location Type deleted");
+        Console.WriteLine("Tipo de ubicación eliminado");
     }
 }

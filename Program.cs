@@ -12,7 +12,7 @@ try
 
     if (context.Database.CanConnect())
     {
-        Console.WriteLine("Conexion exitosa");
+        Console.WriteLine("Conexión exitosa");
 
         var describeArg = args.FirstOrDefault(a => a.StartsWith("--describe-table=", StringComparison.OrdinalIgnoreCase));
         if (describeArg is not null)
@@ -112,7 +112,7 @@ static async Task DescribeTableAsync(sistema_gestor_de_tiquetes_aereos.Src.Share
         table
     ).ToListAsync();
 
-    Console.WriteLine($"Table `{table}` columns ({cols.Count}):");
+    Console.WriteLine($"Columnas de la tabla `{table}` ({cols.Count}):");
     foreach (var c in cols)
     {
         Console.WriteLine($"- {c}");

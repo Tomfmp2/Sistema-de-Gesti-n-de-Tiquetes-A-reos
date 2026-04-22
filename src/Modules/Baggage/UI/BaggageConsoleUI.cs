@@ -30,15 +30,15 @@ public sealed class BaggageConsoleUI : IModuleUI
         while (true)
         {
             Console.WriteLine("\n╔══════════════════════════════════════╗");
-            Console.WriteLine("║      BAGGAGE MANAGEMENT MODULE       ║");
+            Console.WriteLine("║      Módulo de equipaje              ║");
             Console.WriteLine("╚══════════════════════════════════════╝");
-            Console.WriteLine("1. Create Baggage");
-            Console.WriteLine("2. Get Baggage by ID");
-            Console.WriteLine("3. List All Baggages");
-            Console.WriteLine("4. Update Baggage");
-            Console.WriteLine("5. Delete Baggage");
-            Console.WriteLine("0. Exit");
-            Console.Write("\nSelect option: ");
+            Console.WriteLine("1. Registrar equipaje");
+            Console.WriteLine("2. Consultar equipaje por ID");
+            Console.WriteLine("3. Listar todo el equipaje");
+            Console.WriteLine("4. Actualizar equipaje");
+            Console.WriteLine("5. Eliminar equipaje");
+            Console.WriteLine("0. Volver");
+            Console.Write("\nElija una opción: ");
 
             string? option = Console.ReadLine();
 
@@ -62,7 +62,7 @@ public sealed class BaggageConsoleUI : IModuleUI
                 case "0":
                     return;
                 default:
-                    Console.WriteLine("Invalid option. Please try again.");
+                    Console.WriteLine("Opción no válida. Intente de nuevo.");
                     break;
             }
         }
@@ -72,25 +72,25 @@ public sealed class BaggageConsoleUI : IModuleUI
     {
         try
         {
-            Console.WriteLine("\n--- Create Baggage ---");
-            Console.Write("Checkin ID: ");
+            Console.WriteLine("\n--- Registrar equipaje ---");
+            Console.Write("ID check-in: ");
             int checkinId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Baggage Type ID: ");
+            Console.Write("ID tipo de equipaje: ");
             int baggageTypeId = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Weight (kg): ");
+            Console.Write("Peso (kg): ");
             decimal weight = decimal.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("Charged Price: ");
+            Console.Write("Precio cobrado: ");
             decimal price = decimal.Parse(Console.ReadLine() ?? "0");
 
             await _createUseCase.ExecuteAsync(checkinId, baggageTypeId, weight, price);
-            Console.WriteLine("✓ Baggage created successfully!");
+            Console.WriteLine("Equipaje registrado correctamente.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"✗ Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -98,24 +98,24 @@ public sealed class BaggageConsoleUI : IModuleUI
     {
         try
         {
-            Console.WriteLine("\n--- Get Baggage by ID ---");
-            Console.Write("Baggage ID: ");
+            Console.WriteLine("\n--- Consultar equipaje por ID ---");
+            Console.Write("ID equipaje: ");
             int id = int.Parse(Console.ReadLine() ?? "0");
 
             var baggage = await _getByIdUseCase.ExecuteAsync(id);
             Console.WriteLine($"\n┌─────────────────────────────────┐");
             Console.WriteLine($"│ ID: {baggage.Id.Value}");
-            Console.WriteLine($"│ Checkin ID: {baggage.CheckinId}");
-            Console.WriteLine($"│ Baggage Type ID: {baggage.BaggageTypeId}");
-            Console.WriteLine($"│ Weight: {baggage.WeightKg.Value} kg");
-            Console.WriteLine($"│ Charged Price: ${baggage.ChargedPrice.Value}");
-            Console.WriteLine($"│ Created: {baggage.CreatedAt:yyyy-MM-dd HH:mm:ss}");
-            Console.WriteLine($"│ Updated: {baggage.UpdatedAt:yyyy-MM-dd HH:mm:ss}");
+            Console.WriteLine($"│ ID check-in: {baggage.CheckinId}");
+            Console.WriteLine($"│ ID tipo equipaje: {baggage.BaggageTypeId}");
+            Console.WriteLine($"│ Peso: {baggage.WeightKg.Value} kg");
+            Console.WriteLine($"│ Precio cobrado: ${baggage.ChargedPrice.Value}");
+            Console.WriteLine($"│ Creado: {baggage.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+            Console.WriteLine($"│ Actualizado: {baggage.UpdatedAt:yyyy-MM-dd HH:mm:ss}");
             Console.WriteLine($"└─────────────────────────────────┘");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"✗ Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -123,12 +123,12 @@ public sealed class BaggageConsoleUI : IModuleUI
     {
         try
         {
-            Console.WriteLine("\n--- All Baggages ---");
+            Console.WriteLine("\n--- Todo el equipaje ---");
             var baggages = await _getAllUseCase.ExecuteAsync();
 
             if (baggages.Count == 0)
             {
-                Console.WriteLine("No baggages found.");
+                Console.WriteLine("No hay equipajes registrados.");
                 return;
             }
 
@@ -136,17 +136,17 @@ public sealed class BaggageConsoleUI : IModuleUI
             {
                 Console.WriteLine($"\n┌─────────────────────────────────┐");
                 Console.WriteLine($"│ ID: {baggage.Id.Value}");
-                Console.WriteLine($"│ Checkin ID: {baggage.CheckinId}");
-                Console.WriteLine($"│ Baggage Type ID: {baggage.BaggageTypeId}");
-                Console.WriteLine($"│ Weight: {baggage.WeightKg.Value} kg");
-                Console.WriteLine($"│ Charged Price: ${baggage.ChargedPrice.Value}");
-                Console.WriteLine($"│ Created: {baggage.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+                Console.WriteLine($"│ ID check-in: {baggage.CheckinId}");
+                Console.WriteLine($"│ ID tipo equipaje: {baggage.BaggageTypeId}");
+                Console.WriteLine($"│ Peso: {baggage.WeightKg.Value} kg");
+                Console.WriteLine($"│ Precio cobrado: ${baggage.ChargedPrice.Value}");
+                Console.WriteLine($"│ Creado: {baggage.CreatedAt:yyyy-MM-dd HH:mm:ss}");
                 Console.WriteLine($"└─────────────────────────────────┘");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"✗ Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -154,28 +154,28 @@ public sealed class BaggageConsoleUI : IModuleUI
     {
         try
         {
-            Console.WriteLine("\n--- Update Baggage ---");
-            Console.Write("Baggage ID: ");
+            Console.WriteLine("\n--- Actualizar equipaje ---");
+            Console.Write("ID equipaje: ");
             int id = int.Parse(Console.ReadLine() ?? "0");
 
-            Console.Write("New Baggage Type ID (or press Enter to skip): ");
+            Console.Write("Nuevo ID tipo de equipaje (Enter para omitir): ");
             string? baggageTypeIdStr = Console.ReadLine();
             int? baggageTypeId = string.IsNullOrWhiteSpace(baggageTypeIdStr) ? null : int.Parse(baggageTypeIdStr);
 
-            Console.Write("New Weight in kg (or press Enter to skip): ");
+            Console.Write("Nuevo peso en kg (Enter para omitir): ");
             string? weightStr = Console.ReadLine();
             decimal? weight = string.IsNullOrWhiteSpace(weightStr) ? null : decimal.Parse(weightStr);
 
-            Console.Write("New Charged Price (or press Enter to skip): ");
+            Console.Write("Nuevo precio cobrado (Enter para omitir): ");
             string? priceStr = Console.ReadLine();
             decimal? price = string.IsNullOrWhiteSpace(priceStr) ? null : decimal.Parse(priceStr);
 
             await _updateUseCase.ExecuteAsync(id, baggageTypeId, weight, price);
-            Console.WriteLine("✓ Baggage updated successfully!");
+            Console.WriteLine("Equipaje actualizado correctamente.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"✗ Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
@@ -183,16 +183,16 @@ public sealed class BaggageConsoleUI : IModuleUI
     {
         try
         {
-            Console.WriteLine("\n--- Delete Baggage ---");
-            Console.Write("Baggage ID: ");
+            Console.WriteLine("\n--- Eliminar equipaje ---");
+            Console.Write("ID equipaje: ");
             int id = int.Parse(Console.ReadLine() ?? "0");
 
             await _deleteUseCase.ExecuteAsync(id);
-            Console.WriteLine("✓ Baggage deleted successfully!");
+            Console.WriteLine("Equipaje eliminado correctamente.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"✗ Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex.Message}");
         }
     }
 }

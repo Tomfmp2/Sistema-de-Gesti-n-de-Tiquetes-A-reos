@@ -27,13 +27,13 @@ public class FlightStatusConsoleUI : IModuleUI
     {
         while (true)
         {
-            Console.WriteLine("Flight Status Management");
-            Console.WriteLine("1. Create Flight Status");
-            Console.WriteLine("2. Get Flight Status by ID");
-            Console.WriteLine("3. Get All Flight Statuses");
-            Console.WriteLine("4. Update Flight Status");
-            Console.WriteLine("5. Delete Flight Status");
-            Console.WriteLine("0. Back");
+            Console.WriteLine("Gestión de estados de vuelo");
+            Console.WriteLine("1. Crear estado de vuelo");
+            Console.WriteLine("2. Consultar estado por ID");
+            Console.WriteLine("3. Listar todos los estados");
+            Console.WriteLine("4. Actualizar estado");
+            Console.WriteLine("5. Eliminar estado");
+            Console.WriteLine("0. Volver");
             var choice = Console.ReadLine();
             switch (choice)
             {
@@ -60,24 +60,24 @@ public class FlightStatusConsoleUI : IModuleUI
 
     private async Task CreateFlightStatus()
     {
-        Console.Write("Name: ");
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
         await _createUseCase.ExecuteAsync(new CreateFlightStatusRequest(name));
-        Console.WriteLine("Flight Status created");
+        Console.WriteLine("Estado de vuelo creado");
     }
 
     private async Task GetFlightStatusById()
     {
         Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine());
+        var id = int.Parse(Console.ReadLine()!);
         var flightStatus = await _getByIdUseCase.ExecuteAsync(id);
         if (flightStatus != null)
         {
-            Console.WriteLine($"ID: {flightStatus.Id.Value}, Name: {flightStatus.Name.Value}");
+            Console.WriteLine($"ID: {flightStatus.Id.Value}, Nombre: {flightStatus.Name.Value}");
         }
         else
         {
-            Console.WriteLine("Flight Status not found");
+            Console.WriteLine("Estado de vuelo no encontrado");
         }
     }
 
@@ -86,25 +86,25 @@ public class FlightStatusConsoleUI : IModuleUI
         var statuses = await _getAllUseCase.ExecuteAsync();
         foreach (var s in statuses)
         {
-            Console.WriteLine($"ID: {s.Id.Value}, Name: {s.Name.Value}");
+            Console.WriteLine($"ID: {s.Id.Value}, Nombre: {s.Name.Value}");
         }
     }
 
     private async Task UpdateFlightStatus()
     {
         Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine());
-        Console.Write("Name: ");
+        var id = int.Parse(Console.ReadLine()!);
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
         await _updateUseCase.ExecuteAsync(new UpdateFlightStatusRequest(id, name));
-        Console.WriteLine("Flight Status updated");
+        Console.WriteLine("Estado de vuelo actualizado");
     }
 
     private async Task DeleteFlightStatus()
     {
         Console.Write("ID: ");
-        var id = int.Parse(Console.ReadLine());
+        var id = int.Parse(Console.ReadLine()!);
         await _deleteUseCase.ExecuteAsync(id);
-        Console.WriteLine("Flight Status deleted");
+        Console.WriteLine("Estado de vuelo eliminado");
     }
 }

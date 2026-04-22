@@ -31,14 +31,14 @@ public class StaffPositionConsoleUI : IModuleUI
     {
         while (true)
         {
-            Console.WriteLine("\nStaff Positions Management");
-            Console.WriteLine("1. Create Staff Position");
-            Console.WriteLine("2. Get Staff Position by ID");
-            Console.WriteLine("3. Get All Staff Positions");
-            Console.WriteLine("4. Update Staff Position");
-            Console.WriteLine("5. Delete Staff Position");
-            Console.WriteLine("0. Back to Main Menu");
-            Console.Write("Choose an option: ");
+            Console.WriteLine("\nGestión de cargos (posiciones de personal)");
+            Console.WriteLine("1. Crear cargo");
+            Console.WriteLine("2. Consultar cargo por ID");
+            Console.WriteLine("3. Listar todos los cargos");
+            Console.WriteLine("4. Actualizar cargo");
+            Console.WriteLine("5. Eliminar cargo");
+            Console.WriteLine("0. Volver al menú principal");
+            Console.Write("Elija una opción: ");
 
             var choice = Console.ReadLine();
             switch (choice)
@@ -61,7 +61,7 @@ public class StaffPositionConsoleUI : IModuleUI
                 case "0":
                     return;
                 default:
-                    Console.WriteLine("Invalid option. Try again.");
+                    Console.WriteLine("Opción no válida. Intente de nuevo.");
                     break;
             }
         }
@@ -69,7 +69,7 @@ public class StaffPositionConsoleUI : IModuleUI
 
     private async Task CreateStaffPosition()
     {
-        Console.Write("Enter name: ");
+        Console.Write("Nombre: ");
         var name = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(name))
         {
@@ -77,7 +77,7 @@ public class StaffPositionConsoleUI : IModuleUI
             {
                 var staffPositionName = StaffPositionName.Create(name);
                 await _createUseCase.ExecuteAsync(staffPositionName);
-                Console.WriteLine("Staff Position created successfully.");
+                Console.WriteLine("Cargo creado correctamente.");
             }
             catch (Exception ex)
             {
@@ -88,7 +88,7 @@ public class StaffPositionConsoleUI : IModuleUI
 
     private async Task GetStaffPositionById()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
             try
@@ -97,11 +97,11 @@ public class StaffPositionConsoleUI : IModuleUI
                 var staffPosition = await _getByIdUseCase.ExecuteAsync(staffPositionId);
                 if (staffPosition != null)
                 {
-                    Console.WriteLine($"ID: {staffPosition.Id.Value}, Name: {staffPosition.Name.Value}");
+                    Console.WriteLine($"ID: {staffPosition.Id.Value}, Nombre: {staffPosition.Name.Value}");
                 }
                 else
                 {
-                    Console.WriteLine("Staff Position not found.");
+                    Console.WriteLine("Cargo no encontrado.");
                 }
             }
             catch (Exception ex)
@@ -116,16 +116,16 @@ public class StaffPositionConsoleUI : IModuleUI
         var staffPositions = await _getAllUseCase.ExecuteAsync();
         foreach (var sp in staffPositions)
         {
-            Console.WriteLine($"ID: {sp.Id.Value}, Name: {sp.Name.Value}");
+            Console.WriteLine($"ID: {sp.Id.Value}, Nombre: {sp.Name.Value}");
         }
     }
 
     private async Task UpdateStaffPosition()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
-            Console.Write("Enter new name: ");
+            Console.Write("Nuevo nombre: ");
             var name = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -134,7 +134,7 @@ public class StaffPositionConsoleUI : IModuleUI
                     var staffPositionId = StaffPositionId.Create(id);
                     var staffPositionName = StaffPositionName.Create(name);
                     await _updateUseCase.ExecuteAsync(staffPositionId, staffPositionName);
-                    Console.WriteLine("Staff Position updated successfully.");
+                    Console.WriteLine("Cargo actualizado correctamente.");
                 }
                 catch (Exception ex)
                 {
@@ -146,14 +146,14 @@ public class StaffPositionConsoleUI : IModuleUI
 
     private async Task DeleteStaffPosition()
     {
-        Console.Write("Enter ID: ");
+        Console.Write("ID: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
             try
             {
                 var staffPositionId = StaffPositionId.Create(id);
                 await _deleteUseCase.ExecuteAsync(staffPositionId);
-                Console.WriteLine("Staff Position deleted successfully.");
+                Console.WriteLine("Cargo eliminado correctamente.");
             }
             catch (Exception ex)
             {

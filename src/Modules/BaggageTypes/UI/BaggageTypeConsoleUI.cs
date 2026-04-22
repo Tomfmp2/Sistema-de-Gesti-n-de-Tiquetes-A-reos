@@ -31,20 +31,20 @@ public class BaggageTypeConsoleUI : IModuleUI
         {
             Console.Clear();
             Console.WriteLine("╔════════════════════════════════════════════╗");
-            Console.WriteLine("║    BAGGAGE TYPES MANAGEMENT SYSTEM         ║");
+            Console.WriteLine("║    Tipos de equipaje                      ║");
             Console.WriteLine("╠════════════════════════════════════════════╣");
-            Console.WriteLine("║ 1. Create Baggage Type                     ║");
-            Console.WriteLine("║ 2. Get Baggage Type by ID                  ║");
-            Console.WriteLine("║ 3. List All Baggage Types                  ║");
-            Console.WriteLine("║ 4. Update Baggage Type                     ║");
-            Console.WriteLine("║ 5. Delete Baggage Type                     ║");
-            Console.WriteLine("║ 0. Exit                                    ║");
+            Console.WriteLine("║ 1. Crear tipo de equipaje                  ║");
+            Console.WriteLine("║ 2. Consultar tipo por ID                   ║");
+            Console.WriteLine("║ 3. Listar todos los tipos                  ║");
+            Console.WriteLine("║ 4. Actualizar tipo                         ║");
+            Console.WriteLine("║ 5. Eliminar tipo                           ║");
+            Console.WriteLine("║ 0. Volver                                  ║");
             Console.WriteLine("╚════════════════════════════════════════════╝");
-            Console.Write("Select option: ");
+            Console.Write("Elija una opción: ");
 
             if (!int.TryParse(Console.ReadLine(), out int option))
             {
-                Console.WriteLine("Invalid input. Press any key to continue...");
+                Console.WriteLine("Entrada no válida. Pulse una tecla para continuar…");
                 Console.ReadKey();
                 continue;
             }
@@ -71,7 +71,7 @@ public class BaggageTypeConsoleUI : IModuleUI
                     case 0:
                         return;
                     default:
-                        Console.WriteLine("Invalid option. Press any key to continue...");
+                        Console.WriteLine("Opción no válida. Pulse una tecla para continuar…");
                         Console.ReadKey();
                         break;
                 }
@@ -87,67 +87,67 @@ public class BaggageTypeConsoleUI : IModuleUI
     private async Task CreateBaggageTypeAsync()
     {
         Console.Clear();
-        Console.WriteLine("=== Create Baggage Type ===");
+        Console.WriteLine("=== Crear tipo de equipaje ===");
 
-        Console.Write("Name (e.g., Checked Baggage): ");
+        Console.Write("Nombre (p. ej. equipaje de bodega): ");
         string name = Console.ReadLine() ?? "";
 
-        Console.Write("Max Weight (kg): ");
+        Console.Write("Peso máximo (kg): ");
         if (!decimal.TryParse(Console.ReadLine(), out decimal maxWeight))
         {
-            Console.WriteLine("Invalid weight format.");
+            Console.WriteLine("Formato de peso no válido.");
             Console.ReadKey();
             return;
         }
 
-        Console.Write("Base Price (amount): ");
+        Console.Write("Precio base: ");
         if (!decimal.TryParse(Console.ReadLine(), out decimal basePrice))
         {
-            Console.WriteLine("Invalid price format.");
+            Console.WriteLine("Formato de precio no válido.");
             Console.ReadKey();
             return;
         }
 
         var baggageType = await _createUseCase.ExecuteAsync(name, maxWeight, basePrice);
-        Console.WriteLine($"✓ Baggage Type created successfully! ID: {baggageType.Id}");
+        Console.WriteLine($"Tipo de equipaje creado. ID: {baggageType.Id}");
         Console.ReadKey();
     }
 
     private async Task GetBaggageTypeByIdAsync()
     {
         Console.Clear();
-        Console.WriteLine("=== Get Baggage Type by ID ===");
+        Console.WriteLine("=== Consultar tipo por ID ===");
 
-        Console.Write("Enter Baggage Type ID: ");
+        Console.Write("ID tipo de equipaje: ");
         if (!int.TryParse(Console.ReadLine(), out int id))
         {
-            Console.WriteLine("Invalid ID format.");
+            Console.WriteLine("Formato de ID no válido.");
             Console.ReadKey();
             return;
         }
 
         var baggageType = await _getByIdUseCase.ExecuteAsync(id);
-        Console.WriteLine($"\nID: {baggageType.Id}");
-        Console.WriteLine($"Name: {baggageType.Name}");
-        Console.WriteLine($"Max Weight: {baggageType.MaxWeightKg} kg");
-        Console.WriteLine($"Base Price: ${baggageType.BasePrice}");
+        Console.WriteLine($"\nID: {baggageType.Id.Value}");
+        Console.WriteLine($"Nombre: {baggageType.Name.Value}");
+        Console.WriteLine($"Peso máx.: {baggageType.MaxWeightKg.Value} kg");
+        Console.WriteLine($"Precio base: ${baggageType.BasePrice.Value}");
         Console.ReadKey();
     }
 
     private async Task ListAllBaggageTypesAsync()
     {
         Console.Clear();
-        Console.WriteLine("=== All Baggage Types ===\n");
+        Console.WriteLine("=== Tipos de equipaje ===\n");
 
         var baggageTypes = await _getAllUseCase.ExecuteAsync();
 
         if (baggageTypes.Count == 0)
         {
-            Console.WriteLine("No baggage types found.");
+            Console.WriteLine("No hay tipos de equipaje registrados.");
         }
         else
         {
-            Console.WriteLine($"{"ID",-5} {"Name",-25} {"Max Weight (kg)",-15} {"Base Price",-12}");
+            Console.WriteLine($"{"ID",-5} {"Nombre",-25} {"Peso máx. (kg)",-15} {"Precio base",-12}");
             Console.WriteLine("────────────────────────────────────────────────────────");
 
             foreach (var bt in baggageTypes)
@@ -162,61 +162,62 @@ public class BaggageTypeConsoleUI : IModuleUI
     private async Task UpdateBaggageTypeAsync()
     {
         Console.Clear();
-        Console.WriteLine("=== Update Baggage Type ===");
+        Console.WriteLine("=== Actualizar tipo de equipaje ===");
 
-        Console.Write("Enter Baggage Type ID to update: ");
+        Console.Write("ID del tipo a actualizar: ");
         if (!int.TryParse(Console.ReadLine(), out int id))
         {
-            Console.WriteLine("Invalid ID format.");
+            Console.WriteLine("Formato de ID no válido.");
             Console.ReadKey();
             return;
         }
 
-        Console.Write("New Name (leave empty to skip): ");
+        Console.Write("Nuevo nombre (vacío para omitir): ");
         string? newName = Console.ReadLine();
         if (string.IsNullOrWhiteSpace(newName))
             newName = null;
 
-        Console.Write("New Max Weight (leave empty to skip): ");
+        Console.Write("Nuevo peso máximo (vacío para omitir): ");
         decimal? newMaxWeight = null;
         string? weightInput = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(weightInput) && decimal.TryParse(weightInput, out decimal weight))
             newMaxWeight = weight;
 
-        Console.Write("New Base Price (leave empty to skip): ");
+        Console.Write("Nuevo precio base (vacío para omitir): ");
         decimal? newBasePrice = null;
         string? priceInput = Console.ReadLine();
         if (!string.IsNullOrWhiteSpace(priceInput) && decimal.TryParse(priceInput, out decimal price))
             newBasePrice = price;
 
         var baggageType = await _updateUseCase.ExecuteAsync(id, newName, newMaxWeight, newBasePrice);
-        Console.WriteLine($"✓ Baggage Type updated successfully!");
+        Console.WriteLine("Tipo de equipaje actualizado correctamente.");
         Console.ReadKey();
     }
 
     private async Task DeleteBaggageTypeAsync()
     {
         Console.Clear();
-        Console.WriteLine("=== Delete Baggage Type ===");
+        Console.WriteLine("=== Eliminar tipo de equipaje ===");
 
-        Console.Write("Enter Baggage Type ID to delete: ");
+        Console.Write("ID del tipo a eliminar: ");
         if (!int.TryParse(Console.ReadLine(), out int id))
         {
-            Console.WriteLine("Invalid ID format.");
+            Console.WriteLine("Formato de ID no válido.");
             Console.ReadKey();
             return;
         }
 
-        Console.Write("Are you sure? (y/n): ");
-        if (Console.ReadLine()?.ToLower() != "y")
+        Console.Write("¿Confirma la eliminación? (s/n): ");
+        var confirm = Console.ReadLine()?.Trim().ToLowerInvariant();
+        if (confirm is not "y" and not "s")
         {
-            Console.WriteLine("Delete cancelled.");
+            Console.WriteLine("Eliminación cancelada.");
             Console.ReadKey();
             return;
         }
 
         await _deleteUseCase.ExecuteAsync(id);
-        Console.WriteLine($"✓ Baggage Type deleted successfully!");
+        Console.WriteLine("Tipo de equipaje eliminado correctamente.");
         Console.ReadKey();
     }
 }

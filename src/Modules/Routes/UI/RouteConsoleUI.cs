@@ -27,13 +27,13 @@ public class RouteConsoleUI : IModuleUI
     {
         while (true)
         {
-            Console.WriteLine("Route Management");
-            Console.WriteLine("1. Create Route");
-            Console.WriteLine("2. Get Route by ID");
-            Console.WriteLine("3. Get All Routes");
-            Console.WriteLine("4. Update Route");
-            Console.WriteLine("5. Delete Route");
-            Console.WriteLine("0. Back");
+            Console.WriteLine("Gestión de rutas");
+            Console.WriteLine("1. Crear ruta");
+            Console.WriteLine("2. Consultar ruta por ID");
+            Console.WriteLine("3. Listar todas las rutas");
+            Console.WriteLine("4. Actualizar ruta");
+            Console.WriteLine("5. Eliminar ruta");
+            Console.WriteLine("0. Volver");
             var choice = Console.ReadLine();
             switch (choice)
             {
@@ -60,37 +60,37 @@ public class RouteConsoleUI : IModuleUI
 
     private async Task CreateRoute()
     {
-        Console.Write("Origin Airport ID: ");
-        var origin = int.Parse(Console.ReadLine());
-        Console.Write("Destination Airport ID: ");
-        var dest = int.Parse(Console.ReadLine());
-        Console.Write("Distance KM (optional): ");
+        Console.Write("ID aeropuerto origen: ");
+        var origin = int.Parse(Console.ReadLine()!);
+        Console.Write("ID aeropuerto destino: ");
+        var dest = int.Parse(Console.ReadLine()!);
+        Console.Write("Distancia km (opcional): ");
         var distStr = Console.ReadLine();
-        int? dist = string.IsNullOrEmpty(distStr) ? null : int.Parse(distStr);
-        Console.Write("Estimated Duration Min (optional): ");
+        int? dist = string.IsNullOrEmpty(distStr) ? null : int.Parse(distStr!);
+        Console.Write("Duración estimada min (opcional): ");
         var durStr = Console.ReadLine();
-        int? dur = string.IsNullOrEmpty(durStr) ? null : int.Parse(durStr);
+        int? dur = string.IsNullOrEmpty(durStr) ? null : int.Parse(durStr!);
         await _createUseCase.ExecuteAsync(
             OriginAirportId.Create(origin),
             DestinationAirportId.Create(dest),
             DistanceKm.Create(dist),
             EstimatedDurationMin.Create(dur)
         );
-        Console.WriteLine("Route created");
+        Console.WriteLine("Ruta creada");
     }
 
     private async Task GetRouteById()
     {
-        Console.Write("Route ID: ");
-        var id = int.Parse(Console.ReadLine());
+        Console.Write("ID ruta: ");
+        var id = int.Parse(Console.ReadLine()!);
         var route = await _getByIdUseCase.ExecuteAsync(RouteId.Create(id));
         if (route != null)
         {
-            Console.WriteLine($"ID: {route.Id.Value}, Origin: {route.OriginAirportId.Value}, Dest: {route.DestinationAirportId.Value}, Dist: {route.DistanceKm.Value}, Dur: {route.EstimatedDurationMin.Value}");
+            Console.WriteLine($"ID: {route.Id.Value}, Origen: {route.OriginAirportId.Value}, Destino: {route.DestinationAirportId.Value}, Dist. km: {route.DistanceKm.Value}, Dur. min: {route.EstimatedDurationMin.Value}");
         }
         else
         {
-            Console.WriteLine("Route not found");
+            Console.WriteLine("Ruta no encontrada");
         }
     }
 
@@ -99,30 +99,30 @@ public class RouteConsoleUI : IModuleUI
         var routes = await _getAllUseCase.ExecuteAsync();
         foreach (var r in routes)
         {
-            Console.WriteLine($"ID: {r.Id.Value}, Origin: {r.OriginAirportId.Value}, Dest: {r.DestinationAirportId.Value}, Dist: {r.DistanceKm.Value}, Dur: {r.EstimatedDurationMin.Value}");
+            Console.WriteLine($"ID: {r.Id.Value}, Origen: {r.OriginAirportId.Value}, Destino: {r.DestinationAirportId.Value}, Dist. km: {r.DistanceKm.Value}, Dur. min: {r.EstimatedDurationMin.Value}");
         }
     }
 
     private async Task UpdateRoute()
     {
-        Console.Write("Route ID: ");
-        var id = int.Parse(Console.ReadLine());
+        Console.Write("ID ruta: ");
+        var id = int.Parse(Console.ReadLine()!);
         var existing = await _getByIdUseCase.ExecuteAsync(RouteId.Create(id));
         if (existing == null)
         {
-            Console.WriteLine("Route not found");
+            Console.WriteLine("Ruta no encontrada");
             return;
         }
-        Console.Write("Origin Airport ID: ");
-        var origin = int.Parse(Console.ReadLine());
-        Console.Write("Destination Airport ID: ");
-        var dest = int.Parse(Console.ReadLine());
-        Console.Write("Distance KM (optional): ");
+        Console.Write("ID aeropuerto origen: ");
+        var origin = int.Parse(Console.ReadLine()!);
+        Console.Write("ID aeropuerto destino: ");
+        var dest = int.Parse(Console.ReadLine()!);
+        Console.Write("Distancia km (opcional): ");
         var distStr = Console.ReadLine();
-        int? dist = string.IsNullOrEmpty(distStr) ? null : int.Parse(distStr);
-        Console.Write("Estimated Duration Min (optional): ");
+        int? dist = string.IsNullOrEmpty(distStr) ? null : int.Parse(distStr!);
+        Console.Write("Duración estimada min (opcional): ");
         var durStr = Console.ReadLine();
-        int? dur = string.IsNullOrEmpty(durStr) ? null : int.Parse(durStr);
+        int? dur = string.IsNullOrEmpty(durStr) ? null : int.Parse(durStr!);
         await _updateUseCase.ExecuteAsync(
             RouteId.Create(id),
             OriginAirportId.Create(origin),
@@ -130,14 +130,14 @@ public class RouteConsoleUI : IModuleUI
             DistanceKm.Create(dist),
             EstimatedDurationMin.Create(dur)
         );
-        Console.WriteLine("Route updated");
+        Console.WriteLine("Ruta actualizada");
     }
 
     private async Task DeleteRoute()
     {
-        Console.Write("Route ID: ");
-        var id = int.Parse(Console.ReadLine());
+        Console.Write("ID ruta: ");
+        var id = int.Parse(Console.ReadLine()!);
         await _deleteUseCase.ExecuteAsync(RouteId.Create(id));
-        Console.WriteLine("Route deleted");
+        Console.WriteLine("Ruta eliminada");
     }
 }
