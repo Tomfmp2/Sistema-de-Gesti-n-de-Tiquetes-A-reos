@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
@@ -55,5 +56,7 @@ public class StaffEntityConfiguration : IEntityTypeConfiguration<StaffEntity>
             .WithOne(fa => fa.Staff)
             .HasForeignKey("staff_id")
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(StaffDefaultData.Staff);
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
@@ -117,5 +118,7 @@ public class FlightEntityConfiguration : IEntityTypeConfiguration<FlightEntity>
             .WithMany()
             .HasForeignKey(x => x.FlightStatusId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(FlightDefaultData.Flights);
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.RouteLayovers.Infrastructure.Entity;
@@ -30,5 +31,7 @@ public class RouteLayoverEntityConfiguration : IEntityTypeConfiguration<RouteLay
             .WithMany()
             .HasForeignKey(rl => rl.LayoverAirportId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(RouteLayoverDefaultData.RouteLayovers);
     }
 }

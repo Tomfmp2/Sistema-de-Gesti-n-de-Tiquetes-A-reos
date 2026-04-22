@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Directions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity;
 
@@ -87,5 +88,7 @@ public sealed class PersonEntityConfiguration : IEntityTypeConfiguration<PersonE
 
         builder.HasIndex(x => x.DirectionId);
         builder.HasIndex(x => new { x.DocumentTypeId, x.DocumentNumber }).IsUnique();
+
+        builder.HasData(PersonDefaultData.Persons);
     }
 }

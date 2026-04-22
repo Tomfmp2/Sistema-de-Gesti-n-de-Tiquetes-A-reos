@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
@@ -63,5 +64,7 @@ public class FlightSeatEntityConfiguration : IEntityTypeConfiguration<FlightSeat
             .WithMany()
             .HasForeignKey(x => x.LocationTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(FlightSeatDefaultData.FlightSeats);
     }
 }
