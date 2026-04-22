@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CardIssuers.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CardTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentMethods.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentMethodTypes.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.PaymentMethods.Infrastructure.Entity;
@@ -61,5 +62,7 @@ public class PaymentMethodEntityConfiguration : IEntityTypeConfiguration<Payment
             .WithMany()
             .HasForeignKey(x => x.CardIssuerId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(PaymentMethodDefaultData.PaymentMethods);
     }
 }
