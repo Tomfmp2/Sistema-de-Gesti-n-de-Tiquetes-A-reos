@@ -228,6 +228,50 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
             """;
 
+        /// <summary>
+        /// <c>CreateFlightsAndRelatedTables</c> crea la tabla <c>checkins</c>; el modelo usa <c>check_ins</c> y
+        /// <c>checked_in_at</c> (no <c>checkin_date</c>). Idempotente si <c>check_ins</c> ya existe.
+        /// </summary>
+        private const string AlignCheckinsToCheckInsSql = """
+            SET @need_checkins_to_check_ins = (
+                SELECT IF(
+                    EXISTS (
+                        SELECT 1 FROM information_schema.TABLES
+                        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'checkins'
+                    )
+                    AND NOT EXISTS (
+                        SELECT 1 FROM information_schema.TABLES
+                        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'check_ins'
+                    ),
+                    1, 0
+                )
+            );
+
+            /* La FK a checkin_statuses se vuelve a crear como FK_check_ins_checkin_statuses_... en AddForeignKeysOnly */
+            SET @cn = IF(@need_checkins_to_check_ins = 1,
+                (SELECT rc.CONSTRAINT_NAME
+                 FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                 WHERE rc.CONSTRAINT_SCHEMA = DATABASE() AND rc.TABLE_NAME = 'checkins'
+                   AND rc.REFERENCED_TABLE_NAME = 'checkin_statuses' LIMIT 1), NULL);
+            SET @q = IF(@cn IS NOT NULL, CONCAT('ALTER TABLE `checkins` DROP FOREIGN KEY `', @cn, '`'), 'SELECT 1');
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                @need_checkins_to_check_ins = 1,
+                'RENAME TABLE `checkins` TO `check_ins`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+
+            SET @q = IF(
+                EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'check_ins' AND COLUMN_NAME = 'checkin_date')
+                AND NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'check_ins' AND COLUMN_NAME = 'checked_in_at'),
+                'ALTER TABLE `check_ins` RENAME COLUMN `checkin_date` TO `checked_in_at`',
+                'SELECT 1'
+            );
+            PREPARE st FROM @q; EXECUTE st; DEALLOCATE PREPARE st;
+            """;
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -391,6 +435,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
             // Las migraciones antiguas (CreateReservations, etc.) usan nombres reservation_*. El modelo y este archivo usan booking_*.
             // Sin este bloque, en una BD nueva no existen booking_flights, bookings, etc.
             migrationBuilder.Sql(AlignLegacyReservationNamesToBookingSql);
+            migrationBuilder.Sql(AlignCheckinsToCheckInsSql);
 
             // Note: some base FKs already exist in the DB (e.g., addresses -> cities/street_types, aircraft -> models/airlines, etc.)
 
