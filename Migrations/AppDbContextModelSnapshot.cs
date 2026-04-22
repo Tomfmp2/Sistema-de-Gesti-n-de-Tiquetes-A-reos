@@ -27,7 +27,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasColumnName("Id");
+                        .HasColumnName("id");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
@@ -1192,38 +1192,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                         .IsUnique();
 
                     b.ToTable("Continents", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "América"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Europa"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Asia"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "África"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Oceanía"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Name = "Antártida"
-                        });
                 });
 
             modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity.CountryEntity", b =>
@@ -1257,134 +1225,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.HasIndex("ContinentId");
 
                     b.ToTable("countries", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CodeIso = "COL",
-                            ContinentId = 1,
-                            Name = "Colombia"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CodeIso = "USA",
-                            ContinentId = 1,
-                            Name = "Estados Unidos"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CodeIso = "MEX",
-                            ContinentId = 1,
-                            Name = "México"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CodeIso = "BRA",
-                            ContinentId = 1,
-                            Name = "Brasil"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CodeIso = "ARG",
-                            ContinentId = 1,
-                            Name = "Argentina"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CodeIso = "CHL",
-                            ContinentId = 1,
-                            Name = "Chile"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CodeIso = "PER",
-                            ContinentId = 1,
-                            Name = "Perú"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CodeIso = "CAN",
-                            ContinentId = 1,
-                            Name = "Canadá"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CodeIso = "ESP",
-                            ContinentId = 2,
-                            Name = "España"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CodeIso = "FRA",
-                            ContinentId = 2,
-                            Name = "Francia"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CodeIso = "GBR",
-                            ContinentId = 2,
-                            Name = "Reino Unido"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CodeIso = "DEU",
-                            ContinentId = 2,
-                            Name = "Alemania"
-                        },
-                        new
-                        {
-                            Id = 13,
-                            CodeIso = "ITA",
-                            ContinentId = 2,
-                            Name = "Italia"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            CodeIso = "JPN",
-                            ContinentId = 3,
-                            Name = "Japón"
-                        },
-                        new
-                        {
-                            Id = 15,
-                            CodeIso = "CHN",
-                            ContinentId = 3,
-                            Name = "China"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            CodeIso = "KOR",
-                            ContinentId = 3,
-                            Name = "Corea del Sur"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            CodeIso = "AUS",
-                            ContinentId = 5,
-                            Name = "Australia"
-                        },
-                        new
-                        {
-                            Id = 18,
-                            CodeIso = "ZAF",
-                            ContinentId = 4,
-                            Name = "Sudáfrica"
-                        });
                 });
 
             modelBuilder.Entity("sistema_gestor_de_tiquetes_aereos.Src.Modules.Directions.Infrastructure.Entity.AddressEntity", b =>
@@ -1812,11 +1652,11 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<int>("CabinTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("CabinTypeId");
+                        .HasColumnName("cabin_type_id");
 
                     b.Property<int>("FlightId")
                         .HasColumnType("int")
-                        .HasColumnName("FlightId");
+                        .HasColumnName("flight_id");
 
                     b.Property<bool>("IsOccupied")
                         .HasColumnType("tinyint(1)")
@@ -1824,7 +1664,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
                     b.Property<int>("LocationTypeId")
                         .HasColumnType("int")
-                        .HasColumnName("LocationtypeId");
+                        .HasColumnName("location_type_id");
 
                     b.Property<string>("SeatCode")
                         .IsRequired()
@@ -1840,7 +1680,7 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.HasIndex("FlightId", "SeatCode")
                         .IsUnique();
 
-                    b.ToTable("FlightSeats", (string)null);
+                    b.ToTable("flight_seats", (string)null);
 
                     b.HasData(
                         new

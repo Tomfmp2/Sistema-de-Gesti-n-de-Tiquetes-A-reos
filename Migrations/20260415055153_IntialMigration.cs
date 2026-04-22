@@ -46,7 +46,21 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                 """);
 
             migrationBuilder.Sql("""
-                CREATE INDEX IF NOT EXISTS `IX_countries_continent_id` ON `countries` (`continent_id`);
+                SET @idx_exists = (
+                    SELECT COUNT(1)
+                    FROM information_schema.STATISTICS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = 'countries'
+                      AND INDEX_NAME = 'IX_countries_continent_id'
+                );
+                SET @sql = IF(
+                    @idx_exists = 0,
+                    'CREATE INDEX `IX_countries_continent_id` ON `countries` (`continent_id`)',
+                    'SELECT 1'
+                );
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
                 """);
         }
 

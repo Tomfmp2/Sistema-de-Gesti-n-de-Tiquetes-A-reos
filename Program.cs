@@ -10,6 +10,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructu
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Data;
+using ContinentCatalogSeed = sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Infrastructure.Seed.CatalogSeed;
+using CountryCatalogSeed = sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Seed.CatalogSeed;
 
 try
 {
@@ -351,6 +353,8 @@ static async Task NormalizePersonsColumnsAsync(sistema_gestor_de_tiquetes_aereos
 
 static async Task EnsureDefaultsAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context)
 {
+    await ContinentCatalogSeed.SeedAsync(context);
+    await CountryCatalogSeed.SeedAsync(context);
     await ReservationStatusSeeder.EnsureAsync(context);
 }
 

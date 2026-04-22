@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Continents.Infrastructure.Entity;
 
@@ -25,7 +24,5 @@ public sealed class ContinentEntityConfiguration : IEntityTypeConfiguration<Cont
             .IsRequired();
 
         builder.HasIndex(x => x.Name).IsUnique();
-
-        builder.HasData(ContinentDefaultData.Continents);
     }
 }

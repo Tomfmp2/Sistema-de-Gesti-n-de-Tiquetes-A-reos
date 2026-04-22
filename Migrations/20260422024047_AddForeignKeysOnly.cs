@@ -12,13 +12,36 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // Remaining schema alignment needed for FK creation
-            migrationBuilder.RenameTable(name: "flightseats", newName: "flight_seats");
-            migrationBuilder.RenameColumn(name: "Id", table: "flight_seats", newName: "id");
-            migrationBuilder.RenameColumn(name: "FlightId", table: "flight_seats", newName: "flight_id");
-            migrationBuilder.RenameColumn(name: "SeatCode", table: "flight_seats", newName: "seat_code");
-            migrationBuilder.RenameColumn(name: "CabinTypeId", table: "flight_seats", newName: "cabin_type_id");
-            migrationBuilder.RenameColumn(name: "LocationTypeId", table: "flight_seats", newName: "location_type_id");
-            migrationBuilder.RenameColumn(name: "IsOccupied", table: "flight_seats", newName: "is_occupied");
+            migrationBuilder.Sql("""
+                SET @legacy_flight_seats_table = (
+                    SELECT TABLE_NAME
+                    FROM information_schema.TABLES
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME IN ('FlightSeats', 'flightseats')
+                      AND NOT EXISTS (
+                          SELECT 1
+                          FROM information_schema.TABLES
+                          WHERE TABLE_SCHEMA = DATABASE()
+                            AND TABLE_NAME = 'flight_seats'
+                      )
+                    LIMIT 1
+                );
+                SET @sql = IF(
+                    @legacy_flight_seats_table IS NOT NULL,
+                    CONCAT('RENAME TABLE `', @legacy_flight_seats_table, '` TO `flight_seats`'),
+                    'SELECT 1'
+                );
+                PREPARE stmt FROM @sql;
+                EXECUTE stmt;
+                DEALLOCATE PREPARE stmt;
+                """);
+
+            RenameColumnIfExists("flight_seats", "Id", "id");
+            RenameColumnIfExists("flight_seats", "FlightId", "flight_id");
+            RenameColumnIfExists("flight_seats", "SeatCode", "seat_code");
+            RenameColumnIfExists("flight_seats", "CabinTypeId", "cabin_type_id");
+            RenameColumnIfExists("flight_seats", "LocationTypeId", "location_type_id");
+            RenameColumnIfExists("flight_seats", "IsOccupied", "is_occupied");
 
             migrationBuilder.RenameColumn(name: "Id", table: "flight_crew_assignments", newName: "id");
             migrationBuilder.RenameColumn(name: "FlightId", table: "flight_crew_assignments", newName: "flight_id");
@@ -112,6 +135,34 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
 
             migrationBuilder.AddForeignKey("FK_tickets_booking_passengers_booking_passenger_id", "tickets", "booking_passenger_id", "booking_passengers", principalColumn: "id", onDelete: ReferentialAction.Restrict);
             migrationBuilder.AddForeignKey("FK_users_system_roles_role_id", "users", "role_id", "system_roles", principalColumn: "id", onDelete: ReferentialAction.Restrict);
+
+            void RenameColumnIfExists(string table, string from, string to)
+            {
+                migrationBuilder.Sql($"""
+                    SET @column_exists = (
+                        SELECT COUNT(1)
+                        FROM information_schema.COLUMNS
+                        WHERE TABLE_SCHEMA = DATABASE()
+                          AND TABLE_NAME = '{table}'
+                          AND COLUMN_NAME = '{from}'
+                    );
+                    SET @target_exists = (
+                        SELECT COUNT(1)
+                        FROM information_schema.COLUMNS
+                        WHERE TABLE_SCHEMA = DATABASE()
+                          AND TABLE_NAME = '{table}'
+                          AND COLUMN_NAME = '{to}'
+                    );
+                    SET @sql = IF(
+                        @column_exists > 0 AND @target_exists = 0,
+                        'ALTER TABLE `{table}` RENAME COLUMN `{from}` TO `{to}`',
+                        'SELECT 1'
+                    );
+                    PREPARE stmt FROM @sql;
+                    EXECUTE stmt;
+                    DEALLOCATE PREPARE stmt;
+                    """);
+            }
         }
 
         /// <inheritdoc />
