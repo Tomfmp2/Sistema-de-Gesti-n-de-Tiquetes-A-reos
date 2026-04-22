@@ -18,28 +18,50 @@ public sealed class CreateMyReservationConsoleUI : IModuleUI
 
     public async Task RunAsync()
     {
-        SpectreUi.ModuleHeader("Crear reservación", "Alta rápida (cliente)");
-
-        if (_auth.ClientId is null)
+        var exit = false;
+        while (!exit)
         {
-            Console.WriteLine("Tu usuario no está asociado a un cliente (client_id).");
-            SpectreUi.Pause();
-            return;
-        }
+            SpectreUi.ModuleHeader("Crear reservación", "Alta rápida (cliente)");
 
+            if (_auth.ClientId is null)
+            {
+                SpectreUi.MarkupLineOrPlain(
+                    "[red]Tu usuario no está asociado a un cliente (client_id).[/]",
+                    "Tu usuario no está asociado a un cliente (client_id)."
+                );
+                SpectreUi.Pause();
+                return;
+            }
+
+            var items = new List<(string Label, Action Action)>
+            {
+                ("Crear", () => CreateAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
+        }
+    }
+
+    private async Task CreateAsync()
+    {
         try
         {
             // Para cliente: status inicial = Pendiente (1)
             const int pendingStatusId = 1;
             var utcNow = DateTime.UtcNow;
 
-            Console.Write("Total (decimal, p.ej. 150000): ");
-            var totalRaw = (Console.ReadLine() ?? string.Empty).Trim();
+            SpectreUi.ModuleHeader("Crear reservación", "Datos de la reservación");
+
+            var totalRaw = SpectreUi.PromptRequiredCancelable("Total", "decimal (0/c/cancelar para salir)").Trim();
             if (!decimal.TryParse(totalRaw, out var total) || total < 0)
                 throw new InvalidOperationException("Total inválido.");
 
-            Console.Write("Expira en (minutos, opcional; Enter = sin expiración): ");
-            var minutesRaw = (Console.ReadLine() ?? string.Empty).Trim();
+            var minutesRaw = (SpectreUi.PromptOptionalCancelable(
+                "Expira en (minutos)",
+                "Enter = sin expiración (0/c/cancelar para salir)"
+            ) ?? string.Empty).Trim();
+
             DateTime? expiresAt = null;
             if (!string.IsNullOrWhiteSpace(minutesRaw))
             {
@@ -50,7 +72,7 @@ public sealed class CreateMyReservationConsoleUI : IModuleUI
 
             var created = await _createUseCase.ExecuteAsync(
                 new CreateReservationRequest(
-                    ClientId: _auth.ClientId.Value,
+                    ClientId: _auth.ClientId!.Value,
                     ReservationDate: utcNow,
                     ReservationStatusId: pendingStatusId,
                     TotalValue: total,
@@ -60,14 +82,28 @@ public sealed class CreateMyReservationConsoleUI : IModuleUI
                 )
             );
 
-            SpectreUi.MarkupLineOrPlain(
-                $"[green]Reservación creada[/] id={created.Id.Value} total={created.TotalValue.Value} status_id={created.ReservationStatusId.Value}.",
-                $"Reservación creada id={created.Id.Value} total={created.TotalValue.Value} status_id={created.ReservationStatusId.Value}."
+            SpectreUi.ShowTable(
+                "Reservación creada",
+                ["Campo", "Valor"],
+                [
+                    ["ID", created.Id.Value.ToString()],
+                    ["EstadoId", created.ReservationStatusId.Value.ToString()],
+                    ["Total", created.TotalValue.Value.ToString("0.00")],
+                    ["Fecha", created.ReservationDate.Value.ToString("yyyy-MM-dd HH:mm")],
+                    ["Expira", created.ExpiresAt.Value.HasValue ? created.ExpiresAt.Value.Value.ToString("yyyy-MM-dd HH:mm") : "-"]
+                ]
             );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();

@@ -36,11 +36,11 @@ public sealed class UserConsoleUI : IModuleUI
 
             var items = new List<(string Label, Action Action)>
             {
-                ("Registrar usuario nuevo", () => CreateUser().GetAwaiter().GetResult()),
-                ("Listar usuarios", () => ListAll().GetAwaiter().GetResult()),
+                ("Crear", () => CreateUser().GetAwaiter().GetResult()),
+                ("Listar", () => ListAll().GetAwaiter().GetResult()),
                 ("Consultar por ID", () => GetById().GetAwaiter().GetResult()),
-                ("Actualizar usuario", () => UpdateUser().GetAwaiter().GetResult()),
-                ("Eliminar usuario", () => DeleteUser().GetAwaiter().GetResult()),
+                ("Actualizar", () => UpdateUser().GetAwaiter().GetResult()),
+                ("Eliminar", () => DeleteUser().GetAwaiter().GetResult()),
                 ("Volver", () => exit = true),
             };
 
@@ -392,23 +392,38 @@ public sealed class UserConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Usuarios", "Consultar por ID");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
             var u = await _service.GetByIdAsync(id);
             if (u is null)
             {
-                Console.WriteLine("No encontrado.");
+                SpectreUi.MarkupLineOrPlain("[grey]No encontrado.[/]", "No encontrado.");
             }
             else
             {
-                Console.WriteLine(
-                    $"id={u.Id.Value} username={u.Username.Value} role_id={u.SystemRoleId.Value} active={u.IsActive} person_id={(u.PersonId?.ToString() ?? "null")}"
+                SpectreUi.ShowTable(
+                    "Usuario",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", u.Id.Value.ToString()],
+                        ["Username", u.Username.Value],
+                        ["RoleId", u.SystemRoleId.Value.ToString()],
+                        ["Activo", u.IsActive ? "Sí" : "No"],
+                        ["PersonId", u.PersonId?.ToString() ?? "-"]
+                    ]
                 );
             }
         }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
         SpectreUi.Pause();
     }
@@ -417,24 +432,39 @@ public sealed class UserConsoleUI : IModuleUI
     {
         try
         {
+            SpectreUi.ModuleHeader("Usuarios", "Listar");
             var list = await _service.GetAllAsync();
             if (list.Count == 0)
             {
-                Console.WriteLine("No hay usuarios.");
-                SpectreUi.Pause();
+                SpectreUi.MarkupLineOrPlain("[grey]No hay usuarios.[/]", "No hay usuarios.");
                 return;
             }
 
-            foreach (var u in list.OrderBy(x => x.Id.Value))
-            {
-                Console.WriteLine(
-                    $"id={u.Id.Value} username={u.Username.Value} role_id={u.SystemRoleId.Value} active={u.IsActive} person_id={(u.PersonId?.ToString() ?? "null")}"
-                );
-            }
+            SpectreUi.ShowTable(
+                "Usuarios",
+                ["ID", "Username", "RoleId", "Activo", "PersonId"],
+                list.OrderBy(x => x.Id.Value)
+                    .Select(u => (IReadOnlyList<string>)
+                    [
+                        u.Id.Value.ToString(),
+                        u.Username.Value,
+                        u.SystemRoleId.Value.ToString(),
+                        u.IsActive ? "Sí" : "No",
+                        u.PersonId?.ToString() ?? "-"
+                    ])
+                    .ToList()
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
         SpectreUi.Pause();
     }
@@ -443,19 +473,18 @@ public sealed class UserConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Usuarios", "Actualizar");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
 
-            Console.Write("Nuevo username: ");
-            var username = (Console.ReadLine() ?? string.Empty).Trim();
-
-            Console.Write("Nueva contraseña (se guardará tal cual o como SHA-256 hex): ");
-            var password = Console.ReadLine() ?? string.Empty;
+            var username = SpectreUi.PromptRequiredCancelable("Nuevo username", "0/c/cancelar para salir").Trim();
+            var password = SpectreUi.PromptRequiredCancelable(
+                "Nueva contraseña",
+                "se guardará tal cual o como SHA-256 hex (0/c/cancelar para salir)"
+            );
 
             var (roleId, _) = await PromptRoleByNameAsync();
 
-            Console.Write("PersonId (opcional, Enter para null): ");
-            var personIdRaw = Console.ReadLine();
+            var personIdRaw = SpectreUi.PromptOptionalCancelable("PersonId", "Enter = null");
             int? personId = null;
             if (!string.IsNullOrWhiteSpace(personIdRaw))
             {
@@ -465,8 +494,7 @@ public sealed class UserConsoleUI : IModuleUI
                     throw new InvalidOperationException("PersonId inválido.");
             }
 
-            Console.Write("¿Activo? (true/false): ");
-            var isActive = bool.Parse(Console.ReadLine()!);
+            var isActive = SpectreUi.PromptBool("¿Activo?", defaultValue: true);
 
             await _service.UpdateAsync(
                 new UpdateUserRequest(
@@ -480,11 +508,18 @@ public sealed class UserConsoleUI : IModuleUI
                 )
             );
 
-            Console.WriteLine("Actualizado.");
+            SpectreUi.MarkupLineOrPlain("[green]Actualizado.[/]", "Actualizado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
         SpectreUi.Pause();
     }
@@ -493,14 +528,28 @@ public sealed class UserConsoleUI : IModuleUI
     {
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Usuarios", "Eliminar");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
+            var confirm = SpectreUi.PromptBool("¿Confirma la eliminación?", defaultValue: false);
+            if (!confirm)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]Eliminación cancelada.[/]", "Eliminación cancelada.");
+                SpectreUi.Pause();
+                return;
+            }
             await _service.DeleteAsync(id);
-            Console.WriteLine("Eliminado.");
+            SpectreUi.MarkupLineOrPlain("[green]Eliminado.[/]", "Eliminado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
         SpectreUi.Pause();
     }

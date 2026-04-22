@@ -36,8 +36,8 @@ public class AircraftModelUI : IModuleUI
 
             var items = new (string Label, Action Action)[]
             {
-                ("Crear modelo", () => CreateAircraftModelAsync().GetAwaiter().GetResult()),
-                ("Listar todos", () => ViewAllAircraftModelsAsync().GetAwaiter().GetResult()),
+                ("Crear", () => CreateAircraftModelAsync().GetAwaiter().GetResult()),
+                ("Listar", () => ViewAllAircraftModelsAsync().GetAwaiter().GetResult()),
                 ("Consultar por ID", () => ViewAircraftModelByIdAsync().GetAwaiter().GetResult()),
                 ("Actualizar", () => UpdateAircraftModelAsync().GetAwaiter().GetResult()),
                 ("Eliminar", () => DeleteAircraftModelAsync().GetAwaiter().GetResult()),
@@ -50,27 +50,22 @@ public class AircraftModelUI : IModuleUI
 
     private async Task CreateAircraftModelAsync()
     {
-        SpectreUi.ModuleHeader("Crear modelo de aeronave", null);
         try
         {
-            Console.Write("ID del modelo (entero): ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Modelos de aeronave", "Crear");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID del modelo", "0/c/cancelar para salir", min: 1);
             var aircraftModelId = AircraftModelId.Create(id);
 
-            Console.Write("ID del fabricante: ");
-            var manufacturerIdValue = int.Parse(Console.ReadLine()!);
+            var manufacturerIdValue = SpectreUi.PromptIntRequiredCancelable("ID del fabricante", "0/c/cancelar para salir", min: 1);
             var manufacturerId = ManufacturerId.Create(manufacturerIdValue);
 
-            Console.Write("Nombre del modelo: ");
-            var modelName = Console.ReadLine()!;
+            var modelName = SpectreUi.PromptRequiredCancelable("Nombre del modelo", "0/c/cancelar para salir");
             var modelNameValue = ModelName.Create(modelName);
 
-            Console.Write("Capacidad máxima (pasajeros): ");
-            var maxCapacityValue = int.Parse(Console.ReadLine()!);
+            var maxCapacityValue = SpectreUi.PromptIntRequiredCancelable("Capacidad máxima (pasajeros)", "0/c/cancelar para salir", min: 1);
             var maxCapacity = MaxCapacity.Create(maxCapacityValue);
 
-            Console.Write("Peso máximo al despegue (kg, opcional): ");
-            var maxTakeoffWeightInput = Console.ReadLine();
+            var maxTakeoffWeightInput = SpectreUi.PromptOptionalCancelable("Peso máximo al despegue (kg)", "opcional");
             MaxTakeoffWeightKg? maxTakeoffWeightKg = null;
             if (!string.IsNullOrWhiteSpace(maxTakeoffWeightInput))
             {
@@ -78,8 +73,7 @@ public class AircraftModelUI : IModuleUI
                 maxTakeoffWeightKg = MaxTakeoffWeightKg.Create(maxTakeoffWeightValue);
             }
 
-            Console.Write("Consumo combustible (kg/h, opcional): ");
-            var fuelConsumptionInput = Console.ReadLine();
+            var fuelConsumptionInput = SpectreUi.PromptOptionalCancelable("Consumo combustible (kg/h)", "opcional");
             FuelConsumptionKgH? fuelConsumptionKgH = null;
             if (!string.IsNullOrWhiteSpace(fuelConsumptionInput))
             {
@@ -87,8 +81,7 @@ public class AircraftModelUI : IModuleUI
                 fuelConsumptionKgH = FuelConsumptionKgH.Create(fuelConsumptionValue);
             }
 
-            Console.Write("Velocidad crucero (km/h, opcional): ");
-            var cruisingSpeedInput = Console.ReadLine();
+            var cruisingSpeedInput = SpectreUi.PromptOptionalCancelable("Velocidad crucero (km/h)", "opcional");
             CruisingSpeedKmh? cruisingSpeedKmh = null;
             if (!string.IsNullOrWhiteSpace(cruisingSpeedInput))
             {
@@ -96,8 +89,7 @@ public class AircraftModelUI : IModuleUI
                 cruisingSpeedKmh = CruisingSpeedKmh.Create(cruisingSpeedValue);
             }
 
-            Console.Write("Altitud crucero (pies, opcional): ");
-            var cruisingAltitudeInput = Console.ReadLine();
+            var cruisingAltitudeInput = SpectreUi.PromptOptionalCancelable("Altitud crucero (pies)", "opcional");
             CruisingAltitudeFt? cruisingAltitudeFt = null;
             if (!string.IsNullOrWhiteSpace(cruisingAltitudeInput))
             {
@@ -106,11 +98,18 @@ public class AircraftModelUI : IModuleUI
             }
 
             await _createUseCase.ExecuteAsync(aircraftModelId, manufacturerId, modelNameValue, maxCapacity, maxTakeoffWeightKg, fuelConsumptionKgH, cruisingSpeedKmh, cruisingAltitudeFt);
-            Console.WriteLine("Modelo creado correctamente.");
+            SpectreUi.MarkupLineOrPlain("[green]Modelo creado correctamente.[/]", "Modelo creado correctamente.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -118,59 +117,109 @@ public class AircraftModelUI : IModuleUI
 
     private async Task ViewAllAircraftModelsAsync()
     {
-        SpectreUi.ModuleHeader("Modelos registrados", null);
-        var aircraftModels = await _getAllUseCase.ExecuteAsync();
-        foreach (var am in aircraftModels)
+        try
         {
-            Console.WriteLine($"ID: {am.Id.Value}, Fabricante: {am.ManufacturerId.Value}, Modelo: {am.ModelName.Value}, Cap.: {am.MaxCapacity.Value}");
-        }
+            SpectreUi.ModuleHeader("Modelos de aeronave", "Listar");
+            var aircraftModels = (await _getAllUseCase.ExecuteAsync()).ToList();
+            if (aircraftModels.Count == 0)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]No hay modelos registrados.[/]", "No hay modelos registrados.");
+                SpectreUi.Pause();
+                return;
+            }
 
+            SpectreUi.ShowTable(
+                "Modelos",
+                ["ID", "FabricanteId", "Modelo", "Capacidad"],
+                aircraftModels
+                    .OrderBy(x => x.Id.Value)
+                    .Select(am => (IReadOnlyList<string>)
+                    [
+                        am.Id.Value.ToString(),
+                        am.ManufacturerId.Value.ToString(),
+                        am.ModelName.Value,
+                        am.MaxCapacity.Value.ToString()
+                    ])
+                    .ToList()
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
         SpectreUi.Pause();
     }
 
     private async Task ViewAircraftModelByIdAsync()
     {
-        SpectreUi.ModuleHeader("Consultar modelo", null);
-        Console.Write("ID del modelo: ");
-        var id = int.Parse(Console.ReadLine()!);
-        var aircraftModelId = AircraftModelId.Create(id);
-
-        var aircraftModel = await _getByIdUseCase.ExecuteAsync(aircraftModelId);
-        if (aircraftModel != null)
+        try
         {
-            Console.WriteLine($"ID: {aircraftModel.Id.Value}, Fabricante: {aircraftModel.ManufacturerId.Value}, Modelo: {aircraftModel.ModelName.Value}, Cap.: {aircraftModel.MaxCapacity.Value}");
-        }
-        else
-        {
-            Console.WriteLine("Modelo no encontrado.");
-        }
+            SpectreUi.ModuleHeader("Modelos de aeronave", "Consultar por ID");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID del modelo", "0/c/cancelar para salir", min: 1);
+            var aircraftModelId = AircraftModelId.Create(id);
 
+            var aircraftModel = await _getByIdUseCase.ExecuteAsync(aircraftModelId);
+            if (aircraftModel is null)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]Modelo no encontrado.[/]", "Modelo no encontrado.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            SpectreUi.ShowTable(
+                "Modelo",
+                ["Campo", "Valor"],
+                [
+                    ["ID", aircraftModel.Id.Value.ToString()],
+                    ["FabricanteId", aircraftModel.ManufacturerId.Value.ToString()],
+                    ["Nombre", aircraftModel.ModelName.Value],
+                    ["Capacidad", aircraftModel.MaxCapacity.Value.ToString()],
+                    ["MTOW (kg)", aircraftModel.MaxTakeoffWeightKg?.Value.ToString("0.##") ?? "-"],
+                    ["Consumo (kg/h)", aircraftModel.FuelConsumptionKgH?.Value.ToString("0.##") ?? "-"],
+                    ["Velocidad (km/h)", aircraftModel.CruisingSpeedKmh?.Value.ToString() ?? "-"],
+                    ["Altitud (ft)", aircraftModel.CruisingAltitudeFt?.Value.ToString() ?? "-"]
+                ]
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
         SpectreUi.Pause();
     }
 
     private async Task UpdateAircraftModelAsync()
     {
-        SpectreUi.ModuleHeader("Actualizar modelo", null);
         try
         {
-            Console.Write("ID del modelo: ");
-            var id = int.Parse(Console.ReadLine()!);
+            SpectreUi.ModuleHeader("Modelos de aeronave", "Actualizar");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID del modelo", "0/c/cancelar para salir", min: 1);
             var aircraftModelId = AircraftModelId.Create(id);
 
-            Console.Write("Nuevo ID de fabricante: ");
-            var manufacturerIdValue = int.Parse(Console.ReadLine()!);
+            var manufacturerIdValue = SpectreUi.PromptIntRequiredCancelable("Nuevo ID de fabricante", "0/c/cancelar para salir", min: 1);
             var manufacturerId = ManufacturerId.Create(manufacturerIdValue);
 
-            Console.Write("Nuevo nombre del modelo: ");
-            var modelName = Console.ReadLine()!;
+            var modelName = SpectreUi.PromptRequiredCancelable("Nuevo nombre del modelo", "0/c/cancelar para salir");
             var modelNameValue = ModelName.Create(modelName);
 
-            Console.Write("Nueva capacidad máxima: ");
-            var maxCapacityValue = int.Parse(Console.ReadLine()!);
+            var maxCapacityValue = SpectreUi.PromptIntRequiredCancelable("Nueva capacidad máxima", "0/c/cancelar para salir", min: 1);
             var maxCapacity = MaxCapacity.Create(maxCapacityValue);
 
-            Console.Write("Nuevo MTOW kg (opcional): ");
-            var maxTakeoffWeightInput = Console.ReadLine();
+            var maxTakeoffWeightInput = SpectreUi.PromptOptionalCancelable("Nuevo MTOW (kg)", "opcional");
             MaxTakeoffWeightKg? maxTakeoffWeightKg = null;
             if (!string.IsNullOrWhiteSpace(maxTakeoffWeightInput))
             {
@@ -178,8 +227,7 @@ public class AircraftModelUI : IModuleUI
                 maxTakeoffWeightKg = MaxTakeoffWeightKg.Create(maxTakeoffWeightValue);
             }
 
-            Console.Write("Nuevo consumo kg/h (opcional): ");
-            var fuelConsumptionInput = Console.ReadLine();
+            var fuelConsumptionInput = SpectreUi.PromptOptionalCancelable("Nuevo consumo (kg/h)", "opcional");
             FuelConsumptionKgH? fuelConsumptionKgH = null;
             if (!string.IsNullOrWhiteSpace(fuelConsumptionInput))
             {
@@ -187,8 +235,7 @@ public class AircraftModelUI : IModuleUI
                 fuelConsumptionKgH = FuelConsumptionKgH.Create(fuelConsumptionValue);
             }
 
-            Console.Write("Nueva velocidad crucero km/h (opcional): ");
-            var cruisingSpeedInput = Console.ReadLine();
+            var cruisingSpeedInput = SpectreUi.PromptOptionalCancelable("Nueva velocidad crucero (km/h)", "opcional");
             CruisingSpeedKmh? cruisingSpeedKmh = null;
             if (!string.IsNullOrWhiteSpace(cruisingSpeedInput))
             {
@@ -196,8 +243,7 @@ public class AircraftModelUI : IModuleUI
                 cruisingSpeedKmh = CruisingSpeedKmh.Create(cruisingSpeedValue);
             }
 
-            Console.Write("Nueva altitud crucero pies (opcional): ");
-            var cruisingAltitudeInput = Console.ReadLine();
+            var cruisingAltitudeInput = SpectreUi.PromptOptionalCancelable("Nueva altitud crucero (ft)", "opcional");
             CruisingAltitudeFt? cruisingAltitudeFt = null;
             if (!string.IsNullOrWhiteSpace(cruisingAltitudeInput))
             {
@@ -206,11 +252,18 @@ public class AircraftModelUI : IModuleUI
             }
 
             await _updateUseCase.ExecuteAsync(aircraftModelId, manufacturerId, modelNameValue, maxCapacity, maxTakeoffWeightKg, fuelConsumptionKgH, cruisingSpeedKmh, cruisingAltitudeFt);
-            Console.WriteLine("Modelo actualizado.");
+            SpectreUi.MarkupLineOrPlain("[green]Modelo actualizado.[/]", "Modelo actualizado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -218,13 +271,33 @@ public class AircraftModelUI : IModuleUI
 
     private async Task DeleteAircraftModelAsync()
     {
-        SpectreUi.ModuleHeader("Eliminar modelo", null);
-        Console.Write("ID del modelo: ");
-        var id = int.Parse(Console.ReadLine()!);
-        var aircraftModelId = AircraftModelId.Create(id);
+        try
+        {
+            SpectreUi.ModuleHeader("Modelos de aeronave", "Eliminar");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID del modelo", "0/c/cancelar para salir", min: 1);
+            var confirm = SpectreUi.PromptBool("¿Confirma la eliminación?", defaultValue: false);
+            if (!confirm)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]Eliminación cancelada.[/]", "Eliminación cancelada.");
+                SpectreUi.Pause();
+                return;
+            }
 
-        await _deleteUseCase.ExecuteAsync(aircraftModelId);
-        Console.WriteLine("Modelo eliminado.");
+            var aircraftModelId = AircraftModelId.Create(id);
+            await _deleteUseCase.ExecuteAsync(aircraftModelId);
+            SpectreUi.MarkupLineOrPlain("[green]Modelo eliminado.[/]", "Modelo eliminado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
+        }
         SpectreUi.Pause();
     }
 }

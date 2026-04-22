@@ -34,8 +34,8 @@ public class CabinTypeUI : IModuleUI
 
             var items = new (string Label, Action Action)[]
             {
-                ("Crear tipo de cabina", () => CreateCabinTypeAsync().GetAwaiter().GetResult()),
-                ("Listar todos", () => ViewAllCabinTypesAsync().GetAwaiter().GetResult()),
+                ("Crear", () => CreateCabinTypeAsync().GetAwaiter().GetResult()),
+                ("Listar", () => ViewAllCabinTypesAsync().GetAwaiter().GetResult()),
                 ("Consultar por ID", () => ViewCabinTypeByIdAsync().GetAwaiter().GetResult()),
                 ("Actualizar", () => UpdateCabinTypeAsync().GetAwaiter().GetResult()),
                 ("Eliminar", () => DeleteCabinTypeAsync().GetAwaiter().GetResult()),
@@ -48,18 +48,27 @@ public class CabinTypeUI : IModuleUI
 
     private async Task CreateCabinTypeAsync()
     {
-        SpectreUi.ModuleHeader("Crear tipo de cabina", null);
         try
         {
-            Console.Write("Nombre: ");
-            var name = Console.ReadLine() ?? "";
+            SpectreUi.ModuleHeader("Tipos de cabina", "Crear");
+            var name = SpectreUi.PromptRequiredCancelable("Nombre", "0/c/cancelar para salir");
 
             var cabinType = await _createUseCase.ExecuteAsync(name);
-            Console.WriteLine($"Tipo creado con ID: {cabinType.Id.Value}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[green]Creado[/] id={cabinType.Id.Value}.",
+                $"Creado id={cabinType.Id.Value}."
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -67,18 +76,40 @@ public class CabinTypeUI : IModuleUI
 
     private async Task ViewAllCabinTypesAsync()
     {
-        SpectreUi.ModuleHeader("Tipos de cabina", null);
         try
         {
-            var cabinTypes = await _getAllUseCase.ExecuteAsync();
-            foreach (var ct in cabinTypes)
+            SpectreUi.ModuleHeader("Tipos de cabina", "Listar");
+            var cabinTypes = (await _getAllUseCase.ExecuteAsync()).ToList();
+            if (cabinTypes.Count == 0)
             {
-                Console.WriteLine($"ID: {ct.Id.Value}, Nombre: {ct.Name.Value}");
+                SpectreUi.MarkupLineOrPlain("[grey]No hay tipos de cabina.[/]", "No hay tipos de cabina.");
+                SpectreUi.Pause();
+                return;
             }
+
+            SpectreUi.ShowTable(
+                "Tipos de cabina",
+                ["ID", "Nombre"],
+                cabinTypes
+                    .OrderBy(x => x.Id.Value)
+                    .Select(ct => (IReadOnlyList<string>)
+                    [
+                        ct.Id.Value.ToString(),
+                        ct.Name.Value
+                    ])
+                    .ToList()
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -86,26 +117,38 @@ public class CabinTypeUI : IModuleUI
 
     private async Task ViewCabinTypeByIdAsync()
     {
-        SpectreUi.ModuleHeader("Consultar tipo de cabina", null);
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine() ?? "0");
+            SpectreUi.ModuleHeader("Tipos de cabina", "Consultar por ID");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
 
             var cabinType = await _getByIdUseCase.ExecuteAsync(CabinTypeId.Create(id));
             if (cabinType != null)
             {
-                Console.WriteLine($"ID: {cabinType.Id.Value}");
-                Console.WriteLine($"Nombre: {cabinType.Name.Value}");
+                SpectreUi.ShowTable(
+                    "Tipo de cabina",
+                    ["Campo", "Valor"],
+                    [
+                        ["ID", cabinType.Id.Value.ToString()],
+                        ["Nombre", cabinType.Name.Value]
+                    ]
+                );
             }
             else
             {
-                Console.WriteLine("No encontrado.");
+                SpectreUi.MarkupLineOrPlain("[grey]No encontrado.[/]", "No encontrado.");
             }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -113,21 +156,25 @@ public class CabinTypeUI : IModuleUI
 
     private async Task UpdateCabinTypeAsync()
     {
-        SpectreUi.ModuleHeader("Actualizar tipo de cabina", null);
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine() ?? "0");
-
-            Console.Write("Nuevo nombre: ");
-            var name = Console.ReadLine() ?? "";
+            SpectreUi.ModuleHeader("Tipos de cabina", "Actualizar");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
+            var name = SpectreUi.PromptRequiredCancelable("Nuevo nombre", "0/c/cancelar para salir");
 
             await _updateUseCase.ExecuteAsync(CabinTypeId.Create(id), name);
-            Console.WriteLine("Actualizado correctamente.");
+            SpectreUi.MarkupLineOrPlain("[green]Actualizado correctamente.[/]", "Actualizado correctamente.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -135,18 +182,31 @@ public class CabinTypeUI : IModuleUI
 
     private async Task DeleteCabinTypeAsync()
     {
-        SpectreUi.ModuleHeader("Eliminar tipo de cabina", null);
         try
         {
-            Console.Write("ID: ");
-            var id = int.Parse(Console.ReadLine() ?? "0");
+            SpectreUi.ModuleHeader("Tipos de cabina", "Eliminar");
+            var id = SpectreUi.PromptIntRequiredCancelable("ID", "0/c/cancelar para salir", min: 1);
+            var confirm = SpectreUi.PromptBool("¿Confirma la eliminación?", defaultValue: false);
+            if (!confirm)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]Eliminación cancelada.[/]", "Eliminación cancelada.");
+                SpectreUi.Pause();
+                return;
+            }
 
             await _deleteUseCase.ExecuteAsync(CabinTypeId.Create(id));
-            Console.WriteLine("Eliminado.");
+            SpectreUi.MarkupLineOrPlain("[green]Eliminado.[/]", "Eliminado.");
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
