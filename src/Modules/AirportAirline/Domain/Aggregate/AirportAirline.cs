@@ -26,7 +26,7 @@ public sealed class AirportAirlineRecord
     public static AirportAirlineRecord Create(int airportId, int airlineId, Terminal terminal, DateOnly startDate, DateOnly? endDate)
     {
         return new AirportAirlineRecord(
-            AirportAirlineId.Create(0), // will be set by DB
+            AirportAirlineId.Reconstitute(0), // will be set by DB
             airportId,
             airlineId,
             terminal,

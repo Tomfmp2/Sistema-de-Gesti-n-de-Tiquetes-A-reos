@@ -8,7 +8,9 @@ public sealed class SystemRoleEntityConfiguration : IEntityTypeConfiguration<Sys
 {
     public void Configure(EntityTypeBuilder<SystemRoleEntity> builder)
     {
-        builder.ToTable("SystemRoles");
+        // En el esquema MySQL del proyecto la tabla es `system_roles`.
+        // Mantener esto en sync evita errores en runtime (login, FKs, etc.).
+        builder.ToTable("system_roles");
 
         builder.HasKey(x => x.Id);
         builder

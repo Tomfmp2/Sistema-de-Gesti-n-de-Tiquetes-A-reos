@@ -15,14 +15,14 @@ public sealed class AirlineEntityConfiguration : IEntityTypeConfiguration<Airlin
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(150)")
             .IsRequired();
 
@@ -36,7 +36,7 @@ public sealed class AirlineEntityConfiguration : IEntityTypeConfiguration<Airlin
 
         builder
             .Property(x => x.OriginCountryId)
-            .HasColumnName("Origin_countryId")
+            .HasColumnName("origin_country_id")
             .HasColumnType("int")
             .IsRequired();
 
@@ -48,13 +48,13 @@ public sealed class AirlineEntityConfiguration : IEntityTypeConfiguration<Airlin
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("CreatedAt")
+            .HasColumnName("created_at")
             .HasColumnType("datetime")
             .IsRequired();
 
         builder
             .Property(x => x.UpdatedAt)
-            .HasColumnName("UpdatedAt")
+            .HasColumnName("updated_at")
             .HasColumnType("datetime")
             .IsRequired();
 

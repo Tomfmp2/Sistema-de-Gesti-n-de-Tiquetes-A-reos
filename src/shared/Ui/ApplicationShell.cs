@@ -84,6 +84,7 @@ public static class ApplicationShell
             if (isRoot)
             {
                 AppendAdministrationModules(items, context);
+                items.Add(("Usuarios", () => ModuleUiFactory.CreateUserUi(context).RunAsync().GetAwaiter().GetResult()));
                 items.Add((
                     "Mis reservaciones",
                     () => ModuleUiFactory.CreateMyReservationsUi(context, auth).RunAsync().GetAwaiter().GetResult()
@@ -92,10 +93,14 @@ public static class ApplicationShell
             else if (isAdmin)
             {
                 AppendAdministrationModules(items, context);
+                items.Add(("Usuarios", () => ModuleUiFactory.CreateUserUi(context).RunAsync().GetAwaiter().GetResult()));
             }
             else
             {
-                items.Add(("Mis reservaciones", () => ModuleUiFactory.CreateMyReservationsUi(context, auth).RunAsync().GetAwaiter().GetResult()));
+                items.Add((
+                    "Reservaciones",
+                    () => ModuleUiFactory.CreateClientReservationsUi(context, auth).RunAsync().GetAwaiter().GetResult()
+                ));
             }
 
             items.Add((

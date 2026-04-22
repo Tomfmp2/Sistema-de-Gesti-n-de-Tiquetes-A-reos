@@ -5,76 +5,28 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.UI;
 
-public sealed class MyReservationsConsoleUI : IModuleUI
+public sealed class CreateMyReservationConsoleUI : IModuleUI
 {
     private readonly AuthContext _auth;
-    private readonly GetReservationsByClientIdUseCase _getMineUseCase;
     private readonly CreateReservationUseCase _createUseCase;
 
-    public MyReservationsConsoleUI(
-        AuthContext auth,
-        GetReservationsByClientIdUseCase getMineUseCase,
-        CreateReservationUseCase createUseCase
-    )
+    public CreateMyReservationConsoleUI(AuthContext auth, CreateReservationUseCase createUseCase)
     {
         _auth = auth;
-        _getMineUseCase = getMineUseCase;
         _createUseCase = createUseCase;
     }
 
     public async Task RunAsync()
     {
-        var exit = false;
-        while (!exit)
+        SpectreUi.ModuleHeader("Crear reservación", "Alta rápida (cliente)");
+
+        if (_auth.ClientId is null)
         {
-            SpectreUi.ModuleHeader("Mis reservaciones", "Solo las asociadas a tu cliente");
-
-            if (_auth.ClientId is null)
-            {
-                Console.WriteLine("Tu usuario no está asociado a un cliente (client_id).");
-                SpectreUi.Pause();
-                return;
-            }
-
-            var items = new List<(string Label, Action Action)>
-            {
-                ("Crear reservación", () => CreateReservation().GetAwaiter().GetResult()),
-                ("Listar mis reservaciones", () => ListMine().GetAwaiter().GetResult()),
-                ("Volver", () => exit = true),
-            };
-
-            MenuLogic.RunMenu(items);
-        }
-    }
-
-    private async Task ListMine()
-    {
-        try
-        {
-            var list = (await _getMineUseCase.ExecuteAsync(_auth.ClientId!.Value)).ToList();
-            if (list.Count == 0)
-            {
-                Console.WriteLine("No tienes reservaciones.");
-                return;
-            }
-
-            foreach (var r in list.OrderByDescending(x => x.ReservationDate.Value))
-            {
-                Console.WriteLine(
-                    $"ID: {r.Id.Value}, Status: {r.ReservationStatusId.Value}, Total: {r.TotalValue.Value}, BookedAt: {r.ReservationDate.Value:yyyy-MM-dd HH:mm}"
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            Console.WriteLine("Tu usuario no está asociado a un cliente (client_id).");
+            SpectreUi.Pause();
+            return;
         }
 
-        SpectreUi.Pause();
-    }
-
-    private async Task CreateReservation()
-    {
         try
         {
             // Para cliente: status inicial = Pendiente (1)
@@ -98,7 +50,7 @@ public sealed class MyReservationsConsoleUI : IModuleUI
 
             var created = await _createUseCase.ExecuteAsync(
                 new CreateReservationRequest(
-                    ClientId: _auth.ClientId!.Value,
+                    ClientId: _auth.ClientId.Value,
                     ReservationDate: utcNow,
                     ReservationStatusId: pendingStatusId,
                     TotalValue: total,

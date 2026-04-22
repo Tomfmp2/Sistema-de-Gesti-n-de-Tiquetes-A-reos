@@ -13,20 +13,20 @@ public sealed class ClientEntityConfiguration : IEntityTypeConfiguration<ClientE
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.PersonId)
-            .HasColumnName("PersonId")
+            .HasColumnName("person_id")
             .HasColumnType("int")
             .IsRequired();
 
         builder
             .Property(x => x.CreatedAt)
-            .HasColumnName("CreatedAt")
+            .HasColumnName("created_at")
             .HasColumnType("datetime(6)")
             .IsRequired();
 

@@ -59,7 +59,7 @@ public class AirportConsoleUI : IModuleUI
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
         SpectreUi.Pause();
     }
@@ -82,7 +82,7 @@ public class AirportConsoleUI : IModuleUI
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
         }
         SpectreUi.Pause();
     }

@@ -15,14 +15,14 @@ public sealed class AirportEntityConfiguration : IEntityTypeConfiguration<Airpor
         builder.HasKey(x => x.Id);
         builder
             .Property(x => x.Id)
-            .HasColumnName("Id")
+            .HasColumnName("id")
             .HasColumnType("int")
             .ValueGeneratedOnAdd()
             .IsRequired();
 
         builder
             .Property(x => x.Name)
-            .HasColumnName("Name")
+            .HasColumnName("name")
             .HasColumnType("varchar(150)")
             .IsRequired();
 
@@ -44,7 +44,7 @@ public sealed class AirportEntityConfiguration : IEntityTypeConfiguration<Airpor
 
         builder
             .Property(x => x.CityId)
-            .HasColumnName("CityId")
+            .HasColumnName("city_id")
             .HasColumnType("int")
             .IsRequired();
 

@@ -66,6 +66,10 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Application.U
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.UI;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.Services;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.UI;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
@@ -301,6 +305,42 @@ public static class ModuleUiFactory
     public static MyReservationsConsoleUI CreateMyReservationsUi(AppDbContext ctx, AuthContext auth)
     {
         var repo = new ReservationRepository(ctx);
-        return new MyReservationsConsoleUI(auth, new GetReservationsByClientIdUseCase(repo));
+        return new MyReservationsConsoleUI(
+            auth,
+            new GetReservationsByClientIdUseCase(repo),
+            new CreateReservationUseCase(repo)
+        );
+    }
+
+    public static CreateMyReservationConsoleUI CreateCreateMyReservationUi(AppDbContext ctx, AuthContext auth)
+    {
+        var repo = new ReservationRepository(ctx);
+        return new CreateMyReservationConsoleUI(auth, new CreateReservationUseCase(repo));
+    }
+
+    public static ClientReservationsConsoleUI CreateClientReservationsUi(AppDbContext ctx, AuthContext auth)
+    {
+        var repo = new ReservationRepository(ctx);
+        return new ClientReservationsConsoleUI(
+            auth,
+            new CreateReservationUseCase(repo),
+            new GetReservationsByClientIdUseCase(repo),
+            new GetReservationByIdUseCase(repo),
+            new UpdateReservationUseCase(repo),
+            new DeleteReservationUseCase(repo)
+        );
+    }
+
+    public static UserConsoleUI CreateUserUi(AppDbContext ctx)
+    {
+        var repo = new UserRepository(ctx);
+        var service = new UserService(
+            new CreateUserUseCase(repo),
+            new GetUserByIdUseCase(repo),
+            new GetAllUsersUseCase(repo),
+            new UpdateUserUseCase(repo),
+            new DeleteUserUseCase(repo)
+        );
+        return new UserConsoleUI(ctx, service);
     }
 }

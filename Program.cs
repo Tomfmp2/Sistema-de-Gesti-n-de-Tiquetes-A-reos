@@ -1,6 +1,8 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity;
 
@@ -14,6 +16,16 @@ try
     {
         Console.WriteLine("Conexión exitosa");
 
+        var migrateRequested =
+            args.Any(a => string.Equals(a, "--migrate", StringComparison.OrdinalIgnoreCase))
+            || string.Equals(Environment.GetEnvironmentVariable("APPLY_MIGRATIONS"), "true", StringComparison.OrdinalIgnoreCase);
+
+        if (migrateRequested)
+        {
+            context.Database.Migrate();
+            Console.WriteLine("Migraciones aplicadas correctamente");
+        }
+
         var describeArg = args.FirstOrDefault(a => a.StartsWith("--describe-table=", StringComparison.OrdinalIgnoreCase));
         if (describeArg is not null)
         {
@@ -22,17 +34,26 @@ try
             return;
         }
 
-        if (args.Any(a => string.Equals(a, "--seed-root", StringComparison.OrdinalIgnoreCase)))
+        if (args.Any(a => string.Equals(a, "--validate-mappings", StringComparison.OrdinalIgnoreCase)))
         {
-            await SeedRootUserAsync(context);
+            await ValidateMappingsAsync(context);
             return;
         }
 
-        // Opcional: aplicar migraciones solo si se solicita explícitamente
-        if (string.Equals(Environment.GetEnvironmentVariable("APPLY_MIGRATIONS"), "true", StringComparison.OrdinalIgnoreCase))
+        if (args.Any(a => string.Equals(a, "--seed-defaults", StringComparison.OrdinalIgnoreCase)))
         {
+            // Los "defaults" se cargan vía migraciones (InsertData/HasData). Este flag asegura que se apliquen.
             context.Database.Migrate();
-            Console.WriteLine("Migraciones aplicadas correctamente");
+            Console.WriteLine("Seed por defecto aplicado (vía migraciones).");
+            return;
+        }
+
+        if (args.Any(a => string.Equals(a, "--seed-root", StringComparison.OrdinalIgnoreCase)))
+        {
+            // Asegura que el catálogo mínimo exista antes de crear usuario ROOT.
+            context.Database.Migrate();
+            await SeedRootUserAsync(context);
+            return;
         }
 
         while (true)
@@ -117,4 +138,59 @@ static async Task DescribeTableAsync(sistema_gestor_de_tiquetes_aereos.Src.Share
     {
         Console.WriteLine($"- {c}");
     }
+}
+
+static async Task ValidateMappingsAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context)
+{
+    // Compara el modelo EF contra el esquema real en MySQL (information_schema)
+    // para detectar "Unknown column" antes de que el usuario lo vea en runtime.
+
+    var entityTypes = context.Model.GetEntityTypes()
+        .Where(et => !et.IsOwned())
+        .OrderBy(et => et.GetTableName())
+        .ThenBy(et => et.Name)
+        .ToList();
+
+    Console.WriteLine($"Entidades a validar: {entityTypes.Count}");
+
+    foreach (var et in entityTypes)
+    {
+        var table = et.GetTableName();
+        if (string.IsNullOrWhiteSpace(table))
+        {
+            continue;
+        }
+
+        var dbCols = await context.Database.SqlQueryRaw<string>(
+            "SELECT COLUMN_NAME AS Value FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = {0}",
+            table
+        ).ToListAsync();
+
+        if (dbCols.Count == 0)
+        {
+            Console.WriteLine($"[MISSING TABLE?] `{table}` (Entity: {et.Name}) - no se encontraron columnas en information_schema.");
+            continue;
+        }
+
+        var dbSet = new HashSet<string>(dbCols, StringComparer.OrdinalIgnoreCase);
+        var storeId = StoreObjectIdentifier.Table(table);
+
+        var mappedCols = et.GetProperties()
+            .Select(p => p.GetColumnName(storeId))
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var missing = mappedCols.Where(c => !dbSet.Contains(c!)).ToList();
+        if (missing.Count > 0)
+        {
+            Console.WriteLine($"[MISMATCH] `{table}` (Entity: {et.Name})");
+            foreach (var m in missing)
+            {
+                Console.WriteLine($"  - columna mapeada no existe en DB: `{m}`");
+            }
+        }
+    }
+
+    Console.WriteLine("Validación terminada.");
 }

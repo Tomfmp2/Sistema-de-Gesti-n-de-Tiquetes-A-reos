@@ -22,7 +22,7 @@ public sealed class Airport
     public static Airport Create(AirportName name, IataCode iataCode, IcaoCode icaoCode, int cityId)
     {
         return new Airport(
-            AirportId.Create(0), // will be set by DB
+            AirportId.Reconstitute(0), // will be set by DB
             name,
             iataCode,
             icaoCode,

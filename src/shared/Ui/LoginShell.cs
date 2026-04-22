@@ -52,8 +52,27 @@ public static class LoginShell
 
             try
             {
+                username = (username ?? string.Empty).Trim();
+                password = password ?? string.Empty;
+
+                if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
+                {
+                    SpectreUi.MarkupLineOrPlain(
+                        "[red]Usuario/contraseña inválidos.[/]",
+                        "Usuario/contraseña inválidos."
+                    );
+                    SpectreUi.Pause();
+                    continue;
+                }
+
+                var normalizedUsername = username.Trim().ToUpperInvariant();
                 var user = await context.Set<UserEntity>()
-                    .FirstOrDefaultAsync(u => u.Username == username && u.IsActive, cancellationToken);
+                    .FirstOrDefaultAsync(
+                        u => u.Username != null
+                             && u.Username.ToUpper() == normalizedUsername
+                             && u.IsActive,
+                        cancellationToken
+                    );
 
                 if (user is null)
                 {
@@ -111,7 +130,7 @@ public static class LoginShell
 
                 return new AuthContext(
                     user.Id,
-                    user.Username ?? username,
+                    user.Username ?? normalizedUsername,
                     session.Id,
                     user.SystemRoleId,
                     roleName,

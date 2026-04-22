@@ -3,6 +3,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Domain.Aggregat
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Domain.Repositories;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Domain.ValueObjet;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Data;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Infrastructure.repository;
@@ -58,6 +60,9 @@ public sealed class ReservationRepository : IReservationRepository
         {
             throw new InvalidOperationException("Use Id en 0 para insertar.");
         }
+
+        // Evita error FK si la tabla booking_statuses está vacía o incompleta.
+        await EnsureBookingStatusesAsync(cancellationToken);
 
         var e = new ReservationEntity
         {
@@ -134,5 +139,21 @@ e.UpdatedAt = entity.UpdatedAt.Value;
     ReservationCreatedAt.Create(e.CreatedAt),
     ReservationUpdatedAt.Create(e.UpdatedAt)
         );
+    }
+
+    private async Task EnsureBookingStatusesAsync(CancellationToken cancellationToken)
+    {
+        // Si ya hay estados, no hacemos nada.
+        var hasAny = await _context.Set<ReservationStatusEntity>()
+            .AsNoTracking()
+            .AnyAsync(cancellationToken);
+        if (hasAny)
+        {
+            return;
+        }
+
+        // Sembrar defaults (Id fijos 1..5).
+        _context.Set<ReservationStatusEntity>().AddRange(ReservationStatusDefaultData.ReservationStatuses);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }
