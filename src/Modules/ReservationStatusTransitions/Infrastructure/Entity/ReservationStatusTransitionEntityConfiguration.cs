@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatusTransitions.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatusTransitions.Infrastructure.Entity;
 
@@ -44,5 +45,7 @@ public class ReservationStatusTransitionEntityConfiguration
             .WithMany()
             .HasForeignKey(x => x.DestinationStatusId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(ReservationStatusTransitionDefaultData.ReservationStatusTransitions);
     }
 }

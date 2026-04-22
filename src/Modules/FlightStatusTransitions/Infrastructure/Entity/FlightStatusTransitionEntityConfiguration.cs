@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatuses.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatusTransitions.Infrastructure.Data;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightStatusTransitions.Infrastructure.Entity;
 
@@ -43,5 +44,7 @@ public class FlightStatusTransitionEntityConfiguration : IEntityTypeConfiguratio
             .WithMany()
             .HasForeignKey(x => x.DestinationStatusId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(FlightStatusTransitionDefaultData.FlightStatusTransitions);
     }
 }
