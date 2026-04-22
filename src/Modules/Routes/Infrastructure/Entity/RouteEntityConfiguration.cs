@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Data;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
@@ -37,5 +38,7 @@ public class RouteEntityConfiguration : IEntityTypeConfiguration<RouteEntity>
             .WithOne(f => f.Route)
             .HasForeignKey("route_id")
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasData(RouteDefaultData.Routes);
     }
 }
