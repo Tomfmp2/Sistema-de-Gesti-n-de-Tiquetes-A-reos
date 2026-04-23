@@ -95,16 +95,23 @@ Opción B: editar `appsettings.json`:
 }
 ```
 
-### 4) Ejecutar
+### 4) Restaurar, compilar, base de datos y ejecutar
+
+Desde la raíz del repositorio (con la conexión ya configurada en el paso 3):
 
 ```powershell
+dotnet restore
+dotnet build
+dotnet ef database update
 dotnet run
 ```
 
-En el arranque, si hay conexión al servidor MySQL, la app ejecuta automáticamente (de forma **idempotente**):
+En Linux/macOS son los mismos comandos; solo cambia cómo defines `MYSQL_CONNECTION` (por ejemplo `export MYSQL_CONNECTION="..."`).
+
+Tras `dotnet run`, si hay conexión al servidor MySQL, la app ejecuta en el arranque (de forma **idempotente**):
 
 - **Creación de base de datos si no existe** (`CREATE DATABASE IF NOT EXISTS`) cuando el servidor está accesible.
-- **Migraciones EF Core** (`Migrate()`).
+- **Migraciones EF Core** (`Database.Migrate()`), además de lo que ya aplicaste con `dotnet ef database update`.
 - **Seed de data default** (catálogos mínimos).
 - **Seed de usuario ROOT** (admin) con contraseña **`12345`**.
 
@@ -146,20 +153,23 @@ dotnet run -- --seed-defaults
 dotnet run -- --seed-root
 ```
 
-## Ejecutar el proyecto
+## Ejecutar el proyecto (orden recomendado)
 
-Restaurar dependencias y compilar:
+1. **Restaurar** paquetes NuGet.
+2. **Compilar** la solución.
+3. **Aplicar migraciones** a la base de datos (crea/actualiza el esquema según el historial de `Migrations/`).
+4. **Iniciar** la aplicación de consola.
 
 ```powershell
 dotnet restore
 dotnet build
-```
-
-Ejecutar (modo interactivo):
-
-```powershell
+dotnet ef database update
 dotnet run
 ```
+
+> `dotnet ef database update` requiere la herramienta global `dotnet-ef` (`dotnet tool install --global dotnet-ef`) o el paquete de diseño ya referenciado en el proyecto. Si la base aún no existe, créala o deja que la app/tu cadena de conexión apunte a un servidor con permisos para crearla.
+
+Tras el paso 4, la consola debería mostrar la conexión a MySQL y, según `Program.cs`, el login o menú inicial. Si en su lugar usas **solo** `dotnet run` con el flag de migración, es un flujo alternativo (ver *Comandos útiles*).
 
 ## Comandos útiles (flags)
 
