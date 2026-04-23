@@ -24,6 +24,13 @@ public sealed class ContinentEntityConfiguration : IEntityTypeConfiguration<Cont
             .HasColumnType("varchar(50)")
             .IsRequired();
 
+        builder
+            .Property(x => x.IsActive)
+            .HasColumnName("is_active")
+            .HasColumnType("tinyint(1)")
+            .HasDefaultValue(true)
+            .IsRequired();
+
         builder.HasIndex(x => x.Name).IsUnique();
     }
 }

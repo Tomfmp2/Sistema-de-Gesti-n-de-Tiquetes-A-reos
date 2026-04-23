@@ -29,6 +29,15 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.UI;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.UI;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.UI;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.UI;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.UI;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.Infrastructure.repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightAssignments.UI;
@@ -62,6 +71,9 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Applic
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Payments.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Payments.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Payments.UI;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.UI;
@@ -72,6 +84,12 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Application.U
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.UI;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.UI;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Invoices.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Invoices.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Invoices.UI;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.Services;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.repository;
@@ -81,6 +99,24 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
 public static class ModuleUiFactory
 {
+    public static AgentReservationsConsoleUI CreateAgentReservationsUi(AppDbContext ctx)
+    {
+        var repo = new ReservationRepository(ctx);
+        var rfRepo = new ReservationFlightRepository(ctx);
+        var rpRepo = new ReservationPassengerRepository(ctx);
+        var passengerRepo = new PassengerRepository(ctx);
+        return new AgentReservationsConsoleUI(
+            ctx,
+            new CreateReservationUseCase(repo),
+            new GetAllReservationsUseCase(repo),
+            new GetReservationByIdUseCase(repo),
+            new UpdateReservationUseCase(repo),
+            new CreateReservationFlightUseCase(rfRepo),
+            new CreateReservationPassengerUseCase(rpRepo),
+            new CreatePassengerUseCase(passengerRepo)
+        );
+    }
+
     public static AirlineConsoleUI CreateAirlineUi(AppDbContext ctx)
     {
         var repo = new AirlineRepository(ctx);
@@ -114,6 +150,78 @@ public static class ModuleUiFactory
             new GetAllAirportAirlinesUseCase(repo),
             new UpdateAirportAirlineUseCase(repo),
             new DeleteAirportAirlineUseCase(repo)
+        );
+    }
+
+    public static FlightConsoleUI CreateFlightUi(AppDbContext ctx)
+    {
+        var repo = new FlightRepository(ctx);
+        return new FlightConsoleUI(
+            new CreateFlightUseCase(repo),
+            new GetFlightByIdUseCase(repo),
+            new GetAllFlightsUseCase(repo),
+            new UpdateFlightUseCase(repo),
+            new DeleteFlightUseCase(repo)
+        );
+    }
+
+    public static FareConsoleUI CreateFareUi(AppDbContext ctx)
+    {
+        var repo = new FareRepository(ctx);
+        return new FareConsoleUI(
+            new CreateFareUseCase(repo),
+            new GetFareByIdUseCase(repo),
+            new GetAllFaresUseCase(repo),
+            new UpdateFareUseCase(repo),
+            new DeleteFareUseCase(repo)
+        );
+    }
+
+    public static PaymentConsoleUI CreatePaymentUi(AppDbContext ctx)
+    {
+        var repo = new PaymentRepository(ctx);
+        return new PaymentConsoleUI(
+            new CreatePaymentUseCase(repo),
+            new GetPaymentByIdUseCase(repo),
+            new GetAllPaymentsUseCase(repo),
+            new UpdatePaymentUseCase(repo),
+            new DeletePaymentUseCase(repo)
+        );
+    }
+
+    public static TicketConsoleUI CreateTicketUi(AppDbContext ctx)
+    {
+        var repo = new TicketRepository(ctx);
+        return new TicketConsoleUI(
+            new CreateTicketUseCase(repo),
+            new GetTicketByIdUseCase(repo),
+            new GetAllTicketsUseCase(repo),
+            new UpdateTicketUseCase(repo),
+            new DeleteTicketUseCase(repo)
+        );
+    }
+
+    public static CheckinConsoleUI CreateCheckinUi(AppDbContext ctx)
+    {
+        var repo = new CheckinRepository(ctx);
+        return new CheckinConsoleUI(
+            new CreateCheckinUseCase(repo),
+            new GetCheckinByIdUseCase(repo),
+            new GetAllCheckinsUseCase(repo),
+            new UpdateCheckinUseCase(repo),
+            new DeleteCheckinUseCase(repo)
+        );
+    }
+
+    public static InvoiceConsoleUI CreateInvoiceUi(AppDbContext ctx)
+    {
+        var repo = new InvoiceRepository(ctx);
+        return new InvoiceConsoleUI(
+            new CreateInvoiceUseCase(repo),
+            new GetInvoiceByIdUseCase(repo),
+            new GetAllInvoicesUseCase(repo),
+            new UpdateInvoiceUseCase(repo),
+            new DeleteInvoiceUseCase(repo)
         );
     }
 

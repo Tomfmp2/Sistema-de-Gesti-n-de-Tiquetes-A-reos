@@ -29,6 +29,13 @@ public sealed class CityEntityConfiguration : IEntityTypeConfiguration<CityEntit
             .HasColumnName("region_id")
             .HasColumnType("int")
             .IsRequired();
+
+        builder
+            .Property(x => x.IsActive)
+            .HasColumnName("is_active")
+            .HasColumnType("tinyint(1)")
+            .HasDefaultValue(true)
+            .IsRequired();
         builder
             .HasOne<RegionEntity>(x => x.Region)
             .WithMany(r => r.Cities)

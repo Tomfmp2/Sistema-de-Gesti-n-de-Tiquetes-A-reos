@@ -1,205 +1,168 @@
 # Sistema de Gestión de Tiquetes Aéreos (CLI)
 
-Aplicación de consola en **C#/.NET** para gestionar un sistema básico de tiquetes aéreos: usuarios/roles, catálogos, reservas y procesos asociados, con una interfaz interactiva construida con **Spectre.Console** y persistencia en **MySQL** usando **Entity Framework Core**.
+Aplicación de consola en **C#/.NET** para gestionar un sistema de tiquetes aéreos con persistencia en **MySQL** (EF Core) y una interfaz interactiva construida con **Spectre.Console**.
 
-## Características
+Incluye módulos de catálogos (aerolíneas, aeropuertos, rutas, flota, etc.), operación (vuelos, asignaciones, equipaje), reservas y procesos asociados (tickets, check-ins, pagos, facturación) con un enfoque modular por capas.
 
-- **Interfaz de consola interactiva** (menús con flechas, tablas y formularios).
-- **Persistencia en MySQL** con **EF Core**.
-- **Migraciones** y comandos auxiliares (semillas/validaciones) desde `Program.cs`.
-- **Seed idempotente** para usuario **ROOT** (admin) y permisos base.
-- **Prompts cancelables** en formularios (por ejemplo: `0`, `c`, `cancelar`).
+## Qué es este proyecto
 
-## Estructura del proyecto
+- **Tipo**: aplicación de consola (CLI) con menús, tablas y formularios.
+- **Persistencia**: MySQL + EF Core (migraciones y seed idempotente).
+- **Arquitectura**: módulos por dominio bajo `src/Modules/` con capas `Domain / Application / Infrastructure / UI`.
+- **Objetivo**: servir como base académica/práctica para un sistema de reservas y tiquetaje, manteniendo buenas prácticas (DDD ligero, validaciones por value objects y casos de uso).
 
-El código vive bajo `src/` y está organizado por módulos en `src/Modules/`.
+## Características principales
 
-Estructura típica por módulo:
-
-- **Domain**: reglas de negocio (agregados / value objects).
-- **Application**: DTOs y casos de uso (Create/List/Get/Update/Delete).
-- **Infrastructure**: entidades EF, configuraciones, repositorios y seeders por módulo.
-- **UI**: pantallas de consola con menús estandarizados (Spectre.Console).
-
-Además existe una carpeta `src/shared/` con helpers transversales (UI, `DbContextFactory`, formato de errores, etc.).
-
-## Flujo general de ejecución
-
-- `Program.cs` inicializa la consola (`SpectreUi.InitializeConsoleUi()`), crea el `DbContext` y, si hay conexión, permite:
-  - ejecutar flags (`--migrate`, `--seed-defaults`, `--seed-root`, etc.)
-  - iniciar sesión (`LoginShell`) y luego abrir el menú principal (`ApplicationShell`)
-
-## Convenciones y reglas importantes
-
-- **DB en `snake_case`**: tablas y columnas (MySQL).
-- **Personas por documento**: el par `(document_type_id, document_number)` identifica una **única persona**; varios usuarios pueden apuntar a la misma persona.
-- **Cancelación en UI**: los formularios permiten cancelar con `0`, `c` o `cancelar` y vuelven al menú sin romper el flujo.
-
-## Tecnologías
-
-- **.NET**: `net10.0`
-- **ORM**: Entity Framework Core
-- **DB**: MySQL (provider: `Pomelo.EntityFrameworkCore.MySql`)
-- **UI**: `Spectre.Console`
+- **UI interactiva**: navegación con flechas, tablas, prompts y mensajes.
+- **Cancelación consistente**: en formularios puedes cancelar con `0`, `c` o `cancelar`.
+- **Bootstrap automático**: al iniciar, intenta:
+  - crear la DB si falta (cuando el servidor está accesible),
+  - aplicar migraciones,
+  - ejecutar seeds mínimos,
+  - asegurar el usuario **ROOT** y permisos base (idempotente).
+- **Menú por rol/permisos**:
+  - ROOT/Admin ven catálogos y operación.
+  - Cliente ve operaciones sobre sus reservaciones.
+  - La visibilidad de módulos puede depender de permisos (`role_permissions`).
+- **Herramientas de diagnóstico**: describe tablas, valida mapeos EF vs DB real.
 
 ## Requisitos
 
-- **.NET SDK 10** (o el SDK compatible con `net10.0`)
-- **MySQL 8.0+**
+- **.NET SDK** compatible con `net10.0`.
+- **MySQL 8.0+**.
 
-## Configuración
+## Configuración (conexión a MySQL)
 
-La app obtiene la cadena de conexión desde:
+La aplicación obtiene la cadena de conexión desde:
 
-- **Variable de entorno** `MYSQL_CONNECTION` (prioridad), o
-- `appsettings.json` → `ConnectionStrings:MySqlDB`
+1. Variable de entorno **`MYSQL_CONNECTION`** (prioridad), o
+2. `appsettings.json` → `ConnectionStrings:MySqlDB`
 
-Ejemplo (PowerShell):
-
-```powershell
-$env:MYSQL_CONNECTION="server=localhost;port=3306;database=airlinesdb;user=root;password=TU_PASSWORD;"
-```
-
-## Guía rápida (para usarlo en otro computador)
-
-Esta guía asume que solo quieres clonar/abrir el proyecto y ejecutar `dotnet run`.
-
-### 1) Instalar y levantar MySQL
-
-- Instala **MySQL 8.0+**.
-- Asegúrate de que el servicio esté **ejecutándose** y escuchando en el puerto (por defecto `3306`).
-
-### 2) Crear un usuario de MySQL (recomendado)
-
-Usa un usuario que tenga permisos para:
-- crear base de datos (solo la primera vez) y
-- crear/alterar tablas (para migraciones).
-
-Si ya usarás `root`, omite este paso.
-
-### 3) Configurar la conexión
-
-Opción A (recomendada): variable de entorno `MYSQL_CONNECTION`:
+Ejemplo en PowerShell:
 
 ```powershell
 $env:MYSQL_CONNECTION="server=localhost;port=3306;database=airlinesdb;user=root;password=TU_PASSWORD;"
 ```
 
-Opción B: editar `appsettings.json`:
+### Recomendación de permisos en MySQL
 
-```json
-{
-  "ConnectionStrings": {
-    "MySqlDB": "server=localhost;port=3306;database=airlinesdb;user=root;password=TU_PASSWORD;"
-  }
-}
-```
+El usuario debe poder:
+- crear DB (solo si quieres auto-creación),
+- crear/alterar tablas (migraciones),
+- leer/escribir datos (operación normal).
 
-### 4) Restaurar, compilar, base de datos y ejecutar
+## Cómo ejecutar (paso a paso)
 
-Desde la raíz del repositorio (con la conexión ya configurada en el paso 3):
+Desde la raíz del repo:
 
 ```powershell
 dotnet restore
 dotnet build
-dotnet ef database update
 dotnet run
 ```
 
-En Linux/macOS son los mismos comandos; solo cambia cómo defines `MYSQL_CONNECTION` (por ejemplo `export MYSQL_CONNECTION="..."`).
+En el primer arranque con conexión válida, el sistema aplicará migraciones + seeds automáticamente (idempotente).
 
-Tras `dotnet run`, si hay conexión al servidor MySQL, la app ejecuta en el arranque (de forma **idempotente**):
+## Inicio de sesión, roles y permisos
 
-- **Creación de base de datos si no existe** (`CREATE DATABASE IF NOT EXISTS`) cuando el servidor está accesible.
-- **Migraciones EF Core** (`Database.Migrate()`), además de lo que ya aplicaste con `dotnet ef database update`.
-- **Seed de data default** (catálogos mínimos).
-- **Seed de usuario ROOT** (admin) con contraseña **`12345`**.
+### Usuario ROOT
 
-> Si el servidor MySQL está apagado/no instalado, la app no puede funcionar y mostrará un mensaje de conexión fallida.
+- Se garantiza por seed (idempotente).
+- Usuario: `ROOT`
+- Contraseña: `12345`
 
-## Base de datos (MySQL)
+### Roles típicos
 
-1. Crea una base de datos (por ejemplo `airlinesdb`).
-2. Configura la cadena de conexión (variable de entorno o `appsettings.json`).
-3. Aplica migraciones y seeds según necesites.
+- **ROOT / Administrador**: gestión completa de catálogos y operación.
+- **Cliente**: gestiona *sus* reservaciones y operaciones relacionadas.
 
-### Migraciones
+### Permisos (alto nivel)
 
-Para aplicar migraciones desde la app:
+La app usa permisos (tabla `permissions`) y asignaciones por rol (tabla `role_permissions`) para habilitar apartados como:
 
-```powershell
-dotnet run -- --migrate
-```
+- `catalogs.manage` (catálogos)
+- `flights.manage` (vuelos)
+- `fares.manage` (tarifas)
+- `payments.manage` (pagos)
+- `tickets.manage` (tickets)
+- `checkins.manage` (check-ins)
+- `invoices.manage` (facturas)
+- `security.manage` (roles/permisos)
 
-Si prefieres usar el tooling de EF Core:
+> Si tu DB no tiene permisos poblados, el sistema mantiene compatibilidad mostrando módulos de admin por defecto (según configuración del menú).
 
-```powershell
-dotnet ef database update
-```
+## Cómo usarlo (guía rápida por menús)
 
-> Nota: el proyecto incluye `Microsoft.EntityFrameworkCore.Design` y `Microsoft.EntityFrameworkCore.Tools`.
+### Cliente
 
-### Seeds (datos mínimos)
+- **Reservaciones**: crear, listar, confirmar, cambiar expiración, cancelar y realizar check-in (según estado).
 
-- **Seeds de catálogos mínimos**:
+### Administrador / ROOT
 
-```powershell
-dotnet run -- --seed-defaults
-```
+Apartados comunes:
 
-- **Usuario ROOT** (idempotente, contraseña `12345`) y permisos base:
+- **Catálogos / Operación**: aerolíneas, aeropuertos, rutas, temporadas, flota, cabinas, asientos, tripulación, equipaje.
+- **Vuelos**: crear/editar/listar (código, ruta, avión, fechas, cupos, estado).
+- **Tarifas**: precios por ruta/cabina/pasajero/temporada.
+- **Pagos**: registrar/consultar pagos asociados a reservaciones.
+- **Tickets**: emisión/consulta/actualización.
+- **Check-ins**: registro de check-in y pase de abordar.
+- **Facturas**: emisión y consulta.
+- **Seguridad**: administrar roles, permisos y asignaciones `Rol ↔ Permiso`.
 
-```powershell
-dotnet run -- --seed-root
-```
+#### Búsqueda optimizada de Países (IDs)
 
-## Ejecutar el proyecto (orden recomendado)
+Para formularios que piden `CountryId`, existe un apartado:
+- **“Países (por continente)”**: primero lista **Continentes (Id/Nombre)**, luego permite filtrar y listar **Países (Id/Nombre/ISO)**.
+- También incluye **búsqueda rápida por texto** (Nombre/ISO) para ubicar IDs sin navegar por continentes.
 
-1. **Restaurar** paquetes NuGet.
-2. **Compilar** la solución.
-3. **Aplicar migraciones** a la base de datos (crea/actualiza el esquema según el historial de `Migrations/`).
-4. **Iniciar** la aplicación de consola.
+## Arquitectura (estructura del código)
 
-```powershell
-dotnet restore
-dotnet build
-dotnet ef database update
-dotnet run
-```
+El código vive bajo `src/`:
 
-> `dotnet ef database update` requiere la herramienta global `dotnet-ef` (`dotnet tool install --global dotnet-ef`) o el paquete de diseño ya referenciado en el proyecto. Si la base aún no existe, créala o deja que la app/tu cadena de conexión apunte a un servidor con permisos para crearla.
+- `src/Modules/<ModuleName>/`
+  - `Domain/`: agregados y value objects (validaciones/ reglas).
+  - `Application/`: DTOs y casos de uso (Create/Get/List/Update/Delete).
+  - `Infrastructure/`: entidades EF, configuraciones, repositorios, seeds.
+  - `UI/`: pantallas de consola (Spectre.Console) y flujos de menú.
+- `src/shared/`: helpers transversales (`SpectreUi`, `MenuLogic`, `DbContextFactory`, shells).
 
-Tras el paso 4, la consola debería mostrar la conexión a MySQL y, según `Program.cs`, el login o menú inicial. Si en su lugar usas **solo** `dotnet run` con el flag de migración, es un flujo alternativo (ver *Comandos útiles*).
+Flujo general:
+
+1. `Program.cs` inicializa UI y DB.
+2. `LoginShell` autentica y crea sesión.
+3. `ApplicationShell` arma el menú según rol/permisos.
+4. Cada módulo UI usa casos de uso/repo del módulo.
 
 ## Comandos útiles (flags)
 
 Estos flags están implementados en `Program.cs`:
 
-- **Aplicar migraciones**:
+- Aplicar migraciones:
 
 ```powershell
 dotnet run -- --migrate
 ```
 
-- **Seed por defecto** (catálogos mínimos, idempotente):
+- Seed por defecto (catálogos mínimos, idempotente):
 
 ```powershell
 dotnet run -- --seed-defaults
 ```
 
-- **Seed usuario ROOT** (idempotente, contraseña `12345`):
+- Seed usuario ROOT (idempotente, contraseña `12345`):
 
 ```powershell
 dotnet run -- --seed-root
 ```
 
-- **Validar mapeos EF vs columnas reales en MySQL**:
+- Validar mapeos EF vs columnas reales en MySQL:
 
 ```powershell
 dotnet run -- --validate-mappings
 ```
 
-- **Describir columnas de una tabla**:
+- Describir columnas de una tabla:
 
 ```powershell
 dotnet run -- --describe-table=persons
@@ -207,15 +170,15 @@ dotnet run -- --describe-table=persons
 
 ## Troubleshooting
 
-### Error MSB3027 / .exe en uso
+### Error MSB3027 / `.exe` en uso (Windows)
 
-Si al compilar aparece un error indicando que no se puede copiar el ejecutable porque está siendo usado por otro proceso, cierra el proceso en ejecución o finalízalo:
+Si al compilar aparece que el ejecutable está “en uso”, finaliza el proceso:
 
 ```powershell
 taskkill /IM sistema-gestor-de-tiquetes-aereos.exe /F
 ```
 
-Luego vuelve a ejecutar:
+Y luego:
 
 ```powershell
 dotnet build
@@ -223,10 +186,9 @@ dotnet build
 
 ### No conecta a MySQL
 
-- Verifica que MySQL esté levantado y el puerto/usuario/contraseña sean correctos.
-- Asegúrate de estar usando `MYSQL_CONNECTION` o `appsettings.json`.
-- Si el usuario MySQL no tiene permisos, la creación automática de DB/migraciones puede fallar.
-- Si hay dudas de mapeos (columnas que no existen), usa:
+- Verifica que MySQL esté encendido y escuchando en el puerto.
+- Confirma usuario/contraseña en `MYSQL_CONNECTION` o `appsettings.json`.
+- Si hay errores de columnas/tablas, usa:
 
 ```powershell
 dotnet run -- --validate-mappings
@@ -234,8 +196,8 @@ dotnet run -- --validate-mappings
 
 ## Documentación adicional
 
-- `PROMPTS-PROYECTO.md`: prompts guía para diseñar/implementar el sistema (DB 4FN, módulos, seeders, Application, debugging, UI).
-- `ToDo.md`: backlog/tareas pendientes del proyecto.
+- `PROMPTS-PROYECTO.md`: guía de prompts/diseño/implementación.
+- `ToDo.md`: backlog del proyecto.
 
 ## Autores
 

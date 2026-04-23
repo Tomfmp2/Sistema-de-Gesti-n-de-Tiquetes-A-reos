@@ -37,7 +37,7 @@ public class AirlineRepository : IAirlineRepository
 
     public async Task<IEnumerable<Airline>> GetAllAsync()
     {
-        var entities = await _context.Airlines.ToListAsync();
+        var entities = await _context.Airlines.Where(x => x.IsActive).ToListAsync();
         return entities.Select(e => Airline.Reconstitute(
             AirlineId.Reconstitute(e.Id),
             AirlineName.Reconstitute(e.Name),
@@ -99,7 +99,8 @@ public class AirlineRepository : IAirlineRepository
         var entity = await _context.Airlines.FindAsync(id.Value);
         if (entity != null)
         {
-            _context.Airlines.Remove(entity);
+            entity.IsActive = false;
+            entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
     }

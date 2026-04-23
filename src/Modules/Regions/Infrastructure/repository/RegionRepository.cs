@@ -24,13 +24,16 @@ public sealed class RegionRepository : IRegionRepository
         }
 
         var e = await _context.Set<RegionEntity>().AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id.Value, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id.Value && x.IsActive, cancellationToken);
         return e is null ? null : ToDomain(e);
     }
 
     public async Task<IReadOnlyList<Region>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var list = await _context.Set<RegionEntity>().AsNoTracking().ToListAsync(cancellationToken);
+        var list = await _context.Set<RegionEntity>()
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .ToListAsync(cancellationToken);
         return list.Select(ToDomain).ToList();
     }
 
@@ -92,7 +95,7 @@ public sealed class RegionRepository : IRegionRepository
             return;
         }
 
-        _context.Set<RegionEntity>().Remove(e);
+        e.IsActive = false;
         await _context.SaveChangesAsync(cancellationToken);
     }
 

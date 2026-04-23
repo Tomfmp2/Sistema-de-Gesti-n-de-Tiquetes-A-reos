@@ -37,6 +37,13 @@ public class RegionEntityConfiguration : IEntityTypeConfiguration<RegionEntity>
             .IsRequired();
 
         builder
+            .Property(x => x.IsActive)
+            .HasColumnName("is_active")
+            .HasColumnType("tinyint(1)")
+            .HasDefaultValue(true)
+            .IsRequired();
+
+        builder
             .HasOne<CountryEntity>(x => x.Country)
             .WithMany(x => x.Regions)
             .HasForeignKey(x => x.CountryId)

@@ -30,7 +30,10 @@ public sealed class UserRepository : IUserRepository
 
     public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var list = await _context.Set<UserEntity>().AsNoTracking().ToListAsync(cancellationToken);
+        var list = await _context.Set<UserEntity>()
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .ToListAsync(cancellationToken);
         return list.Select(ToDomain).ToList();
     }
 
@@ -102,7 +105,8 @@ public sealed class UserRepository : IUserRepository
             return;
         }
 
-        _context.Set<UserEntity>().Remove(e);
+        e.IsActive = false;
+        e.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync(cancellationToken);
     }
 

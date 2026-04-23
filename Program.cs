@@ -192,7 +192,13 @@ static async Task SeedRootUserAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared
         ("reservations.manage", "Gestionar reservas"),
         ("flights.manage", "Gestionar vuelos"),
         ("catalogs.manage", "Gestionar catálogos del sistema"),
+        ("fares.manage", "Gestionar tarifas"),
         ("payments.manage", "Gestionar pagos"),
+        ("tickets.manage", "Gestionar tickets"),
+        ("checkins.manage", "Gestionar check-ins"),
+        ("invoices.manage", "Gestionar facturas"),
+        ("security.manage", "Gestionar roles/permisos"),
+        ("airport.agent", "Operación aeroportuaria (agente)"),
         ("reports.view", "Consultar reportes")
     };
 

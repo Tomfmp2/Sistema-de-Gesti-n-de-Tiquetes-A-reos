@@ -11,6 +11,7 @@ public class CountryEntity
     public string? Name { get; set; }
     public string? CodeIso { get; set; }
     public int ContinentId { get; set; }
+    public bool IsActive { get; set; } = true;
 
     // Navigation properties
     public ContinentEntity? Continent { get; set; }

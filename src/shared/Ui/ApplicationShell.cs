@@ -8,6 +8,40 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 /// </summary>
 public static class ApplicationShell
 {
+    private static string NormalizeRoleKey(string input) =>
+        string.Concat((input ?? string.Empty)
+            .Trim()
+            .ToLowerInvariant()
+            .Where(char.IsLetterOrDigit));
+
+    private static void RunAirportAgentMenu(AppDbContext context)
+    {
+        var exit = false;
+        while (!exit)
+        {
+            SpectreUi.ModuleHeader(
+                "Agente aeroportuario",
+                "Operación del aeropuerto y reservaciones para clientes"
+            );
+
+            var items = new List<(string Label, Action Action)>
+            {
+                ("Aeropuertos", () => ModuleUiFactory.CreateAirportUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Aeropuerto ↔ Aerolínea", () => ModuleUiFactory.CreateAirportAirlineUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Vuelos", () => ModuleUiFactory.CreateFlightUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Tarifas", () => ModuleUiFactory.CreateFareUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Pagos", () => ModuleUiFactory.CreatePaymentUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Tickets", () => ModuleUiFactory.CreateTicketUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Check-ins", () => ModuleUiFactory.CreateCheckinUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Facturas", () => ModuleUiFactory.CreateInvoiceUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Reservaciones (para clientes)", () => ModuleUiFactory.CreateAgentReservationsUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
+        }
+    }
+
     /// <summary>
     /// Catálogos y operación (flota, red, tripulación, etc.) para rol administrador o ROOT.
     /// </summary>
@@ -69,6 +103,8 @@ public static class ApplicationShell
             // - usuario normal: solo sus reservaciones
             var isRoot = string.Equals(auth.Username, "ROOT", StringComparison.OrdinalIgnoreCase);
             var isAdmin = string.Equals(auth.RoleName, "admin", StringComparison.OrdinalIgnoreCase);
+            var roleKey = NormalizeRoleKey(auth.RoleName);
+            var isAgent = roleKey == "agente" || roleKey.Contains("agente", StringComparison.Ordinal);
 
             if (isRoot)
             {
@@ -83,6 +119,10 @@ public static class ApplicationShell
             {
                 items.Add(("Usuarios", () => ModuleUiFactory.CreateUserUi(context).RunAsync().GetAwaiter().GetResult()));
                 AppendAdministrationModules(items, context);
+            }
+            else if (isAgent)
+            {
+                items.Add(("Operación aeroportuaria", () => RunAirportAgentMenu(context)));
             }
             else
             {

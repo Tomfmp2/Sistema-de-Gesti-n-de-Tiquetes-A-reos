@@ -24,13 +24,16 @@ public sealed class CityRepository : ICityRepository
         }
 
         var e = await _context.Set<CityEntity>().AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id.Value, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id.Value && x.IsActive, cancellationToken);
         return e is null ? null : ToDomain(e);
     }
 
     public async Task<IReadOnlyList<City>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var list = await _context.Set<CityEntity>().AsNoTracking().ToListAsync(cancellationToken);
+        var list = await _context.Set<CityEntity>()
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .ToListAsync(cancellationToken);
         return list.Select(ToDomain).ToList();
     }
 
@@ -90,7 +93,7 @@ public sealed class CityRepository : ICityRepository
             return;
         }
 
-        _context.Set<CityEntity>().Remove(e);
+        e.IsActive = false;
         await _context.SaveChangesAsync(cancellationToken);
     }
 

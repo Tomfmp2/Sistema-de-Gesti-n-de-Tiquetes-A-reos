@@ -10,6 +10,7 @@ public class RegionEntity
     public string? Name { get; set; }
     public string? Type { get; set; }
     public int CountryId { get; set; }
+    public bool IsActive { get; set; } = true;
 
     // Navigation properties
     public CountryEntity? Country { get; set; }

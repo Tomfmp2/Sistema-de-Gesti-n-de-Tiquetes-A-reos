@@ -25,7 +25,7 @@ public class AircraftRepository : IAircraftRepository
 
     public async Task<IEnumerable<Aggregate.Aircraft>> GetAllAsync()
     {
-        var entities = await _context.Aircraft.ToListAsync();
+        var entities = await _context.Aircraft.Where(x => x.IsActive).ToListAsync();
         return entities.Select(e => e.ToDomain());
     }
 
@@ -48,7 +48,7 @@ public class AircraftRepository : IAircraftRepository
         var entity = await _context.Aircraft.FindAsync(id.Value);
         if (entity != null)
         {
-            _context.Aircraft.Remove(entity);
+            entity.IsActive = false;
             await _context.SaveChangesAsync();
         }
     }

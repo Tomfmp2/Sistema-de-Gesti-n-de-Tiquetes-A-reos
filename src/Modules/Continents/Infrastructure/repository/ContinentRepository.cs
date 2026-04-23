@@ -27,7 +27,7 @@ public sealed class ContinentRepository : IContinentRepository
         }
 
         var e = await _context.Set<ContinentEntity>().AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id.Value, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id.Value && x.IsActive, cancellationToken);
         return e is null ? null : ToDomain(e);
     }
 
@@ -35,7 +35,10 @@ public sealed class ContinentRepository : IContinentRepository
         CancellationToken cancellationToken = default
     )
     {
-        var list = await _context.Set<ContinentEntity>().AsNoTracking().ToListAsync(cancellationToken);
+        var list = await _context.Set<ContinentEntity>()
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .ToListAsync(cancellationToken);
         return list.Select(ToDomain).ToList();
     }
 
@@ -90,7 +93,7 @@ public sealed class ContinentRepository : IContinentRepository
             return;
         }
 
-        _context.Set<ContinentEntity>().Remove(e);
+        e.IsActive = false;
         await _context.SaveChangesAsync(cancellationToken);
     }
 

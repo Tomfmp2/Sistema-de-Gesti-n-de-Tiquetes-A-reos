@@ -10,6 +10,7 @@ public class CityEntity
     public int Id { get; set; }
     public string? Name { get; set; }
     public int RegionId { get; set; }
+    public bool IsActive { get; set; } = true;
 
     // Navigation properties
     public RegionEntity? Region { get; set; }

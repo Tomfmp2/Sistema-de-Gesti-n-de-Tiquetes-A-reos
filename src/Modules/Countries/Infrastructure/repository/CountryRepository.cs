@@ -24,13 +24,16 @@ public sealed class CountryRepository : ICountryRepository
         }
 
         var e = await _context.Set<CountryEntity>().AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id.Value, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id.Value && x.IsActive, cancellationToken);
         return e is null ? null : ToDomain(e);
     }
 
     public async Task<IReadOnlyList<Country>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var list = await _context.Set<CountryEntity>().AsNoTracking().ToListAsync(cancellationToken);
+        var list = await _context.Set<CountryEntity>()
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .ToListAsync(cancellationToken);
         return list.Select(ToDomain).ToList();
     }
 
@@ -92,7 +95,7 @@ public sealed class CountryRepository : ICountryRepository
             return;
         }
 
-        _context.Set<CountryEntity>().Remove(e);
+        e.IsActive = false;
         await _context.SaveChangesAsync(cancellationToken);
     }
 

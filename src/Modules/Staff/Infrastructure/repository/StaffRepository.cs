@@ -35,7 +35,7 @@ public class StaffRepository : IStaffRepository
 
     public async Task<IEnumerable<StaffRecord>> GetAllAsync()
     {
-        var entities = await _context.Staff.ToListAsync();
+        var entities = await _context.Staff.Where(x => x.IsActive).ToListAsync();
         return entities.Select(e => StaffRecord.Reconstitute(
             StaffId.Reconstitute(e.Id),
             PersonId.Reconstitute(e.PersonId),
@@ -88,7 +88,8 @@ public class StaffRepository : IStaffRepository
         var entity = await _context.Staff.FindAsync(id.Value);
         if (entity != null)
         {
-            _context.Staff.Remove(entity);
+            entity.IsActive = false;
+            entity.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
     }
