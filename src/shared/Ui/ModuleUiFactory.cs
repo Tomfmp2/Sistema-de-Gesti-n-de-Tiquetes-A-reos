@@ -121,6 +121,7 @@ public static class ModuleUiFactory
     {
         var repo = new AirlineRepository(ctx);
         return new AirlineConsoleUI(
+            ctx,
             new CreateAirlineUseCase(repo),
             new GetAirlineByIdUseCase(repo),
             new GetAllAirlinesUseCase(repo),
@@ -133,6 +134,7 @@ public static class ModuleUiFactory
     {
         var repo = new AirportRepository(ctx);
         return new AirportConsoleUI(
+            ctx,
             new CreateAirportUseCase(repo),
             new GetAirportByIdUseCase(repo),
             new GetAllAirportsUseCase(repo),

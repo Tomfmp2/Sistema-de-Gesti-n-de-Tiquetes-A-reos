@@ -20,10 +20,16 @@ Incluye módulos de catálogos (aerolíneas, aeropuertos, rutas, flota, etc.), o
   - aplicar migraciones,
   - ejecutar seeds mínimos,
   - asegurar el usuario **ROOT** y permisos base (idempotente).
-- **Menú por rol/permisos**:
-  - ROOT/Admin ven catálogos y operación.
-  - Cliente ve operaciones sobre sus reservaciones.
-  - La visibilidad de módulos puede depender de permisos (`role_permissions`).
+- **Menú por rol**:
+  - **ROOT**: menú administrativo + “Mis reservaciones”.
+  - **Administrador**: menú único “Administración aeroportuaria” (ahí están los módulos administrativos).
+  - **Operaciones**: menú “Operación aeroportuaria” (módulos operativos).
+  - **Cliente**: solo sus reservaciones.
+- **Validaciones de datos**:
+  - No permite crear **aerolíneas duplicadas** (por nombre o por IATA).
+  - IATA de **aerolíneas** acepta **2 o 3** caracteres (IATA de **aeropuertos** sigue siendo de 3).
+- **Prompts más amigables**:
+  - Donde aplique, se solicita **nombre** de país/ciudad en lugar de Id.
 - **Herramientas de diagnóstico**: describe tablas, valida mapeos EF vs DB real.
 
 ## Requisitos
@@ -73,7 +79,9 @@ En el primer arranque con conexión válida, el sistema aplicará migraciones + 
 
 ### Roles típicos
 
-- **ROOT / Administrador**: gestión completa de catálogos y operación.
+- **ROOT**: usuario especial (seed idempotente) con acceso a módulos administrativos y “Mis reservaciones”.
+- **Administrador**: rol de administración. En consola ve el menú “Administración aeroportuaria”.
+- **Operaciones**: rol operativo. En consola ve el menú “Operación aeroportuaria”.
 - **Cliente**: gestiona *sus* reservaciones y operaciones relacionadas.
 
 ### Permisos (alto nivel)
@@ -89,7 +97,7 @@ La app usa permisos (tabla `permissions`) y asignaciones por rol (tabla `role_pe
 - `invoices.manage` (facturas)
 - `security.manage` (roles/permisos)
 
-> Si tu DB no tiene permisos poblados, el sistema mantiene compatibilidad mostrando módulos de admin por defecto (según configuración del menú).
+> Nota: la UI principal se guía principalmente por rol (ROOT/Administrador/Operaciones/Cliente). Los permisos se usan como base del modelo de seguridad en la BD.
 
 ## Cómo usarlo (guía rápida por menús)
 
@@ -99,7 +107,15 @@ La app usa permisos (tabla `permissions`) y asignaciones por rol (tabla `role_pe
 
 ### Administrador / ROOT
 
-Apartados comunes:
+#### ROOT
+
+- Menú administrativo + “Mis reservaciones”.
+
+#### Administrador
+
+- Menú principal: **Administración aeroportuaria**.
+
+Dentro de **Administración aeroportuaria** (según módulos disponibles en el proyecto):
 
 - **Catálogos / Operación**: aerolíneas, aeropuertos, rutas, temporadas, flota, cabinas, asientos, tripulación, equipaje.
 - **Vuelos**: crear/editar/listar (código, ruta, avión, fechas, cupos, estado).
@@ -108,13 +124,12 @@ Apartados comunes:
 - **Tickets**: emisión/consulta/actualización.
 - **Check-ins**: registro de check-in y pase de abordar.
 - **Facturas**: emisión y consulta.
-- **Seguridad**: administrar roles, permisos y asignaciones `Rol ↔ Permiso`.
+- **Usuarios**: gestión de usuarios.
 
-#### Búsqueda optimizada de Países (IDs)
+### Operaciones
 
-Para formularios que piden `CountryId`, existe un apartado:
-- **“Países (por continente)”**: primero lista **Continentes (Id/Nombre)**, luego permite filtrar y listar **Países (Id/Nombre/ISO)**.
-- También incluye **búsqueda rápida por texto** (Nombre/ISO) para ubicar IDs sin navegar por continentes.
+- Menú principal: **Operación aeroportuaria**.
+- Incluye módulos operativos: vuelos, tarifas, reservaciones (consulta/gestión), pagos, tickets, check-ins, facturas.
 
 ## Arquitectura (estructura del código)
 

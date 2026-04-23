@@ -14,7 +14,8 @@ public sealed class IataCode
     public static IataCode Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("IATA code cannot be empty");
-        if (value.Length != 3) throw new ArgumentException("IATA code must be 3 characters");
+        // Airline IATA codes are commonly 2 characters, but some may be 3.
+        if (value.Length is < 2 or > 3) throw new ArgumentException("IATA code must be 2 or 3 characters");
         return new IataCode(value.ToUpper());
     }
 

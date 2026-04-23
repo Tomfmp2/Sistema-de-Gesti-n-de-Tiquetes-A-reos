@@ -855,9 +855,11 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             cities.Select(c => (IReadOnlyList<string>)[c.Id.ToString(), c.Name ?? "-"]).ToList()
         );
 
-        var cityId = SpectreUi.PromptIntRequiredCancelable("CityId", "0/c/cancelar para salir", min: 1);
-        if (cities.All(c => c.Id != cityId))
-            throw new InvalidOperationException("CityId inválido.");
+        var cityName = SpectreUi.PromptRequiredCancelable("Ciudad (nombre)", "0/c/cancelar para salir");
+        var cityId = cities.FirstOrDefault(c =>
+            string.Equals(c.Name?.Trim(), cityName.Trim(), StringComparison.OrdinalIgnoreCase))?.Id ?? 0;
+        if (cityId < 1)
+            throw new InvalidOperationException("Ciudad inválida (no coincide con el listado).");
 
         var streetTypes = await _ctx.Set<StreetTypeEntity>()
             .AsNoTracking()

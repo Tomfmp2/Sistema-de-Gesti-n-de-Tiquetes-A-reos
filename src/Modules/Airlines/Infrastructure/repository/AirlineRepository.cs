@@ -59,10 +59,26 @@ public class AirlineRepository : IAirlineRepository
             );
         }
 
+        // Evitar duplicados por nombre o IATA (independiente de IsActive).
+        var name = (airline.Name.Value ?? string.Empty).Trim();
+        var iata = (airline.IataCode.Value ?? string.Empty).Trim();
+        var duplicateExists = await _context.Airlines
+            .AsNoTracking()
+            .AnyAsync(a =>
+                (a.Name != null && a.Name.Trim().ToUpper() == name.ToUpper())
+                || (a.IataCode != null && a.IataCode.Trim().ToUpper() == iata.ToUpper())
+            );
+        if (duplicateExists)
+        {
+            throw new InvalidOperationException(
+                $"Ya existe una aerolínea con el mismo nombre ('{name}') o el mismo código IATA ('{iata}')."
+            );
+        }
+
         var entity = new AirlineEntity
         {
-            Name = airline.Name.Value,
-            IataCode = airline.IataCode.Value,
+            Name = airline.Name.Value ?? string.Empty,
+            IataCode = airline.IataCode.Value ?? string.Empty,
             OriginCountryId = airline.OriginCountryId,
             IsActive = airline.IsActive,
             CreatedAt = airline.CreatedAt,

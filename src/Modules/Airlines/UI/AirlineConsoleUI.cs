@@ -1,4 +1,7 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.Application.UseCases;
+using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Countries.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
@@ -6,14 +9,23 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Airlines.UI;
 
 public class AirlineConsoleUI : IModuleUI
 {
+    private readonly AppDbContext _ctx;
     private readonly CreateAirlineUseCase _createUseCase;
     private readonly GetAirlineByIdUseCase _getByIdUseCase;
     private readonly GetAllAirlinesUseCase _getAllUseCase;
     private readonly UpdateAirlineUseCase _updateUseCase;
     private readonly DeleteAirlineUseCase _deleteUseCase;
 
-    public AirlineConsoleUI(CreateAirlineUseCase create, GetAirlineByIdUseCase getById, GetAllAirlinesUseCase getAll, UpdateAirlineUseCase update, DeleteAirlineUseCase delete)
+    public AirlineConsoleUI(
+        AppDbContext ctx,
+        CreateAirlineUseCase create,
+        GetAirlineByIdUseCase getById,
+        GetAllAirlinesUseCase getAll,
+        UpdateAirlineUseCase update,
+        DeleteAirlineUseCase delete
+    )
     {
+        _ctx = ctx;
         _createUseCase = create;
         _getByIdUseCase = getById;
         _getAllUseCase = getAll;
@@ -50,7 +62,15 @@ public class AirlineConsoleUI : IModuleUI
             SpectreUi.MarkupLineOrPlain("[grey]Tip: escriba 0 / c / cancelar para salir sin guardar.[/]", "Tip: escriba 0 / c / cancelar para salir sin guardar.");
             var name = SpectreUi.PromptRequiredCancelable("Nombre");
             var iata = SpectreUi.PromptRequiredCancelable("Código IATA", "2-3 letras (p.ej. AV)");
-            var countryId = SpectreUi.PromptIntRequiredCancelable("ID país de origen", min: 1);
+            var countryName = SpectreUi.PromptRequiredCancelable("País de origen (nombre)", "p.ej. Colombia");
+
+            var countryId = _ctx.Set<CountryEntity>()
+                .AsNoTracking()
+                .Where(c => c.IsActive && c.Name != null && c.Name.ToUpper() == countryName.Trim().ToUpper())
+                .Select(c => c.Id)
+                .FirstOrDefault();
+            if (countryId < 1)
+                throw new InvalidOperationException($"No existe un país activo con nombre '{countryName}'.");
 
             var airline = _createUseCase.ExecuteAsync(name, iata, countryId).Result;
             SpectreUi.MarkupLineOrPlain(
@@ -153,7 +173,14 @@ public class AirlineConsoleUI : IModuleUI
             var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
             var name = SpectreUi.PromptRequiredCancelable("Nombre");
             var iata = SpectreUi.PromptRequiredCancelable("Código IATA", "2-3 letras (p.ej. AV)");
-            var countryId = SpectreUi.PromptIntRequiredCancelable("ID país de origen", min: 1);
+            var countryName = SpectreUi.PromptRequiredCancelable("País de origen (nombre)", "p.ej. Colombia");
+            var countryId = _ctx.Set<CountryEntity>()
+                .AsNoTracking()
+                .Where(c => c.IsActive && c.Name != null && c.Name.ToUpper() == countryName.Trim().ToUpper())
+                .Select(c => c.Id)
+                .FirstOrDefault();
+            if (countryId < 1)
+                throw new InvalidOperationException($"No existe un país activo con nombre '{countryName}'.");
             var isActive = SpectreUi.PromptBool("¿Activa?", defaultValue: true);
 
             _updateUseCase.ExecuteAsync(id, name, iata, countryId, isActive).Wait();

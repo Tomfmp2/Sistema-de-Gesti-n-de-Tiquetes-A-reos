@@ -1,4 +1,7 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.Application.UseCases;
+using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Cities.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
@@ -6,14 +9,23 @@ namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Airports.UI;
 
 public class AirportConsoleUI : IModuleUI
 {
+    private readonly AppDbContext _ctx;
     private readonly CreateAirportUseCase _createUseCase;
     private readonly GetAirportByIdUseCase _getByIdUseCase;
     private readonly GetAllAirportsUseCase _getAllUseCase;
     private readonly UpdateAirportUseCase _updateUseCase;
     private readonly DeleteAirportUseCase _deleteUseCase;
 
-    public AirportConsoleUI(CreateAirportUseCase create, GetAirportByIdUseCase getById, GetAllAirportsUseCase getAll, UpdateAirportUseCase update, DeleteAirportUseCase delete)
+    public AirportConsoleUI(
+        AppDbContext ctx,
+        CreateAirportUseCase create,
+        GetAirportByIdUseCase getById,
+        GetAllAirportsUseCase getAll,
+        UpdateAirportUseCase update,
+        DeleteAirportUseCase delete
+    )
     {
+        _ctx = ctx;
         _createUseCase = create;
         _getByIdUseCase = getById;
         _getAllUseCase = getAll;
@@ -50,7 +62,14 @@ public class AirportConsoleUI : IModuleUI
             var name = SpectreUi.PromptRequired("Nombre");
             var iata = SpectreUi.PromptRequired("Código IATA", "3 letras (p.ej. BOG)");
             var icao = SpectreUi.PromptOptional("Código ICAO", "opcional (p.ej. SKBO)");
-            var cityId = SpectreUi.PromptIntRequired("ID ciudad", min: 1);
+            var cityName = SpectreUi.PromptRequired("Ciudad (nombre)", "p.ej. Bogotá");
+            var cityId = _ctx.Set<CityEntity>()
+                .AsNoTracking()
+                .Where(c => c.IsActive && c.Name != null && c.Name.ToUpper() == cityName.Trim().ToUpper())
+                .Select(c => c.Id)
+                .FirstOrDefault();
+            if (cityId < 1)
+                throw new InvalidOperationException($"No existe una ciudad activa con nombre '{cityName}'.");
 
             var airport = _createUseCase.ExecuteAsync(
                 name,
@@ -147,7 +166,14 @@ public class AirportConsoleUI : IModuleUI
             var name = SpectreUi.PromptRequired("Nombre");
             var iata = SpectreUi.PromptRequired("Código IATA", "3 letras (p.ej. BOG)");
             var icao = SpectreUi.PromptOptional("Código ICAO", "opcional (p.ej. SKBO)");
-            var cityId = SpectreUi.PromptIntRequired("ID ciudad", min: 1);
+            var cityName = SpectreUi.PromptRequired("Ciudad (nombre)", "p.ej. Bogotá");
+            var cityId = _ctx.Set<CityEntity>()
+                .AsNoTracking()
+                .Where(c => c.IsActive && c.Name != null && c.Name.ToUpper() == cityName.Trim().ToUpper())
+                .Select(c => c.Id)
+                .FirstOrDefault();
+            if (cityId < 1)
+                throw new InvalidOperationException($"No existe una ciudad activa con nombre '{cityName}'.");
 
             _updateUseCase.ExecuteAsync(
                 id,

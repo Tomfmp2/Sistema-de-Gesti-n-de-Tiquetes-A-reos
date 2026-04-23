@@ -14,27 +14,88 @@ public static class ApplicationShell
             .ToLowerInvariant()
             .Where(char.IsLetterOrDigit));
 
-    private static void RunAirportAgentMenu(AppDbContext context)
+    private static void RunAirportAdministrationMenu(AppDbContext context)
     {
         var exit = false;
         while (!exit)
         {
             SpectreUi.ModuleHeader(
-                "Agente aeroportuario",
-                "Operación del aeropuerto y reservaciones para clientes"
+                "Administración aeroportuaria",
+                "Gestión operativa del aeropuerto, ventas y atención al cliente"
             );
 
             var items = new List<(string Label, Action Action)>
             {
+                // Administración del sistema
+                ("Usuarios", () => ModuleUiFactory.CreateUserUi(context).RunAsync().GetAwaiter().GetResult()),
+
+                // Catálogos y operación aeroportuaria
+                ("Aerolíneas", () => ModuleUiFactory.CreateAirlineUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Aeropuertos", () => ModuleUiFactory.CreateAirportUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Aeropuerto ↔ Aerolínea", () => ModuleUiFactory.CreateAirportAirlineUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Rutas", () => ModuleUiFactory.CreateRouteUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Escalas de ruta", () => ModuleUiFactory.CreateRouteLayoverUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Temporadas", () => ModuleUiFactory.CreateSeasonUi(context).RunAsync().GetAwaiter().GetResult()),
+
+                // Flota / cabina / asientos
+                ("Fabricantes de avión", () => ModuleUiFactory.CreateAircraftManufacturerUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Modelos de avión", () => ModuleUiFactory.CreateAircraftModelUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Aviones", () => ModuleUiFactory.CreateAircraftUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Tipos de cabina", () => ModuleUiFactory.CreateCabinTypeUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Configuración de cabina", () => ModuleUiFactory.CreateCabinConfigurationUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Tipos de ubicación de asiento", () => ModuleUiFactory.CreateSeatLocationTypeUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Asientos por vuelo", () => ModuleUiFactory.CreateFlightSeatUi(context).RunAsync().GetAwaiter().GetResult()),
+
+                // Vuelos / tripulación
                 ("Vuelos", () => ModuleUiFactory.CreateFlightUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Estados de vuelo", () => ModuleUiFactory.CreateFlightStatusUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Roles de vuelo", () => ModuleUiFactory.CreateFlightRoleUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Asignaciones de tripulación", () => ModuleUiFactory.CreateFlightAssignmentUi(context).RunAsync().GetAwaiter().GetResult()),
+
+                // Personal
+                ("Personal", () => ModuleUiFactory.CreateStaffUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Cargos", () => ModuleUiFactory.CreateStaffPositionUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Estados de disponibilidad", () => ModuleUiFactory.CreateAvailabilityStatusUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Disponibilidad del personal", () => ModuleUiFactory.CreateStaffAvailabilityUi(context).RunAsync().GetAwaiter().GetResult()),
+
+                // Equipaje
+                ("Tipos de equipaje", () => ModuleUiFactory.CreateBaggageTypeUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Equipaje", () => ModuleUiFactory.CreateBaggageUi(context).RunAsync().GetAwaiter().GetResult()),
+
+                // Venta / post-venta
                 ("Tarifas", () => ModuleUiFactory.CreateFareUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Reservaciones (para clientes)", () => ModuleUiFactory.CreateAgentReservationsUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Pagos", () => ModuleUiFactory.CreatePaymentUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Tickets", () => ModuleUiFactory.CreateTicketUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Check-ins", () => ModuleUiFactory.CreateCheckinUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Facturas", () => ModuleUiFactory.CreateInvoiceUi(context).RunAsync().GetAwaiter().GetResult()),
-                ("Reservaciones (para clientes)", () => ModuleUiFactory.CreateAgentReservationsUi(context).RunAsync().GetAwaiter().GetResult()),
+
+                ("Volver", () => exit = true),
+            };
+
+            MenuLogic.RunMenu(items);
+        }
+    }
+
+    private static void RunOperationsMenu(AppDbContext context)
+    {
+        var exit = false;
+        while (!exit)
+        {
+            SpectreUi.ModuleHeader(
+                "Operación aeroportuaria",
+                "Gestión operativa de vuelos, control, recaudo y documentos"
+            );
+
+            var items = new List<(string Label, Action Action)>
+            {
+                ("Vuelos", () => ModuleUiFactory.CreateFlightUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Tarifas", () => ModuleUiFactory.CreateFareUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Reservaciones (consulta/gestión)", () => ModuleUiFactory.CreateAgentReservationsUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Pagos", () => ModuleUiFactory.CreatePaymentUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Tickets", () => ModuleUiFactory.CreateTicketUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Check-ins", () => ModuleUiFactory.CreateCheckinUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Facturas", () => ModuleUiFactory.CreateInvoiceUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Volver", () => exit = true),
             };
 
@@ -102,9 +163,14 @@ public static class ApplicationShell
             // - admin: todos los módulos de administración/operación disponibles en consola
             // - usuario normal: solo sus reservaciones
             var isRoot = string.Equals(auth.Username, "ROOT", StringComparison.OrdinalIgnoreCase);
-            var isAdmin = string.Equals(auth.RoleName, "admin", StringComparison.OrdinalIgnoreCase);
             var roleKey = NormalizeRoleKey(auth.RoleName);
-            var isAgent = roleKey == "agente" || roleKey.Contains("agente", StringComparison.Ordinal);
+            var isAdmin =
+                auth.RoleId == 1
+                || roleKey == "admin"
+                || roleKey == "administrador"
+                || roleKey == "administradora"
+                || roleKey.Contains("administrador", StringComparison.Ordinal);
+            var isOperations = roleKey == "operaciones" || roleKey.Contains("operaciones", StringComparison.Ordinal);
 
             if (isRoot)
             {
@@ -117,12 +183,11 @@ public static class ApplicationShell
             }
             else if (isAdmin)
             {
-                items.Add(("Usuarios", () => ModuleUiFactory.CreateUserUi(context).RunAsync().GetAwaiter().GetResult()));
-                AppendAdministrationModules(items, context);
+                items.Add(("Administración aeroportuaria", () => RunAirportAdministrationMenu(context)));
             }
-            else if (isAgent)
+            else if (isOperations)
             {
-                items.Add(("Operación aeroportuaria", () => RunAirportAgentMenu(context)));
+                items.Add(("Operación aeroportuaria", () => RunOperationsMenu(context)));
             }
             else
             {
