@@ -239,7 +239,7 @@ dotnet run -- --validate-mappings
 
 ## Autores
 
-- Jeison
+- Jeison Cristancho
 - Tomás Medina
 - Alejandro Escobar
 
