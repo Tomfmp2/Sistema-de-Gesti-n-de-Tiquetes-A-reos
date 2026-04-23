@@ -1,6 +1,6 @@
 # Prompts guía — Sistema de Gestión de Tiquetes Aéreos (C#/.NET + MySQL + EF Core + Spectre.Console)
 
-Este documento contiene **6 prompts** (para usar con un asistente/IA) que describen cómo **diseñar, construir, poblar, depurar y presentar** el proyecto siguiendo la **estructura modular** y el estilo usado en este repositorio.
+Este documento contiene **10 prompts** (para usar con un asistente/IA) que describen cómo **diseñar, construir, poblar, depurar y presentar** el proyecto siguiendo la **estructura modular** y el estilo usado en este repositorio.
 
 > Nota: Los prompts están redactados para obtener salidas **concretas** (modelo de datos, estructura de módulos, seeders, use cases, UI) y con **criterios verificables**.
 
@@ -263,4 +263,205 @@ Este documento contiene **6 prompts** (para usar con un asistente/IA) que descri
 - La UI es consistente con otros módulos.
 - No hay `Console.ReadLine()` ni `Console.WriteLine()` “sueltos” para interacción principal (usar helpers).
 - El usuario puede cancelar cualquier formulario sin romper el flujo.
+
+---
+
+## Prompt 7 — Creación inicial del proyecto (.NET Console + EF Core + MySQL)
+
+**Rol**: Eres un arquitecto de software C#/.NET experto en creación de proyectos limpios, mantenibles y listos para crecer por módulos.
+
+**Objetivo**: Crear desde cero la base de un sistema de gestión de tiquetes aéreos en consola, usando **.NET**, **EF Core**, **MySQL** y una estructura modular que permita agregar funcionalidades sin desordenar el proyecto.
+
+**Entradas**:
+- Nombre del proyecto: `<NombreProyecto>`
+- Base de datos MySQL: `<database_name>`
+- Cadena de conexión o variables de entorno disponibles.
+- Módulos iniciales requeridos:
+  - Auth/Usuarios
+  - Personas/Clientes
+  - Aerolíneas
+  - Aeropuertos
+  - Vuelos
+  - Reservas
+
+**Requisitos técnicos**:
+- Crear estructura bajo `src/`.
+- Separar responsabilidades en:
+  - `Modules/`
+  - `Shared/`
+  - `Infrastructure/`
+  - `Program.cs`
+- Configurar EF Core con MySQL.
+- Crear `AppDbContext` y registrar entidades iniciales.
+- Preparar helpers compartidos para:
+  - menús
+  - mensajes de error
+  - tablas de consola
+  - lectura de configuración
+- Usar `Spectre.Console` para la interacción principal.
+
+**Salida esperada**:
+1. Árbol inicial de carpetas y archivos.
+2. Comandos para crear/restaurar/compilar el proyecto.
+3. Código base de:
+   - `Program.cs`
+   - `AppDbContext`
+   - configuración de conexión
+   - menú principal
+   - helpers compartidos mínimos
+4. Explicación breve de cómo agregar un módulo nuevo.
+
+**Criterios de aceptación**:
+- El proyecto compila con `dotnet build`.
+- La aplicación inicia y muestra un menú principal.
+- La conexión a MySQL queda centralizada y fácil de configurar.
+- La estructura permite agregar módulos sin mezclar lógica de UI, Application e Infrastructure.
+
+---
+
+## Prompt 8 — Autenticación, roles y permisos
+
+**Rol**: Eres un desarrollador backend senior especializado en autenticación, autorización y seguridad básica en aplicaciones de consola .NET.
+
+**Objetivo**: Implementar un sistema de **login**, **roles** y **permisos** para controlar el acceso a los módulos del sistema de gestión de tiquetes aéreos.
+
+**Contexto del dominio**:
+- Existen usuarios asociados a personas.
+- Un usuario puede tener uno o varios roles.
+- Un rol puede tener varios permisos.
+- Los permisos definen qué opciones del sistema puede ejecutar un usuario.
+
+**Requisitos funcionales**:
+- Login por usuario/email y contraseña.
+- Contraseñas almacenadas con hash seguro, nunca en texto plano.
+- Roles mínimos:
+  - Administrador
+  - Agente de ventas
+  - Cliente
+- Permisos por módulo/acción, por ejemplo:
+  - `users.create`
+  - `flights.read`
+  - `reservations.create`
+  - `payments.manage`
+- Menú principal dinámico según permisos del usuario autenticado.
+- Opción para cerrar sesión.
+
+**Requisitos técnicos**:
+- Crear entidades EF para usuarios, roles, permisos y relaciones.
+- Crear seeders idempotentes para roles, permisos y usuario administrador inicial.
+- Crear UseCases para:
+  - Login
+  - Crear usuario
+  - Cambiar contraseña
+  - Asignar roles
+  - Validar permisos
+- Evitar repetir consultas de permisos innecesarias; usar un objeto de sesión simple.
+
+**Salida esperada**:
+- Diseño de tablas necesarias.
+- Código de entidades/configuraciones EF.
+- UseCases principales de autenticación/autorización.
+- Seeder de roles, permisos y admin inicial.
+- Integración con el menú principal.
+
+**Criterios de aceptación**:
+- Un usuario puede iniciar y cerrar sesión.
+- El admin inicial se crea solo si no existe.
+- Los menús muestran únicamente opciones permitidas.
+- Ninguna contraseña queda guardada en texto plano.
+
+---
+
+## Prompt 9 — Flujo completo de reserva, pago y emisión de ticket
+
+**Rol**: Eres un analista funcional y desarrollador senior C# especializado en flujos transaccionales con EF Core.
+
+**Objetivo**: Construir el flujo principal del negocio: buscar vuelo, crear reserva, registrar pasajeros, seleccionar asientos, procesar pago y emitir tickets.
+
+**Entradas**:
+- Cliente que realiza la reserva.
+- Vuelo seleccionado.
+- Pasajeros asociados.
+- Asientos disponibles.
+- Método de pago.
+- Reglas de tarifa y estados.
+
+**Reglas de negocio obligatorias**:
+- No se puede reservar un asiento ocupado.
+- Una reserva inicia en estado `pendiente`.
+- Si el pago es aprobado, la reserva pasa a `confirmada`.
+- Los tickets solo se emiten para reservas confirmadas.
+- Si el pago falla, la reserva queda `rechazada` o `pendiente_pago` según la regla definida.
+- Todo el flujo crítico debe ejecutarse dentro de una transacción.
+
+**Requisitos técnicos**:
+- Crear UseCase orquestador, por ejemplo `CreateReservationFlowUseCase`.
+- Validar disponibilidad de vuelo y asientos antes de confirmar.
+- Usar transacciones EF Core cuando se creen reserva, pasajeros, pagos y tickets.
+- Evitar estados inconsistentes si ocurre una excepción.
+- Devolver un DTO final con:
+  - código de reserva
+  - estado
+  - total pagado
+  - tickets emitidos
+  - asientos asignados
+
+**Salida esperada**:
+- Diagrama textual del flujo paso a paso.
+- DTOs de entrada/salida.
+- UseCase completo del flujo.
+- Validaciones necesarias.
+- Manejo de errores y rollback.
+- UI de consola para ejecutar el flujo desde el menú de reservas.
+
+**Criterios de aceptación**:
+- No se duplican asientos para el mismo vuelo.
+- Una reserva pagada genera tickets correctamente.
+- Si falla cualquier paso crítico, no quedan registros incompletos.
+- El flujo puede probarse manualmente desde la consola.
+
+---
+
+## Prompt 10 — Reportes y consultas administrativas
+
+**Rol**: Eres un desarrollador backend y analista de datos enfocado en reportes administrativos con EF Core, LINQ y MySQL.
+
+**Objetivo**: Crear un módulo de **reportes** para consultar información clave del sistema de tiquetes aéreos, mostrando resultados claros en consola con `Spectre.Console`.
+
+**Reportes requeridos**:
+- Vuelos por rango de fechas.
+- Reservas por estado.
+- Ventas/pagos por día, mes o rango de fechas.
+- Clientes con más reservas.
+- Ocupación de vuelos por porcentaje de asientos vendidos.
+- Tickets emitidos por aerolínea.
+
+**Requisitos técnicos**:
+- Crear módulo `Reports` bajo `src/Modules/Reports/`.
+- Crear DTOs específicos para cada reporte.
+- Crear UseCases de solo lectura.
+- Usar `AsNoTracking()` en consultas.
+- Aplicar filtros por fecha, estado, aerolínea o aeropuerto cuando corresponda.
+- Evitar cargar datos innecesarios en memoria; preferir proyecciones LINQ.
+- Mostrar resultados con `SpectreUi.ShowTable`.
+
+**Salida esperada**:
+- Estructura del módulo `Reports`.
+- Lista de DTOs.
+- Código de UseCases para cada reporte.
+- UI con menú:
+  - Vuelos por fecha
+  - Reservas por estado
+  - Ventas
+  - Clientes frecuentes
+  - Ocupación de vuelos
+  - Tickets por aerolínea
+  - Volver
+- Ejemplos de columnas para cada tabla mostrada.
+
+**Criterios de aceptación**:
+- Los reportes no modifican datos.
+- Las consultas usan `AsNoTracking()`.
+- Los resultados se muestran de forma tabular y legible.
+- Los filtros cancelables funcionan sin romper el flujo del menú.
 
