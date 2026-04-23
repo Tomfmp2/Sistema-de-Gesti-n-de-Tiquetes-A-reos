@@ -58,8 +58,8 @@ public static class ApplicationShell
             SpectreUi.Clear();
             SpectreUi.ShowAppBanner();
             SpectreUi.MarkupLineOrPlain(
-                $"[grey]Sesión:[/] [bold]{auth.Username}[/]  [grey](rol={auth.RoleName}, user_id={auth.UserId}, session_id={auth.SessionId})[/]",
-                $"Sesión: {auth.Username} (rol={auth.RoleName}, user_id={auth.UserId}, session_id={auth.SessionId})"
+                $"[grey]Usuario:[/] [bold]{auth.Username}[/]  ·  [grey]Rol:[/] [bold]{auth.RoleName}[/]  [dim](soporte: user {auth.UserId} · sesión {auth.SessionId})[/]",
+                $"Usuario: {auth.Username} · Rol: {auth.RoleName} (soporte: user {auth.UserId}, sesión {auth.SessionId})"
             );
 
             var items = new List<(string Label, Action Action)>();
@@ -113,7 +113,8 @@ public static class ApplicationShell
 
             MenuLogic.RunMenu(
                 items,
-                "[bold]Módulos del sistema[/]\n[grey]↑/↓ para moverse · Enter para elegir[/]"
+                "[bold]¿Qué deseas hacer?[/]\n[grey]Flechas arriba/abajo y Enter para confirmar. "
+                    + "«Cerrar sesión» vuelve al login. «Salir» cierra el programa.[/]"
             );
 
             if (shouldLogout)

@@ -378,11 +378,7 @@ public static class SpectreUi
     {
         if (!CanUseAnsiPrompts)
         {
-            Console.Write($"{label} (true/false, default={(defaultValue ? "true" : "false")}): ");
-            var raw = (Console.ReadLine() ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(raw))
-                return defaultValue;
-            return bool.TryParse(raw, out var v) ? v : defaultValue;
+            return ParseBoolPlain(label, defaultValue);
         }
 
         try
@@ -392,12 +388,26 @@ public static class SpectreUi
         catch
         {
             DisableRichConsole();
-            Console.Write($"{label} (true/false, default={(defaultValue ? "true" : "false")}): ");
-            var raw = (Console.ReadLine() ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(raw))
-                return defaultValue;
-            return bool.TryParse(raw, out var v) ? v : defaultValue;
+            return ParseBoolPlain(label, defaultValue);
         }
+    }
+
+    private static bool ParseBoolPlain(string label, bool defaultValue)
+    {
+        Console.Write(
+            $"{label} [s/n, sí/no, 1/0; Enter = {(defaultValue ? "sí" : "no")}]: "
+        );
+        var raw = (Console.ReadLine() ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(raw))
+            return defaultValue;
+        if (bool.TryParse(raw, out var b))
+            return b;
+        var lo = raw.ToLowerInvariant();
+        if (lo is "1" or "s" or "si" or "sí" or "y" or "yes")
+            return true;
+        if (lo is "0" or "n" or "no")
+            return false;
+        return defaultValue;
     }
 
     public static void ShowTable(

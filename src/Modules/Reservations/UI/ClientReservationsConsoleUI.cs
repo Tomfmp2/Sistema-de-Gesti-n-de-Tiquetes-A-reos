@@ -10,6 +10,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Applicati
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationStatuses.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.Entity;
@@ -80,7 +81,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
 
             if (_auth.ClientId is null)
             {
-                Console.WriteLine("Tu usuario no está asociado a un cliente (client_id).");
+                SpectreUi.MarkupLineOrPlain(
+                    "[yellow]Tu usuario no está asociado a un cliente.[/] [dim](no hay client_id; contacta administración.)[/]",
+                    "Tu usuario no está asociado a un cliente (no hay client_id; contacta administración)."
+                );
                 SpectreUi.Pause();
                 return;
             }
@@ -96,7 +100,11 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 ("Volver", () => exit = true),
             };
 
-            MenuLogic.RunMenu(items);
+            MenuLogic.RunMenu(
+                items,
+                "[bold]¿Qué deseas hacer?[/]",
+                "[grey]Crear, listar, check-in, confirmar, modificar o cancelar. «Volver» al menú principal.[/]"
+            );
         }
     }
 
@@ -111,18 +119,32 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 return;
             }
 
+            var statusById = await _ctx
+                .Set<ReservationStatusEntity>()
+                .AsNoTracking()
+                .ToDictionaryAsync(s => s.Id, s => s.Name);
+
             SpectreUi.ShowTable(
                 "Mis reservaciones",
-                ["ID", "EstadoId", "Total", "Fecha", "Expira"],
+                ["ID", "Estado", "Total", "Fecha", "Expira"],
                 list.OrderByDescending(x => x.ReservationDate.Value)
-                    .Select(r => (IReadOnlyList<string>)
-                    [
-                        r.Id.Value.ToString(),
-                        r.ReservationStatusId.Value.ToString(),
-                        r.TotalValue.Value.ToString("0.00"),
-                        r.ReservationDate.Value.ToString("yyyy-MM-dd HH:mm"),
-                        r.ExpiresAt.Value.HasValue ? r.ExpiresAt.Value.Value.ToString("yyyy-MM-dd HH:mm") : "-"
-                    ])
+                    .Select(r =>
+                    {
+                        var sid = r.ReservationStatusId.Value;
+                        var statusLabel = statusById.TryGetValue(sid, out var n) && !string.IsNullOrWhiteSpace(n)
+                            ? n
+                            : $"#{sid}";
+                        return (IReadOnlyList<string>)
+                        [
+                            r.Id.Value.ToString(),
+                            statusLabel,
+                            r.TotalValue.Value.ToString("0.00"),
+                            r.ReservationDate.Value.ToString("yyyy-MM-dd HH:mm"),
+                            r.ExpiresAt.Value.HasValue
+                                ? r.ExpiresAt.Value.Value.ToString("yyyy-MM-dd HH:mm")
+                                : "-"
+                        ];
+                    })
                     .ToList()
             );
         }
@@ -348,7 +370,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             const int confirmedStatusId = 2;
             if (current.ReservationStatusId.Value == confirmedStatusId)
             {
-                Console.WriteLine("Ya está confirmada.");
+                SpectreUi.MarkupLineOrPlain(
+                    "[grey]Esta reservación ya está confirmada.[/]",
+                    "Esta reservación ya está confirmada."
+                );
                 SpectreUi.Pause();
                 return;
             }
@@ -367,7 +392,7 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 )
             );
 
-            Console.WriteLine("Confirmada.");
+            SpectreUi.MarkupLineOrPlain("[green]Reservación confirmada.[/]", "Reservación confirmada.");
         }
         catch (OperationCanceledException)
         {
@@ -375,7 +400,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -403,10 +431,13 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 );
             }
 
-            Console.Write(
-                $"Expira en (minutos; Enter=mantener, 0=quitar) (actual={(current.ExpiresAt.Value.HasValue ? current.ExpiresAt.Value.Value.ToString("yyyy-MM-dd HH:mm") : "null")}): "
-            );
-            var minutesRaw = (Console.ReadLine() ?? string.Empty).Trim();
+            var currentExp = current.ExpiresAt.Value.HasValue
+                ? current.ExpiresAt.Value.Value.ToString("yyyy-MM-dd HH:mm")
+                : "sin expiración";
+            var minutesRaw = (SpectreUi.PromptOptionalCancelable(
+                $"Expira en (minutos desde ahora; actual: {currentExp})",
+                "Enter=mantener · 0=quitar expiración · 0/c/cancelar"
+            ) ?? string.Empty).Trim();
             var utcNow = DateTime.UtcNow;
             DateTime? expiresAt = current.ExpiresAt.Value;
             if (!string.IsNullOrWhiteSpace(minutesRaw))
@@ -429,7 +460,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 )
             );
 
-            Console.WriteLine("Expiración actualizada.");
+            SpectreUi.MarkupLineOrPlain(
+                "[green]Expiración actualizada.[/]",
+                "Expiración actualizada."
+            );
         }
         catch (OperationCanceledException)
         {
@@ -437,7 +471,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();
@@ -460,7 +497,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             const int cancelledStatusId = 3;
             if (current.ReservationStatusId.Value == cancelledStatusId)
             {
-                Console.WriteLine("Ya está cancelada.");
+                SpectreUi.MarkupLineOrPlain(
+                    "[grey]Esta reservación ya está cancelada.[/]",
+                    "Esta reservación ya está cancelada."
+                );
                 SpectreUi.Pause();
                 return;
             }
@@ -509,7 +549,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 await tx.CommitAsync();
             });
 
-            Console.WriteLine("Cancelada (cupos devueltos).");
+            SpectreUi.MarkupLineOrPlain(
+                "[green]Reservación cancelada[/] (cupos devueltos).",
+                "Reservación cancelada (cupos devueltos)."
+            );
         }
         catch (OperationCanceledException)
         {
@@ -517,7 +560,10 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+            SpectreUi.MarkupLineOrPlain(
+                $"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}",
+                $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}"
+            );
         }
 
         SpectreUi.Pause();

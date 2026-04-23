@@ -61,6 +61,9 @@ public static class LoginShell
                 try
                 {
                     AnsiConsole.Write(new Rule("[bold green]Inicio de sesión[/]").RuleStyle("grey"));
+                    AnsiConsole.MarkupLine(
+                        "[grey]Escribe el usuario y la contraseña. No se muestra la contraseña mientras escribes.[/]"
+                    );
                     username = AnsiConsole.Ask<string>("[yellow]Usuario[/]:").Trim();
                     password = AnsiConsole.Prompt(
                         new TextPrompt<string>("[yellow]Contraseña[/]:")
@@ -213,10 +216,13 @@ public static class LoginShell
         {
             try
             {
-                AnsiConsole.Write(new Rule("[bold green]Inicio de sesión[/]").RuleStyle("grey"));
+                AnsiConsole.Write(new Rule("[bold green]Bienvenido[/]").RuleStyle("grey"));
+                AnsiConsole.MarkupLine(
+                    "[grey]Inicia sesión con tu usuario, regístrate como cliente o sal del programa.[/]"
+                );
                 var choice = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
-                        .Title("[grey]Elige una opción[/]")
+                        .Title("[bold]¿Qué deseas hacer?[/]")
                         .AddChoices("Iniciar sesión", "Registrarse", "Salir")
                 );
 
@@ -233,11 +239,11 @@ public static class LoginShell
             }
         }
 
-        Console.WriteLine("=== Inicio de sesión ===");
+        Console.WriteLine("=== Bienvenido ===");
         Console.WriteLine("1) Iniciar sesión");
-        Console.WriteLine("2) Registrarse");
+        Console.WriteLine("2) Registrarse (nuevo usuario cliente)");
         Console.WriteLine("0) Salir");
-        Console.Write("Opción: ");
+        Console.Write("Elige una opción (número): ");
         var raw = (Console.ReadLine() ?? string.Empty).Trim();
         return raw switch
         {

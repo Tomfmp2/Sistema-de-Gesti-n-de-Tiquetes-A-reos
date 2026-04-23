@@ -313,6 +313,7 @@ public static class ModuleUiFactory
         var repo = new ReservationRepository(ctx);
         return new MyReservationsConsoleUI(
             auth,
+            ctx,
             new GetReservationsByClientIdUseCase(repo),
             new CreateReservationUseCase(repo)
         );

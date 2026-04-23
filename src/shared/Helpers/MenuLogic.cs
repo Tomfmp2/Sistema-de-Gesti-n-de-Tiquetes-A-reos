@@ -11,18 +11,22 @@ public static class MenuLogic
     /// </summary>
     /// <param name="items">Opciones en el orden mostrado.</param>
     /// <param name="title">Título del prompt; si es null, se usa un texto por defecto en español.</param>
+    /// <param name="subtitle">Segunda línea (p. ej. guía); se concatena bajo <paramref name="title"/> en modo rico y en consola plana.</param>
     public static void RunMenu(
         IReadOnlyList<(string Label, Action Action)> items,
-        string? title = null
+        string? title = null,
+        string? subtitle = null
     )
     {
         ArgumentNullException.ThrowIfNull(items);
         if (items.Count == 0)
             return;
 
+        var fullTitle = CombineMenuTitle(title, subtitle);
+
         if (!SpectreUi.CanUseAnsiPrompts)
         {
-            RunMenuPlain(items, title);
+            RunMenuPlain(items, fullTitle);
             return;
         }
 
@@ -30,7 +34,10 @@ public static class MenuLogic
         {
             var choices = items.Select(i => new MenuOption(i.Label, i.Action)).ToList();
             var prompt = new SelectionPrompt<MenuOption>()
-                .Title(title ?? "[bold]Opciones[/]\n[grey]↑/↓ para moverse · Enter para elegir[/]")
+                .Title(
+                    fullTitle
+                    ?? "[bold]Opciones[/]\n[grey]↑/↓ para moverse · Enter para elegir[/]"
+                )
                 .PageSize(15)
                 .MoreChoicesText("[grey](Más opciones abajo)[/]")
                 .HighlightStyle(new Style(foreground: Color.Lime, decoration: Decoration.Bold))
@@ -50,13 +57,22 @@ public static class MenuLogic
         catch (IOException)
         {
             SpectreUi.DisableRichConsole();
-            RunMenuPlain(items, title);
+            RunMenuPlain(items, fullTitle);
         }
         catch (InvalidOperationException)
         {
             SpectreUi.DisableRichConsole();
-            RunMenuPlain(items, title);
+            RunMenuPlain(items, fullTitle);
         }
+    }
+
+    private static string? CombineMenuTitle(string? title, string? subtitle)
+    {
+        if (subtitle is null)
+            return title;
+        if (string.IsNullOrWhiteSpace(title))
+            return subtitle;
+        return title + "\n" + subtitle;
     }
 
     /// <summary>
@@ -137,7 +153,21 @@ public static class MenuLogic
     private static void RunMenuPlain(IReadOnlyList<(string Label, Action Action)> items, string? title)
     {
         Console.WriteLine();
-        Console.WriteLine(title is null ? "Opciones (número + Enter):" : StripMarkupTitle(title));
+        if (title is null)
+        {
+            Console.WriteLine("Opciones (número + Enter):");
+        }
+        else
+        {
+            foreach (var titleLine in StripMarkupTitle(title).Split(
+                         '\n',
+                         StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+                     ))
+            {
+                Console.WriteLine(titleLine);
+            }
+        }
+
         for (var i = 0; i < items.Count; i++)
             Console.WriteLine($"  {i + 1}. {items[i].Label}");
 
