@@ -1,17 +1,22 @@
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.Interfaces;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.UseCases;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
+using Microsoft.EntityFrameworkCore;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.UI;
 
 public sealed class FlightSeatConsoleUI : IModuleUI
 {
     private readonly IFlightSeatRepository _repository;
+    private readonly AppDbContext _ctx;
 
-    public FlightSeatConsoleUI(IFlightSeatRepository repository)
+    public FlightSeatConsoleUI(IFlightSeatRepository repository, AppDbContext ctx)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _ctx = ctx ?? throw new ArgumentNullException(nameof(ctx));
     }
 
     public async Task RunAsync()
@@ -19,20 +24,194 @@ public sealed class FlightSeatConsoleUI : IModuleUI
         var exit = false;
         while (!exit)
         {
-            SpectreUi.ModuleHeader("Asientos por vuelo", "Crear / listar / consultar / actualizar / eliminar");
+            SpectreUi.ModuleHeader("Asientos por vuelo", "Mapa / disponibilidad / gestión");
 
             var items = new List<(string Label, Action Action)>
             {
-                ("Crear", () => CreateFlightSeatAsync().GetAwaiter().GetResult()),
-                ("Listar", () => GetAllFlightSeatsAsync().GetAwaiter().GetResult()),
-                ("Consultar por ID", () => GetFlightSeatByIdAsync().GetAwaiter().GetResult()),
-                ("Actualizar", () => UpdateFlightSeatAsync().GetAwaiter().GetResult()),
-                ("Eliminar", () => DeleteFlightSeatAsync().GetAwaiter().GetResult()),
-                ("Volver", () => exit = true),
+                ("Ver asientos por vuelo (mapa por clase)", () => ViewSeatsByFlightAsync().GetAwaiter().GetResult()),
+                ("Consultar disponibilidad por clase",      () => ViewAvailabilityByClassAsync().GetAwaiter().GetResult()),
+                ("Ver asientos ocupados por vuelo",         () => ViewOccupiedSeatsAsync().GetAwaiter().GetResult()),
+                ("─── Gestión ───────────────────────────", () => { }),
+                ("Crear",           () => CreateFlightSeatAsync().GetAwaiter().GetResult()),
+                ("Listar todos",    () => GetAllFlightSeatsAsync().GetAwaiter().GetResult()),
+                ("Consultar por ID",() => GetFlightSeatByIdAsync().GetAwaiter().GetResult()),
+                ("Actualizar",      () => UpdateFlightSeatAsync().GetAwaiter().GetResult()),
+                ("Eliminar",        () => DeleteFlightSeatAsync().GetAwaiter().GetResult()),
+                ("Volver",          () => exit = true),
             };
 
             MenuLogic.RunMenu(items);
         }
+    }
+
+    // ─────────────────────────────────────────────
+    // Nuevas vistas del requerimiento
+    // ─────────────────────────────────────────────
+
+    private async Task ViewSeatsByFlightAsync()
+    {
+        try
+        {
+            SpectreUi.ModuleHeader("Asientos por vuelo", "Mapa agrupado por clase");
+            var flightId = SpectreUi.PromptIntRequiredCancelable("ID vuelo", "0/c/cancelar para salir", min: 1);
+
+            var seats = await _ctx.Set<FlightSeatEntity>()
+                .AsNoTracking()
+                .Include(s => s.CabinType)
+                .Where(s => s.FlightId == flightId)
+                .OrderBy(s => s.CabinTypeId)
+                .ThenBy(s => s.SeatCode)
+                .ToListAsync();
+
+            if (seats.Count == 0)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]No hay asientos para ese vuelo.[/]", "No hay asientos para ese vuelo.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            var byClass = seats
+                .GroupBy(s => new { s.CabinTypeId, ClassName = s.CabinType?.Name ?? $"Cabina {s.CabinTypeId}" })
+                .ToList();
+
+            SpectreUi.MarkupLineOrPlain(
+                $"[bold]Vuelo id={flightId} — {seats.Count} asientos totales[/]",
+                $"Vuelo id={flightId} — {seats.Count} asientos totales"
+            );
+
+            foreach (var group in byClass)
+            {
+                SpectreUi.ShowTable(
+                    $"{group.Key.ClassName}",
+                    ["Asiento", "Estado"],
+                    group.Select(s => (IReadOnlyList<string>)[
+                        s.SeatCode,
+                        s.Status switch
+                        {
+                            "Disponible" => "[green]Disponible[/]",
+                            "Reservado"  => "[yellow]Reservado[/]",
+                            "Ocupado"    => "[red]Ocupado[/]",
+                            _            => s.Status
+                        }
+                    ]).ToList()
+                );
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain($"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}", $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+        SpectreUi.Pause();
+    }
+
+    private async Task ViewAvailabilityByClassAsync()
+    {
+        try
+        {
+            SpectreUi.ModuleHeader("Disponibilidad por clase", "Cantidad disponible / total");
+            var flightId = SpectreUi.PromptIntRequiredCancelable("ID vuelo", "0/c/cancelar para salir", min: 1);
+
+            var seats = await _ctx.Set<FlightSeatEntity>()
+                .AsNoTracking()
+                .Include(s => s.CabinType)
+                .Where(s => s.FlightId == flightId)
+                .ToListAsync();
+
+            if (seats.Count == 0)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]No hay asientos para ese vuelo.[/]", "No hay asientos para ese vuelo.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            var summary = seats
+                .GroupBy(s => s.CabinType?.Name ?? $"Cabina {s.CabinTypeId}")
+                .Select(g => new
+                {
+                    Clase       = g.Key,
+                    Total       = g.Count(),
+                    Disponibles = g.Count(s => s.Status == "Disponible"),
+                    Reservados  = g.Count(s => s.Status == "Reservado"),
+                    Ocupados    = g.Count(s => s.Status == "Ocupado"),
+                    PctOcupacion = g.Count() == 0 ? 0 : (g.Count(s => s.Status != "Disponible") * 100 / g.Count())
+                })
+                .OrderBy(x => x.Clase)
+                .ToList();
+
+            SpectreUi.ShowTable(
+                $"Disponibilidad por clase — Vuelo {flightId}",
+                ["Clase", "Total", "Disponibles", "Reservados", "Ocupados", "% Ocupación"],
+                summary.Select(x => (IReadOnlyList<string>)[
+                    x.Clase,
+                    x.Total.ToString(),
+                    $"[green]{x.Disponibles}[/]",
+                    $"[yellow]{x.Reservados}[/]",
+                    $"[red]{x.Ocupados}[/]",
+                    $"{x.PctOcupacion}%"
+                ]).ToList()
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain($"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}", $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+        SpectreUi.Pause();
+    }
+
+    private async Task ViewOccupiedSeatsAsync()
+    {
+        try
+        {
+            SpectreUi.ModuleHeader("Asientos ocupados", "Por vuelo");
+            var flightId = SpectreUi.PromptIntRequiredCancelable("ID vuelo", "0/c/cancelar para salir", min: 1);
+
+            var seats = await _ctx.Set<FlightSeatEntity>()
+                .AsNoTracking()
+                .Include(s => s.CabinType)
+                .Where(s => s.FlightId == flightId && s.Status != "Disponible")
+                .OrderBy(s => s.CabinTypeId)
+                .ThenBy(s => s.SeatCode)
+                .ToListAsync();
+
+            if (seats.Count == 0)
+            {
+                SpectreUi.MarkupLineOrPlain("[green]Todos los asientos están disponibles.[/]", "Todos los asientos están disponibles.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            SpectreUi.ShowTable(
+                $"Asientos no disponibles — Vuelo {flightId}",
+                ["Asiento", "Clase", "Estado"],
+                seats.Select(s => (IReadOnlyList<string>)[
+                    s.SeatCode,
+                    s.CabinType?.Name ?? $"Cabina {s.CabinTypeId}",
+                    s.Status switch
+                    {
+                        "Reservado" => "[yellow]Reservado[/]",
+                        "Ocupado"   => "[red]Ocupado[/]",
+                        _           => s.Status
+                    }
+                ]).ToList()
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain($"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}", $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+        SpectreUi.Pause();
     }
 
     private async Task CreateFlightSeatAsync()

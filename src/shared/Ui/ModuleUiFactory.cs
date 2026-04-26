@@ -310,7 +310,7 @@ public static class ModuleUiFactory
     }
 
     public static FlightSeatConsoleUI CreateFlightSeatUi(AppDbContext ctx) =>
-        new(new FlightSeatRepository(ctx));
+        new(new FlightSeatRepository(ctx), ctx);
 
     public static FlightAssignmentConsoleUI CreateFlightAssignmentUi(AppDbContext ctx)
     {

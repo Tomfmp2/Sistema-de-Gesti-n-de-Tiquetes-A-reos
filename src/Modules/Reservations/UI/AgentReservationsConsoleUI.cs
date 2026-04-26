@@ -19,6 +19,8 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 using Microsoft.EntityFrameworkCore;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.UI;
 
@@ -277,12 +279,29 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
                         new CreatePassengerRequest(PersonId: personId, PassengerTypeId: passengerTypeId)
                     );
 
-                    await _createReservationPassenger.ExecuteAsync(
+                    var reservationPassenger = await _createReservationPassenger.ExecuteAsync(
                         new CreateReservationPassengerRequest(
                             ReservationFlightId: bookingFlight.Id.Value,
                             PassengerId: passenger.Id.Value
                         )
                     );
+
+                    // Selección de asiento (opcional: el agente puede saltar)
+                    var seatId = await PromptFlightSeatAsync(selected.Id, firstName);
+                    if (seatId.HasValue)
+                    {
+                        var seatEntity = await _ctx.Set<FlightSeatEntity>().FirstAsync(s => s.Id == seatId.Value);
+                        seatEntity.Status = "Reservado";
+
+                        var rpEntity = await _ctx.Set<ReservationPassengerEntity>().FirstAsync(rp => rp.Id == reservationPassenger.Id.Value);
+                        rpEntity.FlightSeatId = seatId.Value;
+                        await _ctx.SaveChangesAsync();
+
+                        SpectreUi.MarkupLineOrPlain(
+                            $"[green]Asiento {seatEntity.SeatCode} asignado a {firstName} {lastName}.[/]",
+                            $"Asiento {seatEntity.SeatCode} asignado a {firstName} {lastName}."
+                        );
+                    }
                 }
 
                 // Reservar cupos (concurrencia)
@@ -631,8 +650,92 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
         }
     }
 
+    /// <summary>
+    /// Muestra los asientos disponibles del vuelo agrupados por clase y permite
+    /// que el agente seleccione uno para el pasajero. Devuelve null si el agente omite.
+    /// </summary>
+    private async Task<int?> PromptFlightSeatAsync(int flightId, string passengerName)
+    {
+        var seats = await _ctx.Set<FlightSeatEntity>()
+            .AsNoTracking()
+            .Include(s => s.CabinType)
+            .Where(s => s.FlightId == flightId && s.Status == "Disponible")
+            .OrderBy(s => s.CabinTypeId)
+            .ThenBy(s => s.SeatCode)
+            .ToListAsync();
+
+        if (seats.Count == 0)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                "[yellow]No hay asientos disponibles para este vuelo. Se omite la asignación.[/]",
+                "No hay asientos disponibles para este vuelo. Se omite la asignación."
+            );
+            return null;
+        }
+
+        // Agrupar por clase
+        var byClass = seats
+            .GroupBy(s => new { s.CabinTypeId, ClassName = s.CabinType?.Name ?? $"Cabina {s.CabinTypeId}" })
+            .ToList();
+
+        SpectreUi.MarkupLineOrPlain(
+            $"[bold cyan]── Mapa de asientos para {passengerName} (vuelo id={flightId}) ──[/]",
+            $"── Mapa de asientos para {passengerName} (vuelo id={flightId}) ──"
+        );
+
+        foreach (var group in byClass)
+        {
+            var seatCodes = group.Select(s => s.SeatCode).ToList();
+            SpectreUi.ShowTable(
+                $"{group.Key.ClassName} ({seatCodes.Count} disponibles)",
+                ["Asiento", "Estado"],
+                group.Select(s => (IReadOnlyList<string>)[
+                    s.SeatCode,
+                    "[green]Disponible[/]"
+                ]).ToList()
+            );
+        }
+
+        SpectreUi.MarkupLineOrPlain(
+            "[grey]Ingrese el código del asiento (ej: 1A) o Enter para omitir.[/]",
+            "Ingrese el código del asiento (ej: 1A) o Enter para omitir."
+        );
+
+        while (true)
+        {
+            var input = (SpectreUi.PromptOptionalCancelable("Asiento", "Enter=omitir · 0/c/cancelar") ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+
+            var match = seats.FirstOrDefault(s =>
+                string.Equals(s.SeatCode, input, StringComparison.OrdinalIgnoreCase));
+
+            if (match is null)
+            {
+                SpectreUi.MarkupLineOrPlain(
+                    "[red]Asiento no encontrado o no disponible. Intente de nuevo (o Enter para omitir).[/]",
+                    "Asiento no encontrado o no disponible. Intente de nuevo (o Enter para omitir)."
+                );
+                continue;
+            }
+
+            return match.Id;
+        }
+    }
+
     private async Task<int> CreatePersonAsync(int documentTypeId, string documentNumber, string firstName, string lastName)
     {
+        // Si ya existe esa persona, devolver su ID sin duplicar
+        var existing = await _ctx.Set<PersonEntity>()
+            .AsNoTracking()
+            .Where(p => p.DocumentTypeId == documentTypeId && p.DocumentNumber == documentNumber)
+            .Select(p => (int?)p.Id)
+            .FirstOrDefaultAsync();
+
+        if (existing.HasValue && existing.Value > 0)
+            return existing.Value;
+
         var utcNow = DateTime.UtcNow;
         var inserted = await _ctx.Database.ExecuteSqlRawAsync(
             """

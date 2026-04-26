@@ -24,6 +24,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.StreetsTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
@@ -328,12 +329,29 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                         new CreatePassengerRequest(PersonId: personId, PassengerTypeId: passengerTypeId)
                     );
 
-                    await _createReservationPassenger.ExecuteAsync(
+                    var reservationPassenger = await _createReservationPassenger.ExecuteAsync(
                         new CreateReservationPassengerRequest(
                             ReservationFlightId: bookingFlight.Id.Value,
                             PassengerId: passenger.Id.Value
                         )
                     );
+
+                    // Selección de asiento
+                    var seatId = await PromptFlightSeatAsync(selected.Id, firstName);
+                    if (seatId.HasValue)
+                    {
+                        var seatEntity = await _ctx.Set<FlightSeatEntity>().FirstAsync(s => s.Id == seatId.Value);
+                        seatEntity.Status = "Reservado";
+
+                        var rpEntity = await _ctx.Set<ReservationPassengerEntity>().FirstAsync(rp => rp.Id == reservationPassenger.Id.Value);
+                        rpEntity.FlightSeatId = seatId.Value;
+                        await _ctx.SaveChangesAsync();
+
+                        SpectreUi.MarkupLineOrPlain(
+                            $"[green]Asiento {seatEntity.SeatCode} asignado a {firstName} {lastName}.[/]",
+                            $"Asiento {seatEntity.SeatCode} asignado a {firstName} {lastName}."
+                        );
+                    }
                 }
 
                 var flightRow = await _ctx.Set<FlightEntity>().FirstOrDefaultAsync(f => f.Id == selected.Id);
@@ -783,25 +801,21 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             foreach (var rf in reservationFlights)
             {
                 var reservationPassengers = await _ctx.Set<ReservationPassengerEntity>()
-                    .AsNoTracking()
                     .Where(rp => rp.ReservationFlightId == rf.Id)
-                    .Select(rp => rp.Id)
                     .ToListAsync();
 
-                foreach (var reservationPassengerId in reservationPassengers)
+                foreach (var rp in reservationPassengers)
                 {
                     var existingTicket = await _ctx.Set<TicketEntity>()
                         .Include(t => t.Checkin)
-                        .FirstOrDefaultAsync(t => t.ReservationPassengerId == reservationPassengerId);
+                        .FirstOrDefaultAsync(t => t.ReservationPassengerId == rp.Id);
 
                     if (existingTicket?.Checkin is not null)
-                    {
                         continue; // ya hizo check-in
-                    }
 
                     var ticket = existingTicket ?? new TicketEntity
                     {
-                        ReservationPassengerId = reservationPassengerId,
+                        ReservationPassengerId = rp.Id,
                         Code = $"TKT-{Guid.NewGuid():N}".Substring(0, 12).ToUpperInvariant(),
                         IssueDate = DateTime.UtcNow,
                         TicketStatusId = ticketStatusIssued,
@@ -812,11 +826,23 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                     if (existingTicket is null)
                     {
                         _ctx.Set<TicketEntity>().Add(ticket);
-                        await _ctx.SaveChangesAsync(); // necesita Id para el boarding pass/checkin
+                        await _ctx.SaveChangesAsync();
                     }
 
-                    var seat = await _ctx.Set<FlightSeatEntity>()
-                        .FirstOrDefaultAsync(s => s.FlightId == rf.FlightId && s.Status == "Disponible");
+                    // Fase 4: usar asiento ya reservado; si no tiene, buscar uno disponible
+                    FlightSeatEntity? seat = null;
+                    if (rp.FlightSeatId.HasValue)
+                    {
+                        seat = await _ctx.Set<FlightSeatEntity>()
+                            .FirstOrDefaultAsync(s => s.Id == rp.FlightSeatId.Value);
+                    }
+
+                    if (seat is null)
+                    {
+                        // Fallback: asignar el primer asiento disponible del vuelo
+                        seat = await _ctx.Set<FlightSeatEntity>()
+                            .FirstOrDefaultAsync(s => s.FlightId == rf.FlightId && s.Status == "Disponible");
+                    }
 
                     if (seat is null)
                         throw new InvalidOperationException($"No hay asientos disponibles para el vuelo {rf.FlightId}.");
@@ -934,6 +960,78 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
 #pragma warning restore EF1002
     }
 
+    /// <summary>
+    /// Muestra los asientos disponibles del vuelo agrupados por clase y permite
+    /// que el cliente seleccione uno. Devuelve null si omite.
+    /// </summary>
+    private async Task<int?> PromptFlightSeatAsync(int flightId, string passengerName)
+    {
+        var seats = await _ctx.Set<FlightSeatEntity>()
+            .AsNoTracking()
+            .Include(s => s.CabinType)
+            .Where(s => s.FlightId == flightId && s.Status == "Disponible")
+            .OrderBy(s => s.CabinTypeId)
+            .ThenBy(s => s.SeatCode)
+            .ToListAsync();
+
+        if (seats.Count == 0)
+        {
+            SpectreUi.MarkupLineOrPlain(
+                "[yellow]No hay asientos disponibles para este vuelo. Se omite la asignación.[/]",
+                "No hay asientos disponibles para este vuelo. Se omite la asignación."
+            );
+            return null;
+        }
+
+        var byClass = seats
+            .GroupBy(s => new { s.CabinTypeId, ClassName = s.CabinType?.Name ?? $"Cabina {s.CabinTypeId}" })
+            .ToList();
+
+        SpectreUi.MarkupLineOrPlain(
+            $"[bold cyan]── Mapa de asientos para {passengerName} (vuelo id={flightId}) ──[/]",
+            $"── Mapa de asientos para {passengerName} (vuelo id={flightId}) ──"
+        );
+
+        foreach (var group in byClass)
+        {
+            SpectreUi.ShowTable(
+                $"{group.Key.ClassName} ({group.Count()} disponibles)",
+                ["Asiento", "Estado"],
+                group.Select(s => (IReadOnlyList<string>)[
+                    s.SeatCode,
+                    "Disponible"
+                ]).ToList()
+            );
+        }
+
+        SpectreUi.MarkupLineOrPlain(
+            "[grey]Ingrese el código del asiento (ej: 1A) o Enter para omitir.[/]",
+            "Ingrese el código del asiento (ej: 1A) o Enter para omitir."
+        );
+
+        while (true)
+        {
+            var input = (SpectreUi.PromptOptionalCancelable("Asiento", "Enter=omitir · 0/c/cancelar para salir") ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(input))
+                return null;
+
+            var match = seats.FirstOrDefault(s =>
+                string.Equals(s.SeatCode, input, StringComparison.OrdinalIgnoreCase));
+
+            if (match is null)
+            {
+                SpectreUi.MarkupLineOrPlain(
+                    "[red]Asiento no encontrado o no disponible. Intente de nuevo (o Enter para omitir).[/]",
+                    "Asiento no encontrado o no disponible. Intente de nuevo (o Enter para omitir)."
+                );
+                continue;
+            }
+
+            return match.Id;
+        }
+    }
+
     private async Task<int> CreatePersonAsync(
         int documentTypeId,
         string documentNumber,
@@ -941,6 +1039,16 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         string lastName
     )
     {
+        // Si ya existe esa persona, devolver su ID sin duplicar
+        var existing = await _ctx.Set<PersonEntity>()
+            .AsNoTracking()
+            .Where(p => p.DocumentTypeId == documentTypeId && p.DocumentNumber == documentNumber)
+            .Select(p => (int?)p.Id)
+            .FirstOrDefaultAsync();
+
+        if (existing.HasValue && existing.Value > 0)
+            return existing.Value;
+
         // Insertamos con SQL directo para no depender de mapeos EF en runtime.
         var utcNow = DateTime.UtcNow;
         var inserted = await _ctx.Database.ExecuteSqlRawAsync(
