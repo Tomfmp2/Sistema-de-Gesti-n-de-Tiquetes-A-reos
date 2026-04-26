@@ -53,9 +53,16 @@ public sealed class UserConsoleUI : IModuleUI
     {
         try
         {
-            var username = SpectreUi.PromptRequiredCancelable("Username", "0/c/cancelar para salir").Trim();
-            if (string.IsNullOrWhiteSpace(username))
-                throw new InvalidOperationException("Username es obligatorio.");
+            string username;
+            while (true)
+            {
+                username = SpectreUi.PromptRequiredCancelable("Username", "0/c/cancelar para salir").Trim();
+                var usernameExists = await _ctx.Set<UserEntity>()
+                    .AsNoTracking()
+                    .AnyAsync(u => u.Username != null && u.Username.ToUpper() == username.ToUpper());
+                if (!usernameExists) break;
+                SpectreUi.MarkupLineOrPlain($"[red]Ya existe un usuario con username '{username}'. Intente con otro.[/]", $"Ya existe un usuario con username '{username}'. Intente con otro.");
+            }
 
             var password = SpectreUi.PromptRequiredCancelable(
                 "Contraseña",
@@ -67,43 +74,46 @@ public sealed class UserConsoleUI : IModuleUI
             var firstName = SpectreUi.PromptRequiredCancelable("Nombre", "0/c/cancelar para salir").Trim();
             var lastName = SpectreUi.PromptRequiredCancelable("Apellido", "0/c/cancelar para salir").Trim();
 
-            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName))
-            {
-                throw new InvalidOperationException("Nombre y apellido son obligatorios.");
-            }
-
             var (documentTypeId, documentTypeLabel) = await PromptDocumentTypeAsync();
 
             var documentNumber = SpectreUi.PromptRequiredCancelable(
                 "Número de documento",
                 "0/c/cancelar para salir"
             ).Trim();
-            if (string.IsNullOrWhiteSpace(documentNumber))
-                throw new InvalidOperationException("Número de documento es obligatorio.");
 
-            var birthRaw = (SpectreUi.PromptOptionalCancelable(
-                "Fecha de nacimiento",
-                "yyyy-MM-dd (opcional, 0/c/cancelar para salir)"
-            ) ?? string.Empty).Trim();
             DateTime? birthDate = null;
-            if (!string.IsNullOrWhiteSpace(birthRaw))
+            while (true)
             {
-                if (!DateTime.TryParse(birthRaw, out var bd))
-                    throw new InvalidOperationException("Fecha de nacimiento inválida.");
-                birthDate = bd.Date;
+                var birthRaw = (SpectreUi.PromptOptionalCancelable(
+                    "Fecha de nacimiento",
+                    "yyyy-MM-dd (opcional, 0/c/cancelar para salir)"
+                ) ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(birthRaw)) break;
+
+                if (DateTime.TryParse(birthRaw, out var bd))
+                {
+                    birthDate = bd.Date;
+                    break;
+                }
+                SpectreUi.MarkupLineOrPlain("[red]Fecha de nacimiento inválida.[/]", "Fecha de nacimiento inválida.");
             }
 
-            var genderRaw = (SpectreUi.PromptOptionalCancelable(
-                "Género",
-                "M/F/N (opcional, 0/c/cancelar para salir)"
-            ) ?? string.Empty).Trim();
             char? gender = null;
-            if (!string.IsNullOrWhiteSpace(genderRaw))
+            while (true)
             {
+                var genderRaw = (SpectreUi.PromptOptionalCancelable(
+                    "Género",
+                    "M/F/N (opcional, 0/c/cancelar para salir)"
+                ) ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(genderRaw)) break;
+
                 var g = char.ToUpperInvariant(genderRaw[0]);
-                if (g is not ('M' or 'F' or 'N'))
-                    throw new InvalidOperationException("Género inválido. Use M/F/N.");
-                gender = g;
+                if (g is 'M' or 'F' or 'N')
+                {
+                    gender = g;
+                    break;
+                }
+                SpectreUi.MarkupLineOrPlain("[red]Género inválido. Use M/F/N.[/]", "Género inválido. Use M/F/N.");
             }
 
             var isActive = SpectreUi.PromptBool("¿Activo?", defaultValue: true);
@@ -242,7 +252,10 @@ public sealed class UserConsoleUI : IModuleUI
 
                 var parts = email.Split('@', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                 if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
-                    throw new InvalidOperationException("Email inválido (formato esperado: local@dominio).");
+                {
+                    SpectreUi.MarkupLineOrPlain("[red]Email inválido (formato esperado: local@dominio).[/]", "Email inválido (formato esperado: local@dominio).");
+                    continue;
+                }
 
                 var local = parts[0];
                 var domain = parts[1].ToLowerInvariant();
@@ -316,7 +329,10 @@ public sealed class UserConsoleUI : IModuleUI
                 }
 
                 if (codes.All(c => c.Id != codeId))
-                    throw new InvalidOperationException("Código país inválido.");
+                {
+                    SpectreUi.MarkupLineOrPlain("[red]Código país inválido.[/]", "Código país inválido.");
+                    continue;
+                }
 
                 var number = SpectreUi.PromptRequiredCancelable(
                     first ? "Teléfono principal" : "Teléfono adicional",
@@ -493,14 +509,18 @@ public sealed class UserConsoleUI : IModuleUI
 
             var (roleId, _) = await PromptRoleByNameAsync();
 
-            var personIdRaw = SpectreUi.PromptOptionalCancelable("PersonId", "Enter = null");
             int? personId = null;
-            if (!string.IsNullOrWhiteSpace(personIdRaw))
+            while (true)
             {
+                var personIdRaw = (SpectreUi.PromptOptionalCancelable("PersonId", "Enter = null") ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(personIdRaw)) break;
+
                 if (int.TryParse(personIdRaw, out var pid))
+                {
                     personId = pid;
-                else
-                    throw new InvalidOperationException("PersonId inválido.");
+                    break;
+                }
+                SpectreUi.MarkupLineOrPlain("[red]PersonId inválido.[/]", "PersonId inválido.");
             }
 
             var isActive = SpectreUi.PromptBool("¿Activo?", defaultValue: true);
@@ -582,18 +602,17 @@ public sealed class UserConsoleUI : IModuleUI
             Console.WriteLine($"- {r.Id}: {r.Name}");
         }
 
-        Console.Write("Rol (escriba el nombre, p.ej. admin): ");
-        var roleInput = (Console.ReadLine() ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(roleInput))
-            throw new InvalidOperationException("Rol es obligatorio.");
-
-        var match = roles.FirstOrDefault(r => string.Equals(r.Name, roleInput, StringComparison.OrdinalIgnoreCase));
-        if (match is null)
+        while (true)
         {
-            throw new InvalidOperationException($"Rol inválido: '{roleInput}'.");
-        }
+            var roleInput = SpectreUi.PromptRequiredCancelable("Rol (escriba el nombre, p.ej. admin)", "0/c/cancelar para salir").Trim();
 
-        return (match.Id, match.Name ?? "desconocido");
+            var match = roles.FirstOrDefault(r => string.Equals(r.Name, roleInput, StringComparison.OrdinalIgnoreCase));
+            if (match is not null)
+            {
+                return (match.Id, match.Name ?? "desconocido");
+            }
+            SpectreUi.MarkupLineOrPlain($"[red]Rol inválido: '{roleInput}'. Intente nuevamente.[/]", $"Rol inválido: '{roleInput}'. Intente nuevamente.");
+        }
     }
 
     private async Task<(int DocumentTypeId, string Label)> PromptDocumentTypeAsync()
@@ -616,19 +635,19 @@ public sealed class UserConsoleUI : IModuleUI
             Console.WriteLine($"- {t.Code}: {t.Name}");
         }
 
-        Console.Write("Tipo de documento (código, p.ej. CC/PAS): ");
-        var code = (Console.ReadLine() ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(code))
-            throw new InvalidOperationException("Tipo de documento es obligatorio.");
+        while (true)
+        {
+            var code = SpectreUi.PromptRequiredCancelable("Tipo de documento (código, p.ej. CC/PAS)", "0/c/cancelar para salir").Trim();
+            
+            var match = types.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase))
+                        ?? types.FirstOrDefault(t => string.Equals(t.Name, code, StringComparison.OrdinalIgnoreCase));
 
-        var match = types.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase))
-                    ?? types.FirstOrDefault(t => string.Equals(t.Name, code, StringComparison.OrdinalIgnoreCase));
-
-        if (match is null)
-            throw new InvalidOperationException($"Tipo de documento inválido: '{code}'.");
-
-        var label = $"{match.Code}";
-        return (match.Id, label);
+            if (match is not null)
+            {
+                return (match.Id, $"{match.Code}");
+            }
+            SpectreUi.MarkupLineOrPlain($"[red]Tipo de documento inválido: '{code}'. Intente nuevamente.[/]", $"Tipo de documento inválido: '{code}'. Intente nuevamente.");
+        }
     }
 }
 

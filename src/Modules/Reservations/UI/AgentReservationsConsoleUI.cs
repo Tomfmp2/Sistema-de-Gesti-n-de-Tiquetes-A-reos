@@ -193,30 +193,48 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
                 }).ToList()
             );
 
-            var flightId = SpectreUi.PromptIntRequiredCancelable("ID vuelo a reservar", "0/c/cancelar", min: 1);
-            var selected = flights.FirstOrDefault(x => x.Id == flightId);
-            if (selected is null)
-                throw new InvalidOperationException("Vuelo inválido.");
+            int flightId;
+            var selected = flights.FirstOrDefault();
+            while (true)
+            {
+                flightId = SpectreUi.PromptIntRequiredCancelable("ID vuelo a reservar", "0/c/cancelar", min: 1);
+                selected = flights.FirstOrDefault(x => x.Id == flightId);
+                if (selected is not null)
+                    break;
+                SpectreUi.MarkupLineOrPlain("[red]Vuelo inválido. Intente de nuevo.[/]", "Vuelo inválido. Intente de nuevo.");
+            }
 
-            var paxCount = SpectreUi.PromptIntRequiredCancelable(
-                "Cantidad de pasajeros",
-                $"mín=1, máx={selected.AvailableSeats} (0/c/cancelar)",
-                min: 1
-            );
-            if (paxCount > selected.AvailableSeats)
-                throw new InvalidOperationException("No hay cupos suficientes en el vuelo.");
+            int paxCount;
+            while (true)
+            {
+                paxCount = SpectreUi.PromptIntRequiredCancelable(
+                    "Cantidad de pasajeros",
+                    $"mín=1, máx={selected.AvailableSeats} (0/c/cancelar)",
+                    min: 1
+                );
+                if (paxCount <= selected.AvailableSeats)
+                    break;
+                SpectreUi.MarkupLineOrPlain("[red]No hay cupos suficientes en el vuelo. Intente de nuevo.[/]", "No hay cupos suficientes en el vuelo. Intente de nuevo.");
+            }
 
             // Expiración opcional
-            var minutesRaw = (SpectreUi.PromptOptionalCancelable(
-                "Expira en (minutos)",
-                "Enter = sin expiración (0/c/cancelar)"
-            ) ?? string.Empty).Trim();
             DateTime? expiresAt = null;
-            if (!string.IsNullOrWhiteSpace(minutesRaw))
+            while (true)
             {
-                if (!int.TryParse(minutesRaw, out var minutes) || minutes < 1)
-                    throw new InvalidOperationException("Minutos inválidos.");
-                expiresAt = utcNow.AddMinutes(minutes);
+                var minutesRaw = (SpectreUi.PromptOptionalCancelable(
+                    "Expira en (minutos)",
+                    "Enter = sin expiración (0/c/cancelar)"
+                ) ?? string.Empty).Trim();
+                
+                if (string.IsNullOrWhiteSpace(minutesRaw))
+                    break;
+
+                if (int.TryParse(minutesRaw, out var minutes) && minutes >= 1)
+                {
+                    expiresAt = utcNow.AddMinutes(minutes);
+                    break;
+                }
+                SpectreUi.MarkupLineOrPlain("[red]Minutos inválidos. Intente de nuevo.[/]", "Minutos inválidos. Intente de nuevo.");
             }
 
             // 2) Crear booking + relaciones en transacción
@@ -304,23 +322,44 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
             "Identificación del cliente (por documento)"
         );
 
-        var (documentTypeId, documentTypeLabel) = await PromptDocumentTypeAsync();
-        var documentNumber = SpectreUi.PromptRequiredCancelable(
-            "Número de documento",
-            "0/c/cancelar"
-        ).Trim();
+        int? personId = null;
+        int documentTypeId = 0;
+        string documentTypeLabel = "";
+        string documentNumber = "";
 
-        var personId = await _ctx.Set<PersonEntity>()
-            .AsNoTracking()
-            .Where(p => p.DocumentTypeId == documentTypeId && p.DocumentNumber == documentNumber)
-            .Select(p => (int?)p.Id)
-            .FirstOrDefaultAsync();
+        while (true)
+        {
+            var dt = await PromptDocumentTypeAsync();
+            documentTypeId = dt.DocumentTypeId;
+            documentTypeLabel = dt.Label;
+
+            documentNumber = SpectreUi.PromptRequiredCancelable(
+                "Número de documento",
+                "0/c/cancelar"
+            ).Trim();
+
+            personId = await _ctx.Set<PersonEntity>()
+                .AsNoTracking()
+                .Where(p => p.DocumentTypeId == documentTypeId && p.DocumentNumber == documentNumber)
+                .Select(p => (int?)p.Id)
+                .FirstOrDefaultAsync();
+
+            if (!personId.HasValue || personId.Value < 1)
+            {
+                if (!createIfMissing)
+                {
+                    SpectreUi.MarkupLineOrPlain(
+                        $"[red]No existe cliente con documento {documentTypeLabel} {documentNumber}. Intente de nuevo.[/]",
+                        $"No existe cliente con documento {documentTypeLabel} {documentNumber}. Intente de nuevo."
+                    );
+                    continue;
+                }
+            }
+            break;
+        }
 
         if (!personId.HasValue || personId.Value < 1)
         {
-            if (!createIfMissing)
-                throw new InvalidOperationException($"No existe cliente con documento {documentTypeLabel} {documentNumber}.");
-
             SpectreUi.MarkupLineOrPlain(
                 "[yellow]No existe una persona con ese documento.[/] Se creará el cliente.",
                 "No existe una persona con ese documento. Se creará el cliente."
@@ -542,13 +581,17 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
             types.Select(t => (IReadOnlyList<string>)[t.Code ?? "-", t.Name ?? "-"]).ToList()
         );
 
-        var code = SpectreUi.PromptRequiredCancelable("Código (p.ej. CC/PAS)", "0/c/cancelar").Trim();
-        var match = types.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase))
-                    ?? types.FirstOrDefault(t => string.Equals(t.Name, code, StringComparison.OrdinalIgnoreCase));
-        if (match is null)
-            throw new InvalidOperationException("Tipo de documento inválido.");
-
-        return (match.Id, $"{match.Code}");
+        while (true)
+        {
+            var code = SpectreUi.PromptRequiredCancelable("Código (p.ej. CC/PAS)", "0/c/cancelar").Trim();
+            var match = types.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase))
+                        ?? types.FirstOrDefault(t => string.Equals(t.Name, code, StringComparison.OrdinalIgnoreCase));
+            
+            if (match is not null)
+                return (match.Id, $"{match.Code}");
+            
+            SpectreUi.MarkupLineOrPlain("[red]Tipo de documento inválido. Intente de nuevo.[/]", "Tipo de documento inválido. Intente de nuevo.");
+        }
     }
 
     private async Task<int> PromptPassengerTypeAsync()
@@ -568,22 +611,24 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
             types.Select(t => (IReadOnlyList<string>)[t.Id.ToString(), t.Name ?? "-"]).ToList()
         );
 
-        var raw = (SpectreUi.PromptOptionalCancelable(
-            "Seleccione Id",
-            "Enter = Adulto (0/c/cancelar)"
-        ) ?? string.Empty).Trim();
-
-        if (string.IsNullOrWhiteSpace(raw))
+        while (true)
         {
-            var adulto = types.FirstOrDefault(t => string.Equals(t.Name, "Adulto", StringComparison.OrdinalIgnoreCase));
-            return adulto?.Id ?? types.First().Id;
-        }
+            var raw = (SpectreUi.PromptOptionalCancelable(
+                "Seleccione Id",
+                "Enter = Adulto (0/c/cancelar)"
+            ) ?? string.Empty).Trim();
 
-        if (!int.TryParse(raw, out var id))
-            throw new InvalidOperationException("Tipo inválido.");
-        if (types.All(t => t.Id != id))
-            throw new InvalidOperationException("Tipo inválido.");
-        return id;
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                var adulto = types.FirstOrDefault(t => string.Equals(t.Name, "Adulto", StringComparison.OrdinalIgnoreCase));
+                return adulto?.Id ?? types.First().Id;
+            }
+
+            if (int.TryParse(raw, out var id) && types.Any(t => t.Id == id))
+                return id;
+
+            SpectreUi.MarkupLineOrPlain("[red]Tipo inválido. Intente de nuevo.[/]", "Tipo inválido. Intente de nuevo.");
+        }
     }
 
     private async Task<int> CreatePersonAsync(int documentTypeId, string documentNumber, string firstName, string lastName)

@@ -228,34 +228,47 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                 }).ToList()
             );
 
-            var flightId = SpectreUi.PromptIntRequiredCancelable(
-                "ID vuelo a reservar",
-                "0/c/cancelar para salir"
-            );
-            var selected = flights.FirstOrDefault(x => x.Id == flightId);
-            if (selected is null)
-                throw new InvalidOperationException("Vuelo inválido.");
-
-            var paxCount = SpectreUi.PromptIntRequiredCancelable(
-                "Cantidad de pasajeros",
-                $"mín=1, máx={selected.AvailableSeats} (0/c/cancelar para salir)",
-                min: 1
-            );
-            if (paxCount < 1)
-                throw new InvalidOperationException("Cantidad inválida.");
-            if (paxCount > selected.AvailableSeats)
-                throw new InvalidOperationException("No hay cupos suficientes en el vuelo.");
-
-            var minutesRaw = (SpectreUi.PromptOptionalCancelable(
-                "Expira en (minutos)",
-                "Enter = sin expiración (0/c/cancelar para salir)"
-            ) ?? string.Empty).Trim();
-            DateTime? expiresAt = null;
-            if (!string.IsNullOrWhiteSpace(minutesRaw))
+            int flightId;
+            var selected = flights.FirstOrDefault();
+            while (true)
             {
-                if (!int.TryParse(minutesRaw, out var minutes) || minutes < 1)
-                    throw new InvalidOperationException("Minutos inválidos.");
-                expiresAt = utcNow.AddMinutes(minutes);
+                flightId = SpectreUi.PromptIntRequiredCancelable("ID vuelo a reservar", "0/c/cancelar para salir");
+                selected = flights.FirstOrDefault(x => x.Id == flightId);
+                if (selected is not null)
+                    break;
+                SpectreUi.MarkupLineOrPlain("[red]Vuelo inválido. Intente de nuevo.[/]", "Vuelo inválido. Intente de nuevo.");
+            }
+
+            int paxCount;
+            while (true)
+            {
+                paxCount = SpectreUi.PromptIntRequiredCancelable(
+                    "Cantidad de pasajeros",
+                    $"mín=1, máx={selected.AvailableSeats} (0/c/cancelar para salir)",
+                    min: 1
+                );
+                if (paxCount > 0 && paxCount <= selected.AvailableSeats)
+                    break;
+                SpectreUi.MarkupLineOrPlain("[red]Cantidad inválida o sin cupos suficientes. Intente de nuevo.[/]", "Cantidad inválida o sin cupos suficientes. Intente de nuevo.");
+            }
+
+            DateTime? expiresAt = null;
+            while (true)
+            {
+                var minutesRaw = (SpectreUi.PromptOptionalCancelable(
+                    "Expira en (minutos)",
+                    "Enter = sin expiración (0/c/cancelar para salir)"
+                ) ?? string.Empty).Trim();
+                
+                if (string.IsNullOrWhiteSpace(minutesRaw))
+                    break;
+
+                if (int.TryParse(minutesRaw, out var minutes) && minutes >= 1)
+                {
+                    expiresAt = utcNow.AddMinutes(minutes);
+                    break;
+                }
+                SpectreUi.MarkupLineOrPlain("[red]Minutos inválidos. Intente de nuevo.[/]", "Minutos inválidos. Intente de nuevo.");
             }
 
             // 1.5) Dirección de facturación (se guarda en la persona del usuario/cliente)
@@ -434,17 +447,25 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             var currentExp = current.ExpiresAt.Value.HasValue
                 ? current.ExpiresAt.Value.Value.ToString("yyyy-MM-dd HH:mm")
                 : "sin expiración";
-            var minutesRaw = (SpectreUi.PromptOptionalCancelable(
-                $"Expira en (minutos desde ahora; actual: {currentExp})",
-                "Enter=mantener · 0=quitar expiración · 0/c/cancelar"
-            ) ?? string.Empty).Trim();
             var utcNow = DateTime.UtcNow;
             DateTime? expiresAt = current.ExpiresAt.Value;
-            if (!string.IsNullOrWhiteSpace(minutesRaw))
+
+            while (true)
             {
-                if (!int.TryParse(minutesRaw, out var minutes) || minutes < 0)
-                    throw new InvalidOperationException("Minutos inválidos.");
-                expiresAt = minutes == 0 ? null : utcNow.AddMinutes(minutes);
+                var minutesRaw = (SpectreUi.PromptOptionalCancelable(
+                    $"Expira en (minutos desde ahora; actual: {currentExp})",
+                    "Enter=mantener · 0=quitar expiración · 0/c/cancelar"
+                ) ?? string.Empty).Trim();
+
+                if (string.IsNullOrWhiteSpace(minutesRaw))
+                    break;
+
+                if (int.TryParse(minutesRaw, out var minutes) && minutes >= 0)
+                {
+                    expiresAt = minutes == 0 ? null : utcNow.AddMinutes(minutes);
+                    break;
+                }
+                SpectreUi.MarkupLineOrPlain("[red]Minutos inválidos. Intente de nuevo.[/]", "Minutos inválidos. Intente de nuevo.");
             }
 
             await _update.ExecuteAsync(
@@ -586,13 +607,17 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             types.Select(t => (IReadOnlyList<string>)[t.Code ?? "-", t.Name ?? "-"]).ToList()
         );
 
-        var code = SpectreUi.PromptRequiredCancelable("Código (p.ej. CC/PAS)", "0/c/cancelar para salir").Trim();
-        var match = types.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase))
-                    ?? types.FirstOrDefault(t => string.Equals(t.Name, code, StringComparison.OrdinalIgnoreCase));
-        if (match is null)
-            throw new InvalidOperationException("Tipo de documento inválido.");
-
-        return (match.Id, $"{match.Code}");
+        while (true)
+        {
+            var code = SpectreUi.PromptRequiredCancelable("Código (p.ej. CC/PAS)", "0/c/cancelar para salir").Trim();
+            var match = types.FirstOrDefault(t => string.Equals(t.Code, code, StringComparison.OrdinalIgnoreCase))
+                        ?? types.FirstOrDefault(t => string.Equals(t.Name, code, StringComparison.OrdinalIgnoreCase));
+            
+            if (match is not null)
+                return (match.Id, $"{match.Code}");
+            
+            SpectreUi.MarkupLineOrPlain("[red]Tipo de documento inválido. Intente de nuevo.[/]", "Tipo de documento inválido. Intente de nuevo.");
+        }
     }
 
     private async Task<int> PromptPassengerTypeAsync()
@@ -612,23 +637,24 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             types.Select(t => (IReadOnlyList<string>)[t.Id.ToString(), t.Name ?? "-"]).ToList()
         );
 
-        var raw = (SpectreUi.PromptOptionalCancelable(
-            "Seleccione Id",
-            "Enter = Adulto (0/c/cancelar para salir)"
-        ) ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(raw))
+        while (true)
         {
-            var adulto = types.FirstOrDefault(t => string.Equals(t.Name, "Adulto", StringComparison.OrdinalIgnoreCase));
-            if (adulto is not null)
-                return adulto.Id;
-            return types.First().Id;
-        }
+            var raw = (SpectreUi.PromptOptionalCancelable(
+                "Seleccione Id",
+                "Enter = Adulto (0/c/cancelar para salir)"
+            ) ?? string.Empty).Trim();
 
-        if (!int.TryParse(raw, out var id))
-            throw new InvalidOperationException("Tipo inválido.");
-        if (types.All(t => t.Id != id))
-            throw new InvalidOperationException("Tipo inválido.");
-        return id;
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                var adulto = types.FirstOrDefault(t => string.Equals(t.Name, "Adulto", StringComparison.OrdinalIgnoreCase));
+                return adulto?.Id ?? types.First().Id;
+            }
+
+            if (int.TryParse(raw, out var id) && types.Any(t => t.Id == id))
+                return id;
+
+            SpectreUi.MarkupLineOrPlain("[red]Tipo inválido. Intente de nuevo.[/]", "Tipo inválido. Intente de nuevo.");
+        }
     }
 
     private async Task Checkin()

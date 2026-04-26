@@ -53,21 +53,32 @@ public sealed class CreateMyReservationConsoleUI : IModuleUI
 
             SpectreUi.ModuleHeader("Crear reservación", "Datos de la reservación");
 
-            var totalRaw = SpectreUi.PromptRequiredCancelable("Total", "decimal (0/c/cancelar para salir)").Trim();
-            if (!decimal.TryParse(totalRaw, out var total) || total < 0)
-                throw new InvalidOperationException("Total inválido.");
-
-            var minutesRaw = (SpectreUi.PromptOptionalCancelable(
-                "Expira en (minutos)",
-                "Enter = sin expiración (0/c/cancelar para salir)"
-            ) ?? string.Empty).Trim();
+            decimal total;
+            while (true)
+            {
+                var totalRaw = SpectreUi.PromptRequiredCancelable("Total", "decimal (0/c/cancelar para salir)").Trim();
+                if (decimal.TryParse(totalRaw, out total) && total >= 0)
+                    break;
+                SpectreUi.MarkupLineOrPlain("[red]Total inválido.[/]", "Total inválido.");
+            }
 
             DateTime? expiresAt = null;
-            if (!string.IsNullOrWhiteSpace(minutesRaw))
+            while (true)
             {
-                if (!int.TryParse(minutesRaw, out var minutes) || minutes < 1)
-                    throw new InvalidOperationException("Minutos inválidos.");
-                expiresAt = utcNow.AddMinutes(minutes);
+                var minutesRaw = (SpectreUi.PromptOptionalCancelable(
+                    "Expira en (minutos)",
+                    "Enter = sin expiración (0/c/cancelar para salir)"
+                ) ?? string.Empty).Trim();
+
+                if (string.IsNullOrWhiteSpace(minutesRaw))
+                    break;
+
+                if (int.TryParse(minutesRaw, out var minutes) && minutes >= 1)
+                {
+                    expiresAt = utcNow.AddMinutes(minutes);
+                    break;
+                }
+                SpectreUi.MarkupLineOrPlain("[red]Minutos inválidos.[/]", "Minutos inválidos.");
             }
 
             var created = await _createUseCase.ExecuteAsync(
