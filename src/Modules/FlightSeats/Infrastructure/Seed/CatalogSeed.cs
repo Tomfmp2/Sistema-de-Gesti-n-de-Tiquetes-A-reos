@@ -24,7 +24,7 @@ public static class CatalogSeed
                 SeatCode = row.SeatCode,
                 CabinTypeId = row.CabinTypeId,
                 LocationTypeId = row.LocationTypeId,
-                IsOccupied = row.IsOccupied
+                Status = row.Status
             });
         }
 

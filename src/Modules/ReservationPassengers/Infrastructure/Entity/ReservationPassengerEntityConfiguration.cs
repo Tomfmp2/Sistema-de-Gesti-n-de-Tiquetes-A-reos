@@ -45,5 +45,17 @@ public class ReservationPassengerEntityConfiguration
             .WithMany(p => p.ReservationPassengers)
             .HasForeignKey(x => x.PassengerId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .Property(x => x.FlightSeatId)
+            .HasColumnName("flight_seat_id")
+            .HasColumnType("int")
+            .IsRequired(false);
+
+        builder
+            .HasOne(x => x.FlightSeat)
+            .WithMany()
+            .HasForeignKey(x => x.FlightSeatId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

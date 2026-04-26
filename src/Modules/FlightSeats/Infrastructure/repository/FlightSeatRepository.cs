@@ -48,7 +48,7 @@ public sealed class FlightSeatRepository
             flightSeat.SeatCode,
             flightSeat.CabinTypeId,
             flightSeat.LocationTypeId,
-            flightSeat.IsOccupied);
+            flightSeat.Status);
     }
 
     public async Task<FlightSeat> UpdateAsync(FlightSeat flightSeat, CancellationToken cancellationToken = default)
@@ -80,7 +80,7 @@ public sealed class FlightSeatRepository
             new SeatCode(entity.SeatCode),
             new CabinTypeId(entity.CabinTypeId),
             new LocationTypeId(entity.LocationTypeId),
-            entity.IsOccupied);
+            SeatStatus.Create(entity.Status));
     }
 
     private static FlightSeatEntity MapToEntity(FlightSeat flightSeat)
@@ -92,7 +92,7 @@ public sealed class FlightSeatRepository
             SeatCode = flightSeat.SeatCode.Value,
             CabinTypeId = flightSeat.CabinTypeId.Value,
             LocationTypeId = flightSeat.LocationTypeId.Value,
-            IsOccupied = flightSeat.IsOccupied
+            Status = flightSeat.Status.Value
         };
     }
 }

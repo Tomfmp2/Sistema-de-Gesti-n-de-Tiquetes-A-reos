@@ -22,7 +22,7 @@ public static class FlightSeatDefaultData
                     SeatCode = seat,
                     CabinTypeId = 1,
                     LocationTypeId = GetLocationTypeId(seat[^1]),
-                    IsOccupied = false
+                    Status = "Disponible"
                 });
             }
         }

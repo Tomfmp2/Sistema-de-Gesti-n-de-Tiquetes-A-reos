@@ -12,13 +12,15 @@ public sealed class FlightConsoleUI : IModuleUI
     private readonly GetAllFlightsUseCase _getAll;
     private readonly UpdateFlightUseCase _update;
     private readonly DeleteFlightUseCase _delete;
+    private readonly sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.UseCases.GenerateFlightSeatsUseCase _generateSeats;
 
     public FlightConsoleUI(
         CreateFlightUseCase create,
         GetFlightByIdUseCase getById,
         GetAllFlightsUseCase getAll,
         UpdateFlightUseCase update,
-        DeleteFlightUseCase delete
+        DeleteFlightUseCase delete,
+        sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.UseCases.GenerateFlightSeatsUseCase generateSeats
     )
     {
         _create = create;
@@ -26,6 +28,7 @@ public sealed class FlightConsoleUI : IModuleUI
         _getAll = getAll;
         _update = update;
         _delete = delete;
+        _generateSeats = generateSeats;
     }
 
     public async Task RunAsync()
@@ -89,6 +92,23 @@ public sealed class FlightConsoleUI : IModuleUI
                 $"[green]Vuelo creado[/] id={created.Id.Value} · [bold]{created.FlightCode.Value}[/]",
                 $"Vuelo creado id={created.Id.Value} · {created.FlightCode.Value}"
             );
+
+            // Generar asientos
+            var seatsGenerated = await _generateSeats.ExecuteAsync(created.Id.Value, created.AircraftId.Value);
+            if (seatsGenerated > 0)
+            {
+                SpectreUi.MarkupLineOrPlain(
+                    $"[green]Se generaron {seatsGenerated} asientos para este vuelo.[/]",
+                    $"Se generaron {seatsGenerated} asientos para este vuelo."
+                );
+            }
+            else
+            {
+                SpectreUi.MarkupLineOrPlain(
+                    "[yellow]Advertencia: No se encontraron configuraciones de cabina para generar los asientos.[/]",
+                    "Advertencia: No se encontraron configuraciones de cabina para generar los asientos."
+                );
+            }
         }
         catch (OperationCanceledException)
         {

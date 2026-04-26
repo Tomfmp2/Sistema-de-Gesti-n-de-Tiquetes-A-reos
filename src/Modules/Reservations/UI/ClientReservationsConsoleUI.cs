@@ -816,12 +816,12 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
                     }
 
                     var seat = await _ctx.Set<FlightSeatEntity>()
-                        .FirstOrDefaultAsync(s => s.FlightId == rf.FlightId && !s.IsOccupied);
+                        .FirstOrDefaultAsync(s => s.FlightId == rf.FlightId && s.Status == "Disponible");
 
                     if (seat is null)
                         throw new InvalidOperationException($"No hay asientos disponibles para el vuelo {rf.FlightId}.");
 
-                    seat.IsOccupied = true;
+                    seat.Status = "Ocupado";
 
                     var checkin = new CheckinEntity
                     {

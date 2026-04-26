@@ -158,12 +158,15 @@ public static class ModuleUiFactory
     public static FlightConsoleUI CreateFlightUi(AppDbContext ctx)
     {
         var repo = new FlightRepository(ctx);
+        var flightSeatRepo = new FlightSeatRepository(ctx);
+        var cabinConfigRepo = new sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.repository.CabinConfigurationRepository(ctx);
         return new FlightConsoleUI(
             new CreateFlightUseCase(repo),
             new GetFlightByIdUseCase(repo),
             new GetAllFlightsUseCase(repo),
             new UpdateFlightUseCase(repo),
-            new DeleteFlightUseCase(repo)
+            new DeleteFlightUseCase(repo),
+            new sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.UseCases.GenerateFlightSeatsUseCase(flightSeatRepo, cabinConfigRepo)
         );
     }
 

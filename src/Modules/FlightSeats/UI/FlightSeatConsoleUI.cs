@@ -47,10 +47,10 @@ public sealed class FlightSeatConsoleUI : IModuleUI
 
             var cabinTypeId = SpectreUi.PromptIntRequiredCancelable("ID tipo de cabina", "0/c/cancelar para salir", min: 1);
             var locationTypeId = SpectreUi.PromptIntRequiredCancelable("ID tipo de ubicación", "0/c/cancelar para salir", min: 1);
-            var isOccupied = SpectreUi.PromptBool("¿Asiento ocupado?", defaultValue: false);
+            var status = SpectreUi.PromptRequiredCancelable("Estado (Disponible/Reservado/Ocupado)", "0/c/cancelar para salir").Trim();
 
             var useCase = new CreateFlightSeatUseCase(_repository);
-            var flightSeat = await useCase.ExecuteAsync(flightId, seatCode, cabinTypeId, locationTypeId, isOccupied);
+            var flightSeat = await useCase.ExecuteAsync(flightId, seatCode, cabinTypeId, locationTypeId, status);
             SpectreUi.MarkupLineOrPlain($"[green]Asiento creado[/] id={flightSeat.Id}.", $"Asiento creado id={flightSeat.Id}.");
         }
         catch (OperationCanceledException)
@@ -110,7 +110,7 @@ public sealed class FlightSeatConsoleUI : IModuleUI
 
             SpectreUi.ShowTable(
                 "Asientos",
-                ["ID", "Vuelo", "Asiento", "Cabina", "Ubicación", "Ocupado"],
+                ["ID", "Vuelo", "Asiento", "Cabina", "Ubicación", "Estado"],
                 list.Select(fs => (IReadOnlyList<string>)
                 [
                     fs.Id.ToString(),
@@ -118,7 +118,7 @@ public sealed class FlightSeatConsoleUI : IModuleUI
                     fs.SeatCode.ToString(),
                     fs.CabinTypeId.ToString(),
                     fs.LocationTypeId.ToString(),
-                    fs.IsOccupied ? "Sí" : "No"
+                    fs.Status.Value
                 ]).ToList()
             );
         }
@@ -153,13 +153,13 @@ public sealed class FlightSeatConsoleUI : IModuleUI
             var newLocationTypeIdRaw = SpectreUi.PromptOptionalCancelable("Nuevo ID tipo de ubicación", "Enter=omitir");
             int? newLocationTypeId = string.IsNullOrWhiteSpace(newLocationTypeIdRaw) ? null : int.Parse(newLocationTypeIdRaw);
 
-            bool? newIsOccupied = null;
-            var updateOcc = SpectreUi.PromptBool("¿Cambiar ocupado?", defaultValue: false);
-            if (updateOcc)
-                newIsOccupied = SpectreUi.PromptBool("¿Ocupado?", defaultValue: false);
+            string? newStatus = null;
+            var updateStatus = SpectreUi.PromptBool("¿Cambiar estado?", defaultValue: false);
+            if (updateStatus)
+                newStatus = SpectreUi.PromptRequiredCancelable("Nuevo estado", "0/c/cancelar para salir").Trim();
 
             var useCase = new UpdateFlightSeatUseCase(_repository);
-            var flightSeat = await useCase.ExecuteAsync(id, newFlightId, newSeatCode, newCabinTypeId, newLocationTypeId, newIsOccupied);
+            var flightSeat = await useCase.ExecuteAsync(id, newFlightId, newSeatCode, newCabinTypeId, newLocationTypeId, newStatus);
             
             if (flightSeat == null)
             {
@@ -227,7 +227,7 @@ public sealed class FlightSeatConsoleUI : IModuleUI
                 ["Asiento", flightSeat.SeatCode.ToString()],
                 ["Cabina", flightSeat.CabinTypeId.ToString()],
                 ["Ubicación", flightSeat.LocationTypeId.ToString()],
-                ["Ocupado", flightSeat.IsOccupied ? "Sí" : "No"]
+                ["Estado", flightSeat.Status.Value]
             ]
         );
     }

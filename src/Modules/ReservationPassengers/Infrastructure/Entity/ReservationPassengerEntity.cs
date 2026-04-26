@@ -11,9 +11,11 @@ public class ReservationPassengerEntity
     public int Id { get; set; }
     public int ReservationFlightId { get; set; }
     public int PassengerId { get; set; }
+    public int? FlightSeatId { get; set; }
 
     public ReservationFlightEntity? ReservationFlight { get; set; }
     public PassengerEntity? Passenger { get; set; }
+    public sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity.FlightSeatEntity? FlightSeat { get; set; }
     public ICollection<TicketEntity> Tickets { get; set; } = new List<TicketEntity>();
     public ICollection<InvoiceItemEntity> InvoiceItems { get; set; } = new List<InvoiceItemEntity>();
 }
