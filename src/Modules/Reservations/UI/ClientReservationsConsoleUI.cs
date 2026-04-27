@@ -1019,65 +1019,81 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
 
         var faresByClass = await FareLookupHelper.GetFaresByCabinAsync(_ctx, flightId, passengerTypeId);
 
-        var byClass = seats
+        var classesAvailable = seats
             .GroupBy(s => new { s.CabinTypeId, ClassName = s.CabinType?.Name ?? $"Cabina {s.CabinTypeId}" })
+            .Select(g => new { g.Key.CabinTypeId, g.Key.ClassName, Count = g.Count() })
             .ToList();
 
         SpectreUi.MarkupLineOrPlain(
-            $"[bold cyan]── Mapa de asientos para {passengerName} (vuelo id={flightId}) ──[/]",
-            $"── Mapa de asientos para {passengerName} (vuelo id={flightId}) ──"
+            $"[bold cyan]── Selección de Clase para {passengerName} ──[/]",
+            $"── Selección de Clase para {passengerName} ──"
         );
 
-        foreach (var group in byClass)
-        {
-            var priceLabel = faresByClass.TryGetValue(group.Key.CabinTypeId, out var fp)
-                ? $" — ${fp.Price:0.00} c/u"
-                : " — sin tarifa";
+        SpectreUi.ShowTable(
+            "Clases disponibles",
+            ["Id", "Clase", "Asientos Libres", "Precio Estimado"],
+            classesAvailable.Select(c =>
+            {
+                var price = faresByClass.TryGetValue(c.CabinTypeId, out var fp) ? $"${fp.Price:0.00}" : "$0.00";
+                return (IReadOnlyList<string>)[c.CabinTypeId.ToString(), c.ClassName, c.Count.ToString(), price];
+            }).ToList()
+        );
 
-            SpectreUi.ShowTable(
-                $"{group.Key.ClassName}{priceLabel} ({group.Count()} disponibles)",
-                ["Asiento", "Estado"],
-                group.Select(s => (IReadOnlyList<string>)[
-                    s.SeatCode,
-                    "[green]Disponible[/]"
-                ]).ToList()
-            );
+        int selectedCabinTypeId;
+        while (true)
+        {
+            var rawClass = SpectreUi.PromptOptionalCancelable("ID de Clase", "Enter = Económica (1) · 0/c/cancelar para salir");
+            if (string.IsNullOrWhiteSpace(rawClass))
+            {
+                selectedCabinTypeId = 1;
+            }
+            else if (int.TryParse(rawClass, out var cid) && classesAvailable.Any(c => c.CabinTypeId == cid))
+            {
+                selectedCabinTypeId = cid;
+            }
+            else
+            {
+                SpectreUi.MarkupLineOrPlain("[red]Clase inválida o no disponible.[/]", "Clase inválida o no disponible.");
+                continue;
+            }
+
+            break;
         }
 
+        var priceForReservation = faresByClass.TryGetValue(selectedCabinTypeId, out var fareInfo) ? fareInfo.Price : 0m;
+
+        var filteredSeats = seats.Where(s => s.CabinTypeId == selectedCabinTypeId).ToList();
+
         SpectreUi.MarkupLineOrPlain(
-            "[grey]Ingrese el código del asiento (ej: 1A) o Enter para omitir.[/]",
-            "Ingrese el código del asiento (ej: 1A) o Enter para omitir."
+            $"[bold cyan]── Asientos disponibles en {classesAvailable.First(c => c.CabinTypeId == selectedCabinTypeId).ClassName} ──[/]",
+            $"── Asientos disponibles en {classesAvailable.First(c => c.CabinTypeId == selectedCabinTypeId).ClassName} ──"
+        );
+
+        SpectreUi.ShowTable(
+            "Mapa de asientos",
+            ["Asiento", "Estado"],
+            filteredSeats.Select(s => (IReadOnlyList<string>)[s.SeatCode, "[green]Disponible[/]"]).ToList()
         );
 
         while (true)
         {
-            var input = (SpectreUi.PromptOptionalCancelable("Asiento", "Enter=omitir · 0/c/cancelar para salir") ?? string.Empty).Trim();
-
+            var input = (SpectreUi.PromptOptionalCancelable("Código de Asiento", "Enter = asignar automáticamente · 0/c/cancelar") ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(input))
-                return (null, 0m);
+            {
+                var auto = filteredSeats.First();
+                return (auto.Id, priceForReservation);
+            }
 
-            var match = seats.FirstOrDefault(s =>
+            var match = filteredSeats.FirstOrDefault(s =>
                 string.Equals(s.SeatCode, input, StringComparison.OrdinalIgnoreCase));
 
             if (match is null)
             {
-                SpectreUi.MarkupLineOrPlain(
-                    "[red]Asiento no encontrado o no disponible. Intente de nuevo (o Enter para omitir).[/]",
-                    "Asiento no encontrado o no disponible. Intente de nuevo (o Enter para omitir)."
-                );
+                SpectreUi.MarkupLineOrPlain("[red]Asiento inválido para esta clase. Intente de nuevo.[/]", "Asiento inválido para esta clase. Intente de nuevo.");
                 continue;
             }
 
-            if (!faresByClass.TryGetValue(match.CabinTypeId, out var fp2) || fp2.Price <= 0)
-            {
-                SpectreUi.MarkupLineOrPlain(
-                    $"[red]Esta clase ({match.CabinType?.Name}) no está disponible para reserva en este momento (sin tarifa). Por favor elija otra.[/]",
-                    $"Esta clase ({match.CabinType?.Name}) no está disponible para reserva en este momento (sin tarifa). Por favor elija otra."
-                );
-                continue;
-            }
-
-            return (match.Id, fp2.Price);
+            return (match.Id, priceForReservation);
         }
     }
 
@@ -1098,31 +1114,23 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
         if (existing.HasValue && existing.Value > 0)
             return existing.Value;
 
-        // Insertamos con SQL directo para no depender de mapeos EF en runtime.
         var utcNow = DateTime.UtcNow;
-        var inserted = await _ctx.Database.ExecuteSqlRawAsync(
-            """
-            INSERT INTO persons
-              (document_type_id, document_number, first_name, last_name, birth_date, gender, address_id, created_at, updated_at)
-            VALUES
-              ({0}, {1}, {2}, {3}, NULL, NULL, NULL, {4}, {5})
-            """,
-            documentTypeId,
-            documentNumber,
-            firstName,
-            lastName,
-            utcNow,
-            utcNow
-        );
+        var person = new PersonEntity
+        {
+            DocumentTypeId = documentTypeId,
+            DocumentNumber = documentNumber,
+            FirstName = firstName,
+            LastName = lastName,
+            BirthDate = null,
+            Gender = null,
+            AddressId = null,
+            CreatedAt = utcNow,
+            UpdatedAt = utcNow
+        };
 
-        if (inserted != 1)
-            throw new InvalidOperationException("No se pudo crear la persona.");
-
-        var ids = await _ctx.Database.SqlQueryRaw<int>("SELECT LAST_INSERT_ID() AS Value").ToListAsync();
-        var id = ids.FirstOrDefault();
-        if (id < 1)
-            throw new InvalidOperationException("No se pudo obtener el id de la persona creada.");
-        return id;
+        _ctx.Set<PersonEntity>().Add(person);
+        await _ctx.SaveChangesAsync();
+        return person.Id;
     }
 }
 

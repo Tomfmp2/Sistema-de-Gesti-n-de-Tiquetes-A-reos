@@ -22,6 +22,20 @@ public static class FareDefaultData
         new() { Id = 12, RouteId = 12, CabinTypeId = 1, PassengerTypeId = 3, SeasonId = 2, BasePrice = 690000.00m, ValidFrom = ValidFrom },
         new() { Id = 13, RouteId = 13, CabinTypeId = 1, PassengerTypeId = 3, SeasonId = 2, BasePrice = 510000.00m, ValidFrom = ValidFrom },
         new() { Id = 14, RouteId = 14, CabinTypeId = 1, PassengerTypeId = 3, SeasonId = 2, BasePrice = 850000.00m, ValidFrom = ValidFrom },
-        new() { Id = 15, RouteId = 15, CabinTypeId = 1, PassengerTypeId = 3, SeasonId = 2, BasePrice = 3100000.00m, ValidFrom = ValidFrom }
+        new() { Id = 15, RouteId = 15, CabinTypeId = 1, PassengerTypeId = 3, SeasonId = 2, BasePrice = 3100000.00m, ValidFrom = ValidFrom },
+
+        // Ejecutiva (x2.2)
+        new() { Id = 16, RouteId = 1, CabinTypeId = 3, PassengerTypeId = 3, SeasonId = 2, BasePrice = 396000.00m, ValidFrom = ValidFrom },
+        new() { Id = 17, RouteId = 2, CabinTypeId = 3, PassengerTypeId = 3, SeasonId = 2, BasePrice = 462000.00m, ValidFrom = ValidFrom },
+        new() { Id = 18, RouteId = 4, CabinTypeId = 3, PassengerTypeId = 3, SeasonId = 2, BasePrice = 2090000.00m, ValidFrom = ValidFrom },
+        new() { Id = 19, RouteId = 14, CabinTypeId = 3, PassengerTypeId = 3, SeasonId = 2, BasePrice = 1870000.00m, ValidFrom = ValidFrom },
+        new() { Id = 20, RouteId = 11, CabinTypeId = 3, PassengerTypeId = 3, SeasonId = 2, BasePrice = 1056000.00m, ValidFrom = ValidFrom },
+
+        // Primera Clase (x3.8)
+        new() { Id = 21, RouteId = 1, CabinTypeId = 4, PassengerTypeId = 3, SeasonId = 2, BasePrice = 684000.00m, ValidFrom = ValidFrom },
+        new() { Id = 22, RouteId = 2, CabinTypeId = 4, PassengerTypeId = 3, SeasonId = 2, BasePrice = 798000.00m, ValidFrom = ValidFrom },
+        new() { Id = 23, RouteId = 4, CabinTypeId = 4, PassengerTypeId = 3, SeasonId = 2, BasePrice = 3610000.00m, ValidFrom = ValidFrom },
+        new() { Id = 24, RouteId = 14, CabinTypeId = 4, PassengerTypeId = 3, SeasonId = 2, BasePrice = 3230000.00m, ValidFrom = ValidFrom },
+        new() { Id = 25, RouteId = 11, CabinTypeId = 4, PassengerTypeId = 3, SeasonId = 2, BasePrice = 1824000.00m, ValidFrom = ValidFrom }
     ];
 }

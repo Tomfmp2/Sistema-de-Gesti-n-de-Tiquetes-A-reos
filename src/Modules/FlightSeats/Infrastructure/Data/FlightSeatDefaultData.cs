@@ -13,17 +13,28 @@ public static class FlightSeatDefaultData
 
         for (var flightId = 1; flightId <= 5; flightId++)
         {
-            foreach (var seat in new[] { "1A", "1B", "1C", "1D", "1E", "1F" })
+            for (var row = 1; row <= 15; row++)
             {
-                seats.Add(new FlightSeatEntity
+                foreach (var col in new[] { "A", "B", "C", "D", "E", "F" })
                 {
-                    Id = id++,
-                    FlightId = flightId,
-                    SeatCode = seat,
-                    CabinTypeId = 1,
-                    LocationTypeId = GetLocationTypeId(seat[^1]),
-                    Status = "Disponible"
-                });
+                    var seatCode = $"{row}{col}";
+                    var cabinTypeId = row switch
+                    {
+                        <= 2 => 4, // Primera Clase
+                        <= 5 => 3, // Ejecutiva
+                        _ => 1     // Económica
+                    };
+
+                    seats.Add(new FlightSeatEntity
+                    {
+                        Id = id++,
+                        FlightId = flightId,
+                        SeatCode = seatCode,
+                        CabinTypeId = cabinTypeId,
+                        LocationTypeId = GetLocationTypeId(col[0]),
+                        Status = "Disponible"
+                    });
+                }
             }
         }
 
