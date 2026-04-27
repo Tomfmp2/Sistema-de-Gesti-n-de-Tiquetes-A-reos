@@ -1,222 +1,50 @@
-# Sistema de Gestión de Tiquetes Aéreos (CLI)
-
-Aplicación de consola en **C#/.NET** para gestionar un sistema de tiquetes aéreos con persistencia en **MySQL** (EF Core) y una interfaz interactiva construida con **Spectre.Console**.
-
-Incluye módulos de catálogos (aerolíneas, aeropuertos, rutas, flota, etc.), operación (vuelos, asignaciones, equipaje), reservas y procesos asociados (tickets, check-ins, pagos, facturación) con un enfoque modular por capas.
-
-## Qué es este proyecto
-
-- **Tipo**: aplicación de consola (CLI) con menús, tablas y formularios.
-- **Persistencia**: MySQL + EF Core (migraciones y seed idempotente).
-- **Arquitectura**: módulos por dominio bajo `src/Modules/` con capas `Domain / Application / Infrastructure / UI`.
-- **Objetivo**: servir como base académica/práctica para un sistema de reservas y tiquetaje, manteniendo buenas prácticas (DDD ligero, validaciones por value objects y casos de uso).
-
-## Características principales
-
-- **UI interactiva**: navegación con flechas, tablas, prompts y mensajes.
-- **Cancelación consistente**: en formularios puedes cancelar con `0`, `c` o `cancelar`.
-- **Bootstrap automático**: al iniciar, intenta:
-  - crear la DB si falta (cuando el servidor está accesible),
-  - aplicar migraciones,
-  - ejecutar seeds mínimos,
-  - asegurar el usuario **ROOT** y permisos base (idempotente).
-- **Menú por rol**:
-  - **ROOT**: menú administrativo + “Mis reservaciones”.
-  - **Administrador**: menú único “Administración aeroportuaria” (ahí están los módulos administrativos).
-  - **Operaciones**: menú “Operación aeroportuaria” (módulos operativos).
-  - **Cliente**: solo sus reservaciones.
-- **Validaciones de datos**:
-  - No permite crear **aerolíneas duplicadas** (por nombre o por IATA).
-  - IATA de **aerolíneas** acepta **2 o 3** caracteres (IATA de **aeropuertos** sigue siendo de 3).
-- **Prompts más amigables**:
-  - Donde aplique, se solicita **nombre** de país/ciudad en lugar de Id.
-- **Herramientas de diagnóstico**: describe tablas, valida mapeos EF vs DB real.
-
-## Requisitos
-
-- **.NET SDK** compatible con `net10.0`.
-- **MySQL 8.0+**.
-
-## Configuración (conexión a MySQL)
-
-La aplicación obtiene la cadena de conexión desde:
-
-1. Variable de entorno **`MYSQL_CONNECTION`** (prioridad), o
-2. `appsettings.json` → `ConnectionStrings:MySqlDB`
-
-Ejemplo en PowerShell:
-
-```powershell
-$env:MYSQL_CONNECTION="server=localhost;port=3306;database=airlinesdb;user=root;password=TU_PASSWORD;"
-```
-
-### Recomendación de permisos en MySQL
-
-El usuario debe poder:
-- crear DB (solo si quieres auto-creación),
-- crear/alterar tablas (migraciones),
-- leer/escribir datos (operación normal).
-
-## Cómo ejecutar (paso a paso)
-
-Desde la raíz del repo:
-
-```powershell
-dotnet restore
-dotnet build
-dotnet run
-```
-
-En el primer arranque con conexión válida, el sistema aplicará migraciones + seeds automáticamente (idempotente).
-
-## Inicio de sesión, roles y permisos
-
-### Usuario ROOT
-
-- Se garantiza por seed (idempotente).
-- Usuario: `ROOT`
-- Contraseña: `12345`
-
-### Roles típicos
-
-- **ROOT**: usuario especial (seed idempotente) con acceso a módulos administrativos y “Mis reservaciones”.
-- **Administrador**: rol de administración. En consola ve el menú “Administración aeroportuaria”.
-- **Operaciones**: rol operativo. En consola ve el menú “Operación aeroportuaria”.
-- **Cliente**: gestiona *sus* reservaciones y operaciones relacionadas.
-
-### Permisos (alto nivel)
-
-La app usa permisos (tabla `permissions`) y asignaciones por rol (tabla `role_permissions`) para habilitar apartados como:
-
-- `catalogs.manage` (catálogos)
-- `flights.manage` (vuelos)
-- `fares.manage` (tarifas)
-- `payments.manage` (pagos)
-- `tickets.manage` (tickets)
-- `checkins.manage` (check-ins)
-- `invoices.manage` (facturas)
-- `security.manage` (roles/permisos)
-
-> Nota: la UI principal se guía principalmente por rol (ROOT/Administrador/Operaciones/Cliente). Los permisos se usan como base del modelo de seguridad en la BD.
-
-## Cómo usarlo (guía rápida por menús)
-
-### Cliente
-
-- **Reservaciones**: crear, listar, confirmar, cambiar expiración, cancelar y realizar check-in (según estado).
-
-### Administrador / ROOT
-
-#### ROOT
-
-- Menú administrativo + “Mis reservaciones”.
-
-#### Administrador
-
-- Menú principal: **Administración aeroportuaria**.
-
-Dentro de **Administración aeroportuaria** (según módulos disponibles en el proyecto):
-
-- **Catálogos / Operación**: aerolíneas, aeropuertos, rutas, temporadas, flota, cabinas, asientos, tripulación, equipaje.
-- **Vuelos**: crear/editar/listar (código, ruta, avión, fechas, cupos, estado).
-- **Tarifas**: precios por ruta/cabina/pasajero/temporada.
-- **Pagos**: registrar/consultar pagos asociados a reservaciones.
-- **Tickets**: emisión/consulta/actualización.
-- **Check-ins**: registro de check-in y pase de abordar.
-- **Facturas**: emisión y consulta.
-- **Usuarios**: gestión de usuarios.
-
-### Operaciones
-
-- Menú principal: **Operación aeroportuaria**.
-- Incluye módulos operativos: vuelos, tarifas, reservaciones (consulta/gestión), pagos, tickets, check-ins, facturas.
-
-## Arquitectura (estructura del código)
-
-El código vive bajo `src/`:
-
-- `src/Modules/<ModuleName>/`
-  - `Domain/`: agregados y value objects (validaciones/ reglas).
-  - `Application/`: DTOs y casos de uso (Create/Get/List/Update/Delete).
-  - `Infrastructure/`: entidades EF, configuraciones, repositorios, seeds.
-  - `UI/`: pantallas de consola (Spectre.Console) y flujos de menú.
-- `src/shared/`: helpers transversales (`SpectreUi`, `MenuLogic`, `DbContextFactory`, shells).
-
-Flujo general:
-
-1. `Program.cs` inicializa UI y DB.
-2. `LoginShell` autentica y crea sesión.
-3. `ApplicationShell` arma el menú según rol/permisos.
-4. Cada módulo UI usa casos de uso/repo del módulo.
-
-## Comandos útiles (flags)
-
-Estos flags están implementados en `Program.cs`:
-
-- Aplicar migraciones:
-
-```powershell
-dotnet run -- --migrate
-```
-
-- Seed por defecto (catálogos mínimos, idempotente):
-
-```powershell
-dotnet run -- --seed-defaults
-```
-
-- Seed usuario ROOT (idempotente, contraseña `12345`):
-
-```powershell
-dotnet run -- --seed-root
-```
-
-- Validar mapeos EF vs columnas reales en MySQL:
-
-```powershell
-dotnet run -- --validate-mappings
-```
-
-- Describir columnas de una tabla:
-
-```powershell
-dotnet run -- --describe-table=persons
-```
-
-## Troubleshooting
-
-### Error MSB3027 / `.exe` en uso (Windows)
-
-Si al compilar aparece que el ejecutable está “en uso”, finaliza el proceso:
-
-```powershell
-taskkill /IM sistema-gestor-de-tiquetes-aereos.exe /F
-```
-
-Y luego:
-
-```powershell
-dotnet build
-```
-
-### No conecta a MySQL
-
-- Verifica que MySQL esté encendido y escuchando en el puerto.
-- Confirma usuario/contraseña en `MYSQL_CONNECTION` o `appsettings.json`.
-- Si hay errores de columnas/tablas, usa:
-
-```powershell
-dotnet run -- --validate-mappings
-```
-
-## Documentación adicional
-
-- `PROMPTS-PROYECTO.md`: guía de prompts/diseño/implementación.
-- `ToDo.md`: backlog del proyecto.
-
-## Autores
-
-- Jeison Cristancho
-- Tomás Medina
-- Alejandro Escobar
-
+# Examen 1 - Sistema de Gestión de Tiquetes Aéreos
+
+Este README resume las funcionalidades Requeridas en el examen y las especificaciones técnicas implementadas en el sistema de gestión de tiquetes.
+
+## 🚀 Funcionalidades Principales
+
+### 1. Gestión de Capacidad y Asientos
+- **Capacidad Ampliada**: Cada vuelo ahora cuenta con una capacidad total de **90 asientos**, organizados en **15 filas** de 6 columnas (A-F).
+- **Configuración de Clases**:
+  - **Filas 1-2**: Primera Clase.
+  - **Filas 3-5**: Clase Ejecutiva.
+  - **Filas 6-15**: Clase Económica.
+- **Selección Interactiva**: El proceso de reserva permite al usuario elegir primero la clase deseada y luego visualizar únicamente los asientos disponibles en dicha clase.
+
+### 2. Sistema de Tarifas Visuales
+- Se han implementado tarifas base para mejorar la experiencia de usuario:
+  - **Económica**: $40.00
+  - **Ejecutiva**: $70.00
+  - **Primera Clase**: $100.00
+
+### 3. Usuarios de Prueba (Seed Data)
+El sistema garantiza la existencia de usuarios base para pruebas inmediatas:
+- **Administrador (ROOT)**: (Admin)
+  - Usuario: `ROOT`
+  - Contraseña: `12345`
+- **Cliente (Jolhver)**: (Cliente)
+  - Usuario: `Jolhver`
+  - Contraseña: `123`
+
+---
+
+## 🛠 Detalles Técnicos
+
+### Arquitectura
+- **Lenguaje**: C# (.NET 10)
+- **Base de Datos**: MySQL
+- **ORM**: Entity Framework Core
+- **Interfaz**: Aplicación de consola interactiva con `Spectre.Console`.
+
+### Base de Datos
+- **Idempotencia**: El sistema de *seeding* asegura que los datos base (aerolíneas, aeropuertos, rutas, usuarios) se creen solo si no existen.
+- **Limpieza Automática**: Se incluye lógica para limpiar columnas obsoletas y normalizar esquemas de bases de datos heredadas.
+
+---
+
+## 📖 Instrucciones de Uso
+1. Ejecutar el proyecto: `dotnet run`.
+2. Iniciar sesión con `Jolhver / 123` o crear cliente desde `ROOT -> Usuarios`.
+3. Navegar a **Reservaciones** -> **Crear reservación**.
+4. Seguir los pasos de selección de vuelo, clase y asiento.

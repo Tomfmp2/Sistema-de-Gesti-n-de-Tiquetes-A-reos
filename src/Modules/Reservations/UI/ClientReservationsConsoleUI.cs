@@ -1034,7 +1034,8 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             ["Id", "Clase", "Asientos Libres", "Precio Estimado"],
             classesAvailable.Select(c =>
             {
-                var price = faresByClass.TryGetValue(c.CabinTypeId, out var fp) ? $"${fp.Price:0.00}" : "$0.00";
+                var visualPrice = c.CabinTypeId switch { 1 => 40.00m, 3 => 70.00m, 4 => 100.00m, _ => 0.00m };
+                var price = faresByClass.TryGetValue(c.CabinTypeId, out var fp) ? $"${fp.Price:0.00}" : $"${visualPrice:0.00}";
                 return (IReadOnlyList<string>)[c.CabinTypeId.ToString(), c.ClassName, c.Count.ToString(), price];
             }).ToList()
         );
@@ -1060,7 +1061,8 @@ public sealed class ClientReservationsConsoleUI : IModuleUI
             break;
         }
 
-        var priceForReservation = faresByClass.TryGetValue(selectedCabinTypeId, out var fareInfo) ? fareInfo.Price : 0m;
+        var visualPriceDefault = selectedCabinTypeId switch { 1 => 40.00m, 3 => 70.00m, 4 => 100.00m, _ => 0.00m };
+        var priceForReservation = faresByClass.TryGetValue(selectedCabinTypeId, out var fareInfo) ? fareInfo.Price : visualPriceDefault;
 
         var filteredSeats = seats.Where(s => s.CabinTypeId == selectedCabinTypeId).ToList();
 

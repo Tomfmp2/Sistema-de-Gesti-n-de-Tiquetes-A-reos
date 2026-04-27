@@ -43,6 +43,7 @@ try
 
         await EnsureDefaultsAsync(context);
         await SeedRootUserAsync(context);
+        await SeedJolhverUserAsync(context);
 
         var migrateRequested =
             args.Any(a => string.Equals(a, "--migrate", StringComparison.OrdinalIgnoreCase))
@@ -261,6 +262,66 @@ static async Task SeedRootUserAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared
     await context.SaveChangesAsync();
 
     Console.WriteLine($"Usuario ROOT creado (role_id={role.Id}). Contraseña: 12345");
+}
+
+static async Task SeedJolhverUserAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context)
+{
+    const string username = "Jolhver";
+    const string password = "123";
+
+    var existing = await context.Set<UserEntity>().FirstOrDefaultAsync(u => u.Username == username);
+    if (existing is not null) return;
+
+    var clientRole = await context.Set<SystemRoleEntity>()
+        .FirstOrDefaultAsync(r => r.Name == "Cliente" || r.Name == "client");
+    
+    if (clientRole is null)
+    {
+        clientRole = new SystemRoleEntity { Name = "Cliente", Description = "Usuario cliente del sistema" };
+        context.Set<SystemRoleEntity>().Add(clientRole);
+        await context.SaveChangesAsync();
+    }
+
+    var now = DateTime.UtcNow;
+    
+    // Crear Persona para Jolhver
+    var person = new sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonEntity
+    {
+        FirstName = "Jolhver",
+        LastName = "Base",
+        DocumentTypeId = 1, // CC
+        DocumentNumber = "123456789",
+        CreatedAt = now,
+        UpdatedAt = now
+    };
+    context.Set<sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity.PersonEntity>().Add(person);
+    await context.SaveChangesAsync();
+
+    // Crear Cliente para la persona
+    var client = new sistema_gestor_de_tiquetes_aereos.Src.Modules.Clients.Infrastructure.Entity.ClientEntity
+    {
+        PersonId = person.Id,
+        CreatedAt = now
+    };
+    context.Set<sistema_gestor_de_tiquetes_aereos.Src.Modules.Clients.Infrastructure.Entity.ClientEntity>().Add(client);
+    await context.SaveChangesAsync();
+
+    // Crear Usuario
+    var user = new UserEntity
+    {
+        Username = username,
+        PasswordHash = password,
+        PersonId = person.Id,
+        SystemRoleId = clientRole.Id,
+        IsActive = true,
+        CreatedAt = now,
+        UpdatedAt = now
+    };
+
+    context.Set<UserEntity>().Add(user);
+    await context.SaveChangesAsync();
+
+    Console.WriteLine($"Usuario base {username} creado con contraseña {password}.");
 }
 
 static async Task DescribeTableAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context, string table)
