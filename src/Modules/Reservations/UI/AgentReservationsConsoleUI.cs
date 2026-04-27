@@ -21,6 +21,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 using Microsoft.EntityFrameworkCore;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Reservations.UI;
 
@@ -267,6 +268,8 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
                 var (docTypeId, docTypeLabel) = await PromptDocumentTypeAsync();
                 var passengerTypeId = await PromptPassengerTypeAsync();
 
+                decimal fareTotal = 0m;
+
                 for (var i = 1; i <= paxCount; i++)
                 {
                     SpectreUi.MarkupLineOrPlain($"[grey]Pasajero {i}/{paxCount}[/]", $"Pasajero {i}/{paxCount}");
@@ -275,19 +278,39 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
                     var docNumber = SpectreUi.PromptRequiredCancelable($"Documento ({docTypeLabel}) número", "0/c/cancelar").Trim();
 
                     var personId = await CreatePersonAsync(docTypeId, docNumber, firstName, lastName);
-                    var passenger = await _createPassenger.ExecuteAsync(
-                        new CreatePassengerRequest(PersonId: personId, PassengerTypeId: passengerTypeId)
-                    );
+                    
+                    // Evitar duplicado en la tabla 'passengers' (Unique Index on person_id)
+                    var passengerEntity = await _ctx.Set<sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Infrastructure.Entity.PassengerEntity>()
+                        .FirstOrDefaultAsync(p => p.PersonId == personId);
+
+                    int pId;
+                    if (passengerEntity != null)
+                    {
+                        pId = passengerEntity.Id;
+                        // Opcional: actualizar el tipo de pasajero si cambió
+                        if (passengerEntity.PassengerTypeId != passengerTypeId)
+                        {
+                            passengerEntity.PassengerTypeId = passengerTypeId;
+                            await _ctx.SaveChangesAsync();
+                        }
+                    }
+                    else
+                    {
+                        var passenger = await _createPassenger.ExecuteAsync(
+                            new CreatePassengerRequest(PersonId: personId, PassengerTypeId: passengerTypeId)
+                        );
+                        pId = passenger.Id.Value;
+                    }
 
                     var reservationPassenger = await _createReservationPassenger.ExecuteAsync(
                         new CreateReservationPassengerRequest(
                             ReservationFlightId: bookingFlight.Id.Value,
-                            PassengerId: passenger.Id.Value
+                            PassengerId: pId
                         )
                     );
 
-                    // Selección de asiento (opcional: el agente puede saltar)
-                    var seatId = await PromptFlightSeatAsync(selected.Id, firstName);
+                    // Selección de asiento con tarifa integrada
+                    var (seatId, farePrice) = await PromptFlightSeatAsync(selected.Id, firstName, passengerTypeId);
                     if (seatId.HasValue)
                     {
                         var seatEntity = await _ctx.Set<FlightSeatEntity>().FirstAsync(s => s.Id == seatId.Value);
@@ -297,9 +320,11 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
                         rpEntity.FlightSeatId = seatId.Value;
                         await _ctx.SaveChangesAsync();
 
+                        fareTotal += farePrice;
+
                         SpectreUi.MarkupLineOrPlain(
-                            $"[green]Asiento {seatEntity.SeatCode} asignado a {firstName} {lastName}.[/]",
-                            $"Asiento {seatEntity.SeatCode} asignado a {firstName} {lastName}."
+                            $"[green]Asiento {seatEntity.SeatCode} asignado a {firstName} {lastName}.[/] Tarifa: ${farePrice:0.00}",
+                            $"Asiento {seatEntity.SeatCode} asignado a {firstName} {lastName}. Tarifa: ${farePrice:0.00}"
                         );
                     }
                 }
@@ -313,12 +338,22 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
                 if (flightRow.AvailableSeats < 0)
                     throw new InvalidOperationException("Cupos negativos (concurrencia).");
 
+                // Actualizar valores económicos de la reserva
+                if (fareTotal > 0m)
+                {
+                    var rfRow = await _ctx.Set<ReservationFlightEntity>().FirstOrDefaultAsync(rf => rf.Id == bookingFlight.Id.Value);
+                    if (rfRow is not null) rfRow.PartialValue = fareTotal;
+
+                    var resRow = await _ctx.Set<ReservationEntity>().FirstOrDefaultAsync(r => r.Id == booking.Id.Value);
+                    if (resRow is not null) resRow.TotalValue = fareTotal;
+                }
+
                 await _ctx.SaveChangesAsync();
                 await tx.CommitAsync();
 
                 SpectreUi.MarkupLineOrPlain(
-                    $"[green]Reservación creada[/] booking_id={booking.Id.Value} client_id={clientId}.",
-                    $"Reservación creada booking_id={booking.Id.Value} client_id={clientId}."
+                    $"[green]Reservación creada[/] booking_id={booking.Id.Value} client_id={clientId}. Total: ${fareTotal:0.00}",
+                    $"Reservación creada booking_id={booking.Id.Value} client_id={clientId}. Total: ${fareTotal:0.00}"
                 );
             });
         }
@@ -651,10 +686,11 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
     }
 
     /// <summary>
-    /// Muestra los asientos disponibles del vuelo agrupados por clase y permite
-    /// que el agente seleccione uno para el pasajero. Devuelve null si el agente omite.
+    /// Muestra los asientos disponibles agrupados por clase con su precio,
+    /// y permite que el agente seleccione uno. Devuelve (null, 0) si omite.
     /// </summary>
-    private async Task<int?> PromptFlightSeatAsync(int flightId, string passengerName)
+    private async Task<(int? SeatId, decimal FarePrice)> PromptFlightSeatAsync(
+        int flightId, string passengerName, int passengerTypeId)
     {
         var seats = await _ctx.Set<FlightSeatEntity>()
             .AsNoTracking()
@@ -670,10 +706,12 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
                 "[yellow]No hay asientos disponibles para este vuelo. Se omite la asignación.[/]",
                 "No hay asientos disponibles para este vuelo. Se omite la asignación."
             );
-            return null;
+            return (null, 0m);
         }
 
-        // Agrupar por clase
+        // Tarifas por clase
+        var faresByClass = await FareLookupHelper.GetFaresByCabinAsync(_ctx, flightId, passengerTypeId);
+
         var byClass = seats
             .GroupBy(s => new { s.CabinTypeId, ClassName = s.CabinType?.Name ?? $"Cabina {s.CabinTypeId}" })
             .ToList();
@@ -685,9 +723,12 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
 
         foreach (var group in byClass)
         {
-            var seatCodes = group.Select(s => s.SeatCode).ToList();
+            var priceLabel = faresByClass.TryGetValue(group.Key.CabinTypeId, out var fp)
+                ? $" — ${fp.Price:0.00} c/u"
+                : " — sin tarifa";
+
             SpectreUi.ShowTable(
-                $"{group.Key.ClassName} ({seatCodes.Count} disponibles)",
+                $"{group.Key.ClassName}{priceLabel} ({group.Count()} disponibles)",
                 ["Asiento", "Estado"],
                 group.Select(s => (IReadOnlyList<string>)[
                     s.SeatCode,
@@ -706,7 +747,7 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
             var input = (SpectreUi.PromptOptionalCancelable("Asiento", "Enter=omitir · 0/c/cancelar") ?? string.Empty).Trim();
 
             if (string.IsNullOrWhiteSpace(input))
-                return null;
+                return (null, 0m);
 
             var match = seats.FirstOrDefault(s =>
                 string.Equals(s.SeatCode, input, StringComparison.OrdinalIgnoreCase));
@@ -720,7 +761,16 @@ public sealed class AgentReservationsConsoleUI : IModuleUI
                 continue;
             }
 
-            return match.Id;
+            if (!faresByClass.TryGetValue(match.CabinTypeId, out var fp2) || fp2.Price <= 0)
+            {
+                SpectreUi.MarkupLineOrPlain(
+                    $"[red]Lo sentimos, la clase '{match.CabinType?.Name}' no tiene una tarifa configurada para este vuelo. Seleccione otra clase o consulte con administración.[/]",
+                    $"Lo sentimos, la clase '{match.CabinType?.Name}' no tiene una tarifa configurada para este vuelo. Seleccione otra clase."
+                );
+                continue;
+            }
+
+            return (match.Id, fp2.Price);
         }
     }
 

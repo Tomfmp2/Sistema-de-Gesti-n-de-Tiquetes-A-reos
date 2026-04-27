@@ -202,7 +202,8 @@ public static class ModuleUiFactory
             new GetTicketByIdUseCase(repo),
             new GetAllTicketsUseCase(repo),
             new UpdateTicketUseCase(repo),
-            new DeleteTicketUseCase(repo)
+            new DeleteTicketUseCase(repo),
+            ctx
         );
     }
 
@@ -214,7 +215,8 @@ public static class ModuleUiFactory
             new GetCheckinByIdUseCase(repo),
             new GetAllCheckinsUseCase(repo),
             new UpdateCheckinUseCase(repo),
-            new DeleteCheckinUseCase(repo)
+            new DeleteCheckinUseCase(repo),
+            ctx
         );
     }
 

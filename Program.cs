@@ -38,6 +38,9 @@ try
         context.Database.Migrate();
         Console.WriteLine("Conexión exitosa. Migraciones aplicadas.");
 
+        // Limpieza de columnas obsoletas (Requerimiento nuevo de asientos)
+        await CleanupFlightSeatsTableAsync(context);
+
         await EnsureDefaultsAsync(context);
         await SeedRootUserAsync(context);
 
@@ -443,4 +446,27 @@ static async Task DebugRootAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Co
     }
 
     Console.WriteLine("== Fin debug ==");
+}
+
+static async Task CleanupFlightSeatsTableAsync(sistema_gestor_de_tiquetes_aereos.Src.Shared.Context.AppDbContext context)
+{
+    try
+    {
+        // Verificar si la columna is_occupied existe
+        var cols = await context.Database.SqlQueryRaw<string>(
+            "SELECT COLUMN_NAME AS Value FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'flight_seats' AND COLUMN_NAME = 'is_occupied'"
+        ).ToListAsync();
+
+        if (cols.Count > 0)
+        {
+            Console.WriteLine("Limpiando columna obsoleta `is_occupied` en `flight_seats`...");
+            await context.Database.ExecuteSqlRawAsync("ALTER TABLE `flight_seats` DROP COLUMN `is_occupied`;");
+            Console.WriteLine("¡Columna eliminada exitosamente!");
+        }
+    }
+    catch (Exception ex)
+    {
+        // Silencioso si falla, para no bloquear el arranque si ya se eliminó o no hay permisos
+        Console.WriteLine($"Nota: No se pudo limpiar la columna `is_occupied`: {ex.Message}");
+    }
 }

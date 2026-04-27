@@ -31,6 +31,8 @@ public sealed class FlightSeatConsoleUI : IModuleUI
                 ("Ver asientos por vuelo (mapa por clase)", () => ViewSeatsByFlightAsync().GetAwaiter().GetResult()),
                 ("Consultar disponibilidad por clase",      () => ViewAvailabilityByClassAsync().GetAwaiter().GetResult()),
                 ("Ver asientos ocupados por vuelo",         () => ViewOccupiedSeatsAsync().GetAwaiter().GetResult()),
+                ("Ver asientos de una reservación",         () => ViewSeatsByReservationAsync().GetAwaiter().GetResult()),
+                ("Cambiar asiento de pasajero",             () => ChangePassengerSeatAsync().GetAwaiter().GetResult()),
                 ("─── Gestión ───────────────────────────", () => { }),
                 ("Crear",           () => CreateFlightSeatAsync().GetAwaiter().GetResult()),
                 ("Listar todos",    () => GetAllFlightSeatsAsync().GetAwaiter().GetResult()),
@@ -45,7 +47,7 @@ public sealed class FlightSeatConsoleUI : IModuleUI
     }
 
     // ─────────────────────────────────────────────
-    // Nuevas vistas del requerimiento
+    // Vistas del requerimiento
     // ─────────────────────────────────────────────
 
     private async Task ViewSeatsByFlightAsync()
@@ -202,6 +204,169 @@ public sealed class FlightSeatConsoleUI : IModuleUI
                     }
                 ]).ToList()
             );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain($"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}", $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+        SpectreUi.Pause();
+    }
+
+    private async Task ViewSeatsByReservationAsync()
+    {
+        try
+        {
+            SpectreUi.ModuleHeader("Asientos por reservación", null);
+            var reservationId = SpectreUi.PromptIntRequiredCancelable("ID reservación", "0/c/cancelar para salir", min: 1);
+
+            var seats = await _ctx.Set<sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.Entity.ReservationPassengerEntity>()
+                .AsNoTracking()
+                .Include(rp => rp.Passenger).ThenInclude(p => p!.Person)
+                .Include(rp => rp.FlightSeat).ThenInclude(s => s!.CabinType)
+                .Include(rp => rp.ReservationFlight).ThenInclude(rf => rf!.Flight)
+                .Where(rp => rp.ReservationFlight!.ReservationId == reservationId)
+                .ToListAsync();
+
+            if (seats.Count == 0)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]No se encontraron asientos o pasajeros para esta reservación.[/]", "No se encontraron asientos o pasajeros para esta reservación.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            var flightCode = seats.FirstOrDefault()?.ReservationFlight?.Flight?.FlightCode ?? "N/A";
+
+            SpectreUi.ShowTable(
+                $"Asientos de la Reservación #{reservationId} (Vuelo: {flightCode})",
+                ["Pasajero", "Documento", "Asiento", "Clase"],
+                seats.Select(s => (IReadOnlyList<string>)[
+                    $"{s.Passenger?.Person?.FirstName} {s.Passenger?.Person?.LastName}",
+                    s.Passenger?.Person?.DocumentNumber ?? "-",
+                    s.FlightSeat != null ? $"[bold yellow]{s.FlightSeat.SeatCode}[/]" : "[grey]Sin asignar[/]",
+                    s.FlightSeat?.CabinType?.Name ?? "-"
+                ]).ToList()
+            );
+        }
+        catch (OperationCanceledException)
+        {
+            SpectreUi.MarkupLineOrPlain("[grey]Operación cancelada.[/]", "Operación cancelada.");
+        }
+        catch (Exception ex)
+        {
+            SpectreUi.MarkupLineOrPlain($"[red]Error:[/] {ExceptionFormatting.GetDiagnosticMessage(ex)}", $"Error: {ExceptionFormatting.GetDiagnosticMessage(ex)}");
+        }
+        SpectreUi.Pause();
+    }
+
+    private async Task ChangePassengerSeatAsync()
+    {
+        try
+        {
+            SpectreUi.ModuleHeader("Cambiar asiento", "Reasignación de pasajero");
+            var resId = SpectreUi.PromptIntRequiredCancelable("ID reservación", "0/c/cancelar para salir", min: 1);
+
+            var passengers = await _ctx.Set<sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.Entity.ReservationPassengerEntity>()
+                .Include(rp => rp.Passenger).ThenInclude(p => p!.Person)
+                .Include(rp => rp.FlightSeat).ThenInclude(s => s!.CabinType)
+                .Include(rp => rp.ReservationFlight)
+                .Where(rp => rp.ReservationFlight!.ReservationId == resId)
+                .ToListAsync();
+
+            if (passengers.Count == 0)
+            {
+                SpectreUi.MarkupLineOrPlain("[grey]No se encontraron pasajeros para esta reservación.[/]", "No se encontraron pasajeros.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            // 1. Mostrar tabla de pasajeros para elegir
+            SpectreUi.ShowTable(
+                "Pasajeros de la reservación",
+                ["ID", "Nombre", "Asiento Actual"],
+                passengers.Select(rp => (IReadOnlyList<string>)[
+                    rp.Id.ToString(),
+                    $"{rp.Passenger?.Person?.FirstName} {rp.Passenger?.Person?.LastName}",
+                    rp.FlightSeat?.SeatCode ?? "Sin asignar"
+                ]).ToList()
+            );
+
+            var rpId = SpectreUi.PromptIntRequiredCancelable("Ingrese el ID del pasajero a reasignar", "0/c/cancelar para salir");
+            var selectedRp = passengers.FirstOrDefault(p => p.Id == rpId);
+
+            if (selectedRp == null)
+            {
+                SpectreUi.MarkupLineOrPlain("[red]ID de pasajero no válido.[/]", "ID no válido.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            if (selectedRp.FlightSeat == null)
+            {
+                SpectreUi.MarkupLineOrPlain("[yellow]Este pasajero no tiene un asiento asignado aún.[/]", "Pasajero sin asiento.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            var flightId = selectedRp.ReservationFlight!.FlightId;
+            var cabinTypeId = selectedRp.FlightSeat.CabinTypeId;
+
+            // 2. Buscar asientos disponibles en la MISMA CLASE
+            var availableSeats = await _ctx.Set<FlightSeatEntity>()
+                .Where(s => s.FlightId == flightId && s.CabinTypeId == cabinTypeId && s.Status == "Disponible")
+                .OrderBy(s => s.SeatCode)
+                .ToListAsync();
+
+            if (availableSeats.Count == 0)
+            {
+                SpectreUi.MarkupLineOrPlain($"[red]No hay otros asientos disponibles en la clase {selectedRp.FlightSeat.CabinType?.Name ?? "actual"}.[/]", "No hay asientos disponibles.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            SpectreUi.ShowTable(
+                $"Asientos Disponibles ({selectedRp.FlightSeat.CabinType?.Name})",
+                ["Asiento", "Estado"],
+                availableSeats.Select(s => (IReadOnlyList<string>)[s.SeatCode, "Disponible"]).ToList()
+            );
+
+            var newSeatCode = SpectreUi.PromptRequiredCancelable("Nuevo código de asiento", "0/c/cancelar para salir").Trim();
+            var newSeat = availableSeats.FirstOrDefault(s => string.Equals(s.SeatCode, newSeatCode, StringComparison.OrdinalIgnoreCase));
+
+            if (newSeat == null)
+            {
+                SpectreUi.MarkupLineOrPlain("[red]Asiento no válido o no disponible en la misma clase.[/]", "Asiento no válido.");
+                SpectreUi.Pause();
+                return;
+            }
+
+            // 3. Ejecutar cambio en transacción
+            var strategy = _ctx.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var tx = await _ctx.Database.BeginTransactionAsync();
+                
+                // Liberar viejo
+                var oldSeat = await _ctx.Set<FlightSeatEntity>().FindAsync(selectedRp.FlightSeatId);
+                if (oldSeat != null) oldSeat.Status = "Disponible";
+
+                // Reservar nuevo
+                newSeat.Status = "Reservado";
+
+                // Actualizar RP
+                selectedRp.FlightSeatId = newSeat.Id;
+
+                await _ctx.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                SpectreUi.MarkupLineOrPlain(
+                    $"[green]¡Cambio exitoso![/] El pasajero ahora tiene el asiento [bold]{newSeat.SeatCode}[/].",
+                    $"¡Cambio exitoso! Asiento: {newSeat.SeatCode}"
+                );
+            });
         }
         catch (OperationCanceledException)
         {
