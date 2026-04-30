@@ -23,6 +23,7 @@ public static class CatalogSeed
 
         // Persons & Related
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.DocumentTypes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.EmailDomains.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.PhoneCodes.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
 
@@ -46,6 +47,9 @@ public static class CatalogSeed
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftManufacturers.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.AircraftModels.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.Aircraft.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.Seed.CatalogSeed.SeedAsync(
+            context
+        );
 
         // Tarifas y operación (dependen de rutas / cabin / passenger / season / aeronave / estado)
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.Fares.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
@@ -64,10 +68,17 @@ public static class CatalogSeed
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.StaffPositions.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.AvailabilityStatuses.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Staff.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
 
         // Auth catalogs (permisos y asignaciones dependen de roles)
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.SystemRoles.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.Permissions.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
         await sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+
+        // Cliente de catálogo (persona por documento en ClientDefaultData; usuario aparte)
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.Clients.Infrastructure.Seed.CatalogSeed.SeedAsync(context);
+
+        // Clientes demo con millas para reportes del módulo de fidelización
+        await sistema_gestor_de_tiquetes_aereos.Src.Modules.MilesTransactions.Infrastructure.Seed.DemoClientsSeed.SeedAsync(context);
     }
 }
