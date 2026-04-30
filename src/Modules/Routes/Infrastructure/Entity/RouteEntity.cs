@@ -15,6 +15,7 @@ public class RouteEntity
     public int DestinationAirportId { get; set; }
     public int? DistanceKm { get; set; }
     public int? EstimatedDurationMin { get; set; }
+    public decimal Miles { get; set; }
 
     // Navigation properties
     public AirportEntity? OriginAirport { get; set; }
@@ -31,7 +32,8 @@ public class RouteEntity
             OriginAirportId = route.OriginAirportId.Value,
             DestinationAirportId = route.DestinationAirportId.Value,
             DistanceKm = route.DistanceKm.Value,
-            EstimatedDurationMin = route.EstimatedDurationMin.Value
+            EstimatedDurationMin = route.EstimatedDurationMin.Value,
+            Miles = route.Miles.Value
         };
     }
 
@@ -42,7 +44,8 @@ public class RouteEntity
             sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject.OriginAirportId.Reconstitute(OriginAirportId),
             sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject.DestinationAirportId.Reconstitute(DestinationAirportId),
             sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject.DistanceKm.Reconstitute(DistanceKm),
-            sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject.EstimatedDurationMin.Reconstitute(EstimatedDurationMin)
+            sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject.EstimatedDurationMin.Reconstitute(EstimatedDurationMin),
+            sistema_gestor_de_tiquetes_aereos.Src.Modules.Routes.Domain.ValueObject.RouteMiles.Reconstitute(Miles)
         );
     }
 }

@@ -59,11 +59,18 @@ public class RouteConsoleUI : IModuleUI
             var dest = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto destino", min: 1);
             var dist = PromptNullableInt("Distancia (km)", "opcional");
             var dur = PromptNullableInt("Duración estimada (min)", "opcional");
+            
+            // Sugerir millas: Distancia * 10 para que sea una escala "real" pero alcanzable en el examen
+            var suggestedMiles = dist.HasValue ? (dist.Value * 10m).ToString() : "5000";
+            var milesRaw = SpectreUi.PromptOptionalCancelable("Millas por ticket", $"sugerido: {suggestedMiles}");
+            var miles = decimal.Parse(string.IsNullOrWhiteSpace(milesRaw) ? suggestedMiles : milesRaw);
+            
             await _createUseCase.ExecuteAsync(
                 OriginAirportId.Create(origin),
                 DestinationAirportId.Create(dest),
                 DistanceKm.Create(dist),
-                EstimatedDurationMin.Create(dur)
+                EstimatedDurationMin.Create(dur),
+                RouteMiles.Create(miles)
             );
             SpectreUi.MarkupLineOrPlain("[green]Ruta creada.[/]", "Ruta creada.");
         }
@@ -100,6 +107,7 @@ public class RouteConsoleUI : IModuleUI
                         ["DestinoAirportId", route.DestinationAirportId.Value.ToString()],
                         ["Distancia (km)", route.DistanceKm.Value?.ToString() ?? ""],
                         ["Duración (min)", route.EstimatedDurationMin.Value?.ToString() ?? ""],
+                        ["Millas", route.Miles.Value.ToString("0.##")],
                     ]
                 );
             }
@@ -135,7 +143,7 @@ public class RouteConsoleUI : IModuleUI
             SpectreUi.ModuleHeader("Rutas", "Listado");
             SpectreUi.ShowTable(
                 "Rutas",
-                ["ID", "Origen", "Destino", "Km", "Min"],
+                ["ID", "Origen", "Destino", "Km", "Min", "Millas"],
                 list
                     .OrderBy(r => r.Id.Value)
                     .Select(r => (IReadOnlyList<string>)new[]
@@ -144,7 +152,8 @@ public class RouteConsoleUI : IModuleUI
                         r.OriginAirportId.Value.ToString(),
                         r.DestinationAirportId.Value.ToString(),
                         r.DistanceKm.Value?.ToString() ?? "",
-                        r.EstimatedDurationMin.Value?.ToString() ?? ""
+                        r.EstimatedDurationMin.Value?.ToString() ?? "",
+                        r.Miles.Value.ToString("0.##")
                     })
                     .ToList()
             );
@@ -178,12 +187,18 @@ public class RouteConsoleUI : IModuleUI
             var dest = SpectreUi.PromptIntRequiredCancelable("ID aeropuerto destino", min: 1);
             var dist = PromptNullableInt("Distancia (km)", "opcional");
             var dur = PromptNullableInt("Duración estimada (min)", "opcional");
+            
+            var suggestedMiles = dist.HasValue ? (dist.Value * 10m).ToString() : "5000";
+            var milesRaw = SpectreUi.PromptOptionalCancelable("Millas por ticket", $"sugerido: {suggestedMiles}");
+            var miles = decimal.Parse(string.IsNullOrWhiteSpace(milesRaw) ? suggestedMiles : milesRaw);
+            
             await _updateUseCase.ExecuteAsync(
                 RouteId.Create(id),
                 OriginAirportId.Create(origin),
                 DestinationAirportId.Create(dest),
                 DistanceKm.Create(dist),
-                EstimatedDurationMin.Create(dur)
+                EstimatedDurationMin.Create(dur),
+                RouteMiles.Create(miles)
             );
             SpectreUi.MarkupLineOrPlain("[green]Ruta actualizada.[/]", "Ruta actualizada.");
         }
