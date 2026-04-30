@@ -62,6 +62,7 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.RolePermissions.Infrastructu
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Sessions.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightRoles.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.BaggageTypes.Infrastructure.Entity;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.MilesTransactions.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -87,6 +88,7 @@ public class AppDbContext : DbContext
 
     // Users & Authorization
     public DbSet<ClientEntity> Clients { get; set; }
+    public DbSet<MilesTransactionEntity> MilesTransactions { get; set; }
     public DbSet<PassengerEntity> Passengers { get; set; }
     public DbSet<PassengerTypeEntity> PassengerTypes { get; set; }
     public DbSet<UserEntity> Users { get; set; }

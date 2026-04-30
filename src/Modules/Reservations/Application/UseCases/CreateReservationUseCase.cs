@@ -27,7 +27,7 @@ public sealed class CreateReservationUseCase : ICreateReservationUseCase
         CancellationToken cancellationToken = default
     )
     {
-        var x = Reservation.Create(new ReservationId(0), ReservationClientId.Create(request.ClientId), ReservationDate.Create(request.ReservationDate), ReservationStatusId.Create(request.ReservationStatusId), ReservationTotalValue.Create(request.TotalValue), ReservationExpiresAt.Create(request.ExpiresAt), ReservationCreatedAt.Create(request.CreatedAt), ReservationUpdatedAt.Create(request.UpdatedAt));
+        var x = Reservation.Create(new ReservationId(0), ReservationClientId.Create(request.ClientId), ReservationDate.Create(request.ReservationDate), ReservationStatusId.Create(request.ReservationStatusId), ReservationTotalValue.Create(request.TotalValue), request.DiscountPercentage, request.OriginalTotalValue, ReservationExpiresAt.Create(request.ExpiresAt), ReservationCreatedAt.Create(request.CreatedAt), ReservationUpdatedAt.Create(request.UpdatedAt));
         return _repository.AddAsync(x, cancellationToken);
     }
 }

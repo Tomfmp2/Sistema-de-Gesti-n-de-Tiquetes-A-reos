@@ -9,6 +9,8 @@ public class Reservation
     public ReservationDate ReservationDate { get; private set; }
     public ReservationStatusId ReservationStatusId { get; private set; }
     public ReservationTotalValue TotalValue { get; private set; }
+    public decimal DiscountPercentage { get; private set; }
+    public decimal OriginalTotalValue { get; private set; }
     public ReservationExpiresAt ExpiresAt { get; private set; }
     public ReservationCreatedAt CreatedAt { get; private set; }
     public ReservationUpdatedAt UpdatedAt { get; private set; }
@@ -19,6 +21,8 @@ public class Reservation
         ReservationDate reservationDate,
         ReservationStatusId reservationStatusId,
         ReservationTotalValue totalValue,
+        decimal discountPercentage,
+        decimal originalTotalValue,
         ReservationExpiresAt expiresAt,
         ReservationCreatedAt createdAt,
         ReservationUpdatedAt updatedAt
@@ -29,6 +33,8 @@ public class Reservation
         ReservationDate = reservationDate;
         ReservationStatusId = reservationStatusId;
         TotalValue = totalValue;
+        DiscountPercentage = discountPercentage;
+        OriginalTotalValue = originalTotalValue;
         ExpiresAt = expiresAt;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
@@ -40,6 +46,8 @@ public class Reservation
         ReservationDate reservationDate,
         ReservationStatusId reservationStatusId,
         ReservationTotalValue totalValue,
+        decimal discountPercentage,
+        decimal originalTotalValue,
         ReservationExpiresAt expiresAt,
         ReservationCreatedAt createdAt,
         ReservationUpdatedAt updatedAt
@@ -51,6 +59,8 @@ public class Reservation
             reservationDate,
             reservationStatusId,
             totalValue,
+            discountPercentage,
+            originalTotalValue,
             expiresAt,
             createdAt,
             updatedAt

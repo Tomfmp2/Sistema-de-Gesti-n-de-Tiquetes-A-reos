@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 
@@ -11,9 +12,11 @@ using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
 namespace sistema_gestor_de_tiquetes_aereos.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427133117_AddReservationDiscounts")]
+    partial class AddReservationDiscounts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1849,9 +1852,6 @@ namespace sistema_gestor_de_tiquetes_aereos.Migrations
                     b.Property<int?>("EstimatedDurationMin")
                         .HasColumnType("int")
                         .HasColumnName("estimated_duration_min");
-
-                    b.Property<decimal>("Miles")
-                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("OriginAirportId")
                         .HasColumnType("int")

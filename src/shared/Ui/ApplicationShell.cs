@@ -69,6 +69,7 @@ public static class ApplicationShell
                 ("Tickets", () => ModuleUiFactory.CreateTicketUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Check-ins", () => ModuleUiFactory.CreateCheckinUi(context).RunAsync().GetAwaiter().GetResult()),
                 ("Facturas", () => ModuleUiFactory.CreateInvoiceUi(context).RunAsync().GetAwaiter().GetResult()),
+                ("Programa de Fidelización (Millas)", () => ModuleUiFactory.CreateMilesTransactionUi(context).RunAsync().GetAwaiter().GetResult()),
 
                 ("Volver", () => exit = true),
             };
@@ -139,6 +140,7 @@ public static class ApplicationShell
         Add("Disponibilidad del personal", () => ModuleUiFactory.CreateStaffAvailabilityUi(context).RunAsync());
         Add("Tipos de equipaje", () => ModuleUiFactory.CreateBaggageTypeUi(context).RunAsync());
         Add("Equipaje", () => ModuleUiFactory.CreateBaggageUi(context).RunAsync());
+        Add("Programa de Fidelización (Millas)", () => ModuleUiFactory.CreateMilesTransactionUi(context).RunAsync());
     }
 
     public static async Task<AppExitReason?> RunAsync(
@@ -194,6 +196,10 @@ public static class ApplicationShell
                 items.Add((
                     "Reservaciones",
                     () => ModuleUiFactory.CreateClientReservationsUi(context, auth).RunAsync().GetAwaiter().GetResult()
+                ));
+                items.Add((
+                    "Mis Millas (Fidelización)",
+                    () => ModuleUiFactory.CreateMilesTransactionUi(context, auth).RunAsync().GetAwaiter().GetResult()
                 ));
             }
 

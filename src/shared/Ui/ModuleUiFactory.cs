@@ -94,6 +94,9 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.Services;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.Infrastructure.repository;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Users.UI;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.MilesTransactions.Application.Services;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.MilesTransactions.Infrastructure.repository;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.MilesTransactions.UI;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
 
@@ -158,15 +161,12 @@ public static class ModuleUiFactory
     public static FlightConsoleUI CreateFlightUi(AppDbContext ctx)
     {
         var repo = new FlightRepository(ctx);
-        var flightSeatRepo = new FlightSeatRepository(ctx);
-        var cabinConfigRepo = new sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinConfiguration.Infrastructure.repository.CabinConfigurationRepository(ctx);
         return new FlightConsoleUI(
             new CreateFlightUseCase(repo),
             new GetFlightByIdUseCase(repo),
             new GetAllFlightsUseCase(repo),
             new UpdateFlightUseCase(repo),
-            new DeleteFlightUseCase(repo),
-            new sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Application.UseCases.GenerateFlightSeatsUseCase(flightSeatRepo, cabinConfigRepo)
+            new DeleteFlightUseCase(repo)
         );
     }
 
@@ -202,8 +202,7 @@ public static class ModuleUiFactory
             new GetTicketByIdUseCase(repo),
             new GetAllTicketsUseCase(repo),
             new UpdateTicketUseCase(repo),
-            new DeleteTicketUseCase(repo),
-            ctx
+            new DeleteTicketUseCase(repo)
         );
     }
 
@@ -215,8 +214,7 @@ public static class ModuleUiFactory
             new GetCheckinByIdUseCase(repo),
             new GetAllCheckinsUseCase(repo),
             new UpdateCheckinUseCase(repo),
-            new DeleteCheckinUseCase(repo),
-            ctx
+            new DeleteCheckinUseCase(repo)
         );
     }
 
@@ -312,7 +310,7 @@ public static class ModuleUiFactory
     }
 
     public static FlightSeatConsoleUI CreateFlightSeatUi(AppDbContext ctx) =>
-        new(new FlightSeatRepository(ctx), ctx);
+        new(new FlightSeatRepository(ctx));
 
     public static FlightAssignmentConsoleUI CreateFlightAssignmentUi(AppDbContext ctx)
     {
@@ -446,6 +444,8 @@ public static class ModuleUiFactory
         var rfRepo = new ReservationFlightRepository(ctx);
         var rpRepo = new ReservationPassengerRepository(ctx);
         var passengerRepo = new PassengerRepository(ctx);
+        var milesRepo = new MilesTransactionRepository(ctx);
+        var milesService = new MilesTransactionService(milesRepo, ctx);
         return new ClientReservationsConsoleUI(
             auth,
             ctx,
@@ -456,7 +456,8 @@ public static class ModuleUiFactory
             new DeleteReservationUseCase(repo),
             new CreateReservationFlightUseCase(rfRepo),
             new CreateReservationPassengerUseCase(rpRepo),
-            new CreatePassengerUseCase(passengerRepo)
+            new CreatePassengerUseCase(passengerRepo),
+            milesService
         );
     }
 
@@ -471,5 +472,19 @@ public static class ModuleUiFactory
             new DeleteUserUseCase(repo)
         );
         return new UserConsoleUI(ctx, service);
+    }
+
+    public static MilesTransactionConsoleUI CreateMilesTransactionUi(AppDbContext ctx, AuthContext? auth = null)
+    {
+        var repo = new MilesTransactionRepository(ctx);
+        var service = new MilesTransactionService(repo, ctx);
+        Func<decimal, decimal, Task>? reserveWithDiscount = null;
+        if (auth != null && auth.ClientId.HasValue)
+        {
+            // Crear la UI de reservas con soporte de descuento
+            var clientReservationsUi = CreateClientReservationsUi(ctx, auth);
+            reserveWithDiscount = (discountPct, miles) => clientReservationsUi.CreateWithDiscountAsync(discountPct, miles);
+        }
+        return new MilesTransactionConsoleUI(service, auth, reserveWithDiscount);
     }
 }

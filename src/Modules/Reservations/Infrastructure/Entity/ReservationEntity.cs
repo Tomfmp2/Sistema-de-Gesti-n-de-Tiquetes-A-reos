@@ -14,6 +14,8 @@ public class ReservationEntity
     public DateTime ReservationDate { get; set; }
     public int ReservationStatusId { get; set; }
     public decimal TotalValue { get; set; }
+    public decimal DiscountPercentage { get; set; }
+    public decimal OriginalTotalValue { get; set; }
     public DateTime? ExpiresAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

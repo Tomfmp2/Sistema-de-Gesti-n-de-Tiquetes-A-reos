@@ -70,6 +70,8 @@ public sealed class ReservationRepository : IReservationRepository
     ReservationDate = entity.ReservationDate.Value,
     ReservationStatusId = entity.ReservationStatusId.Value,
     TotalValue = entity.TotalValue.Value,
+    DiscountPercentage = entity.DiscountPercentage,
+    OriginalTotalValue = entity.OriginalTotalValue,
     ExpiresAt = entity.ExpiresAt.Value,
     CreatedAt = entity.CreatedAt.Value,
     UpdatedAt = entity.UpdatedAt.Value,
@@ -100,6 +102,8 @@ public sealed class ReservationRepository : IReservationRepository
 e.ReservationDate = entity.ReservationDate.Value;
 e.ReservationStatusId = entity.ReservationStatusId.Value;
 e.TotalValue = entity.TotalValue.Value;
+e.DiscountPercentage = entity.DiscountPercentage;
+e.OriginalTotalValue = entity.OriginalTotalValue;
 e.ExpiresAt = entity.ExpiresAt.Value;
 e.CreatedAt = entity.CreatedAt.Value;
 e.UpdatedAt = entity.UpdatedAt.Value;
@@ -135,6 +139,8 @@ e.UpdatedAt = entity.UpdatedAt.Value;
     ReservationDate.Create(e.ReservationDate),
     ReservationStatusId.Create(e.ReservationStatusId),
     ReservationTotalValue.Create(e.TotalValue),
+    e.DiscountPercentage,
+    e.OriginalTotalValue,
     ReservationExpiresAt.Create(e.ExpiresAt),
     ReservationCreatedAt.Create(e.CreatedAt),
     ReservationUpdatedAt.Create(e.UpdatedAt)
