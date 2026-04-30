@@ -9,7 +9,7 @@ public sealed class FlightSeat
     public SeatCode SeatCode { get; private set; }
     public CabinTypeId CabinTypeId { get; private set; }
     public LocationTypeId LocationTypeId { get; private set; }
-    public SeatStatus Status { get; private set; }
+    public bool IsOccupied { get; private set; }
 
     private FlightSeat(
         FlightSeatId id,
@@ -17,14 +17,14 @@ public sealed class FlightSeat
         SeatCode seatCode,
         CabinTypeId cabinTypeId,
         LocationTypeId locationTypeId,
-        SeatStatus status)
+        bool isOccupied)
     {
         Id = id;
         FlightId = flightId;
         SeatCode = seatCode;
         CabinTypeId = cabinTypeId;
         LocationTypeId = locationTypeId;
-        Status = status;
+        IsOccupied = isOccupied;
     }
 
     public static FlightSeat Create(
@@ -32,7 +32,7 @@ public sealed class FlightSeat
         SeatCode seatCode,
         CabinTypeId cabinTypeId,
         LocationTypeId locationTypeId,
-        SeatStatus? status = null)
+        bool isOccupied = false)
     {
         return new FlightSeat(
             new FlightSeatId(0),
@@ -40,7 +40,7 @@ public sealed class FlightSeat
             seatCode,
             cabinTypeId,
             locationTypeId,
-            status ?? SeatStatus.Create("Disponible"));
+            isOccupied);
     }
 
     public static FlightSeat Reconstitute(
@@ -49,9 +49,9 @@ public sealed class FlightSeat
         SeatCode seatCode,
         CabinTypeId cabinTypeId,
         LocationTypeId locationTypeId,
-        SeatStatus status)
+        bool isOccupied)
     {
-        return new FlightSeat(id, flightId, seatCode, cabinTypeId, locationTypeId, status);
+        return new FlightSeat(id, flightId, seatCode, cabinTypeId, locationTypeId, isOccupied);
     }
 
     public void UpdateFlightId(FlightId flightId)
@@ -76,16 +76,11 @@ public sealed class FlightSeat
 
     public void MarkAsOccupied()
     {
-        Status = SeatStatus.Create("Ocupado");
+        IsOccupied = true;
     }
 
     public void MarkAsAvailable()
     {
-        Status = SeatStatus.Create("Disponible");
-    }
-
-    public void MarkAsReserved()
-    {
-        Status = SeatStatus.Create("Reservado");
+        IsOccupied = false;
     }
 }

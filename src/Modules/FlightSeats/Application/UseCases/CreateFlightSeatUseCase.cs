@@ -18,7 +18,7 @@ public sealed class CreateFlightSeatUseCase
         string seatCode,
         int cabinTypeId,
         int locationTypeId,
-        string status = "Disponible",
+        bool isOccupied = false,
         CancellationToken cancellationToken = default)
     {
         var flightSeat = FlightSeat.Create(
@@ -26,7 +26,7 @@ public sealed class CreateFlightSeatUseCase
             new SeatCode(seatCode),
             new CabinTypeId(cabinTypeId),
             new LocationTypeId(locationTypeId),
-            SeatStatus.Create(status));
+            isOccupied);
 
         return await _repository.AddAsync(flightSeat, cancellationToken);
     }

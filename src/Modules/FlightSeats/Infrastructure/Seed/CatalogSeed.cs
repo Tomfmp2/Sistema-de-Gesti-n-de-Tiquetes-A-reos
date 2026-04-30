@@ -24,8 +24,24 @@ public static class CatalogSeed
                 SeatCode = row.SeatCode,
                 CabinTypeId = row.CabinTypeId,
                 LocationTypeId = row.LocationTypeId,
-                Status = row.Status
+                IsOccupied = row.IsOccupied
             });
+        }
+
+        await context.SaveChangesAsync();
+        await SyncFlightCapacitiesFromSeatsAsync(context);
+    }
+
+    private static async Task SyncFlightCapacitiesFromSeatsAsync(AppDbContext context)
+    {
+        var flightIds = await context.Flights.AsNoTracking().Select(f => f.Id).ToListAsync();
+        foreach (var fid in flightIds)
+        {
+            var total = await context.FlightSeats.CountAsync(s => s.FlightId == fid);
+            var free = await context.FlightSeats.CountAsync(s => s.FlightId == fid && !s.IsOccupied);
+            var f = await context.Flights.FirstAsync(x => x.Id == fid);
+            f.TotalCapacity = total;
+            f.AvailableSeats = free;
         }
 
         await context.SaveChangesAsync();

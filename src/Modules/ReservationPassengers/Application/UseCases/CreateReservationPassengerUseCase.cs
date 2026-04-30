@@ -27,7 +27,12 @@ public sealed class CreateReservationPassengerUseCase : ICreateReservationPassen
         CancellationToken cancellationToken = default
     )
     {
-        var x = ReservationPassenger.Create(new ReservationPassengerId(0), ReservationPassengerReservationFlightId.Create(request.ReservationFlightId), ReservationPassengerPassengerId.Create(request.PassengerId));
+        var x = ReservationPassenger.Create(
+            new ReservationPassengerId(0),
+            ReservationPassengerReservationFlightId.Create(request.ReservationFlightId),
+            ReservationPassengerPassengerId.Create(request.PassengerId),
+            ReservationPassengerCabinTypeId.Create(request.CabinTypeId)
+        );
         return _repository.AddAsync(x, cancellationToken);
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using sistema_gestor_de_tiquetes_aereos.Src.Modules.CabinTypes.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Infrastructure.Entity;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Infrastructure.Entity;
 
@@ -32,7 +33,14 @@ public class ReservationPassengerEntityConfiguration
             .HasColumnType("int")
             .IsRequired();
 
+        builder
+            .Property(x => x.CabinTypeId)
+            .HasColumnName("cabin_type_id")
+            .HasColumnType("int")
+            .IsRequired();
+
         builder.HasIndex(x => new { x.ReservationFlightId, x.PassengerId }).IsUnique();
+        builder.HasIndex(x => x.CabinTypeId);
 
         builder
             .HasOne<ReservationFlightEntity>(x => x.ReservationFlight)
@@ -47,15 +55,9 @@ public class ReservationPassengerEntityConfiguration
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .Property(x => x.FlightSeatId)
-            .HasColumnName("flight_seat_id")
-            .HasColumnType("int")
-            .IsRequired(false);
-
-        builder
-            .HasOne(x => x.FlightSeat)
+            .HasOne<CabinTypeEntity>(x => x.CabinType)
             .WithMany()
-            .HasForeignKey(x => x.FlightSeatId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasForeignKey(x => x.CabinTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -12,7 +12,7 @@ public sealed class FlightSeatEntity
     public string SeatCode { get; set; } = string.Empty;
     public int CabinTypeId { get; set; }
     public int LocationTypeId { get; set; }
-    public string Status { get; set; } = "Disponible";
+    public bool IsOccupied { get; set; }
 
     public FlightEntity? Flight { get; set; }
     public CabinTypeEntity? CabinType { get; set; }

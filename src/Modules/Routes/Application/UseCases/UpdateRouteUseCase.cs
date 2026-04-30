@@ -13,9 +13,9 @@ public class UpdateRouteUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(RouteId id, OriginAirportId originAirportId, DestinationAirportId destinationAirportId, DistanceKm distanceKm, EstimatedDurationMin estimatedDurationMin)
+    public async Task ExecuteAsync(RouteId id, OriginAirportId originAirportId, DestinationAirportId destinationAirportId, DistanceKm distanceKm, EstimatedDurationMin estimatedDurationMin, RouteMiles miles)
     {
-        var route = Route.Reconstitute(id, originAirportId, destinationAirportId, distanceKm, estimatedDurationMin);
+        var route = Route.Reconstitute(id, originAirportId, destinationAirportId, distanceKm, estimatedDurationMin, miles);
         await _repository.UpdateAsync(route);
     }
 }

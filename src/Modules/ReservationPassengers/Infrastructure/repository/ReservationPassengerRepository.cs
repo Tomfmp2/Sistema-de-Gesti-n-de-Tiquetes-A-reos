@@ -44,7 +44,8 @@ public sealed class ReservationPassengerRepository : IReservationPassengerReposi
         var e = new ReservationPassengerEntity
         {
             ReservationFlightId = entity.ReservationFlightId.Value,
-    PassengerId = entity.PassengerId.Value,
+            PassengerId = entity.PassengerId.Value,
+            CabinTypeId = entity.CabinTypeId.Value
         };
         _context.Set<ReservationPassengerEntity>().Add(e);
         await _context.SaveChangesAsync(cancellationToken);
@@ -69,7 +70,8 @@ public sealed class ReservationPassengerRepository : IReservationPassengerReposi
         }
 
         e.ReservationFlightId = entity.ReservationFlightId.Value;
-e.PassengerId = entity.PassengerId.Value;
+        e.PassengerId = entity.PassengerId.Value;
+        e.CabinTypeId = entity.CabinTypeId.Value;
         await _context.SaveChangesAsync(cancellationToken);
     }
 
@@ -98,8 +100,9 @@ e.PassengerId = entity.PassengerId.Value;
     {
         return ReservationPassenger.Create(
             ReservationPassengerId.Create(e.Id),
-    ReservationPassengerReservationFlightId.Create(e.ReservationFlightId),
-    ReservationPassengerPassengerId.Create(e.PassengerId)
+            ReservationPassengerReservationFlightId.Create(e.ReservationFlightId),
+            ReservationPassengerPassengerId.Create(e.PassengerId),
+            ReservationPassengerCabinTypeId.Create(e.CabinTypeId)
         );
     }
 }

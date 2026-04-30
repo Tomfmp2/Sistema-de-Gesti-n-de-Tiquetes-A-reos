@@ -2,15 +2,6 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using Microsoft.EntityFrameworkCore;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Checkins.UI;
 
@@ -21,15 +12,13 @@ public sealed class CheckinConsoleUI : IModuleUI
     private readonly GetAllCheckinsUseCase _getAll;
     private readonly UpdateCheckinUseCase _update;
     private readonly DeleteCheckinUseCase _delete;
-    private readonly AppDbContext _ctx;
 
     public CheckinConsoleUI(
         CreateCheckinUseCase create,
         GetCheckinByIdUseCase getById,
         GetAllCheckinsUseCase getAll,
         UpdateCheckinUseCase update,
-        DeleteCheckinUseCase delete,
-        AppDbContext ctx
+        DeleteCheckinUseCase delete
     )
     {
         _create = create;
@@ -37,7 +26,6 @@ public sealed class CheckinConsoleUI : IModuleUI
         _getAll = getAll;
         _update = update;
         _delete = delete;
-        _ctx = ctx;
     }
 
     public async Task RunAsync()
@@ -146,58 +134,33 @@ public sealed class CheckinConsoleUI : IModuleUI
     {
         try
         {
-            SpectreUi.ModuleHeader("Consultar Check-in / Pase de Abordar", null);
+            SpectreUi.ModuleHeader("Consultar check-in", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
             var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
-
-            var checkin = await _ctx.Set<CheckinEntity>()
-                .AsNoTracking()
-                .Include(c => c.Ticket)
-                    .ThenInclude(t => t!.ReservationPassenger)
-                        .ThenInclude(rp => rp!.Passenger)
-                            .ThenInclude(p => p!.Person)
-                .Include(c => c.FlightSeat)
-                    .ThenInclude(s => s!.CabinType)
-                .Include(c => c.CheckinStatus)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (checkin is null)
+            var x = await _getById.ExecuteAsync(id);
+            if (x is null)
             {
                 SpectreUi.MarkupLineOrPlain("[grey]No encontrado.[/]", "No encontrado.");
                 SpectreUi.Pause();
                 return;
             }
 
-            var ticket = checkin.Ticket;
-            var rp = ticket?.ReservationPassenger;
-            var person = rp?.Passenger?.Person;
-            var seat = checkin.FlightSeat;
-
-            // Buscar el vuelo
-            var flightCode = "N/A";
-            if (rp != null)
-            {
-                flightCode = await _ctx.Set<ReservationFlightEntity>()
-                    .AsNoTracking()
-                    .Include(rf => rf.Flight)
-                    .Where(rf => rf.Id == rp.ReservationFlightId)
-                    .Select(rf => rf.Flight!.FlightCode)
-                    .FirstOrDefaultAsync() ?? "N/A";
-            }
-
             SpectreUi.ShowTable(
-                "PASE DE ABORDAR",
+                "Check-in",
                 ["Campo", "Valor"],
                 [
-                    ["Número de Pase", $"[bold yellow]{checkin.BoardingPassNumber}[/]"],
-                    ["Estado", checkin.CheckinStatus?.Name ?? checkin.CheckinStatusId.ToString()],
-                    ["Fecha Check-in", checkin.CheckinDate.ToString("yyyy-MM-dd HH:mm")],
-                    ["─── Pasajero ───", ""],
-                    ["Nombre", $"{person?.FirstName} {person?.LastName}"],
-                    ["Tiquete", ticket?.Code ?? "N/A"],
-                    ["─── Información de Vuelo ───", ""],
-                    ["Vuelo", flightCode],
-                    ["Asiento", seat != null ? $"[bold green]{seat.SeatCode}[/] ({seat.CabinType?.Name})" : "[red]PENDIENTE[/]"],
-                    ["Equipaje", checkin.HasCheckedBaggage ? $"[blue]Sí ({checkin.BaggageWeightKg}kg)[/]" : "No"],
+                    ["ID", x.Id.Value.ToString()],
+                    ["TicketId", x.TicketId.Value.ToString()],
+                    ["StaffId", x.StaffId.Value.ToString()],
+                    ["FlightSeatId", x.FlightSeatId.Value.ToString()],
+                    ["CheckinDate", x.CheckinDate.Value.ToString("yyyy-MM-dd HH:mm")],
+                    ["CheckinStatusId", x.CheckinStatusId.Value.ToString()],
+                    ["BoardingPassNumber", x.BoardingPassNumber.Value],
+                    ["HasCheckedBaggage", x.HasCheckedBaggage.Value ? "Sí" : "No"],
+                    ["BaggageWeightKg", x.BaggageWeightKg.Value?.ToString("0.00") ?? "-"],
                 ]
             );
         }

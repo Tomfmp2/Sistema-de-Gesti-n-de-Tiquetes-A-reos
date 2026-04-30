@@ -278,35 +278,7 @@ public static class LoginShell
 
         session.IsActive = false;
         session.ClosedAt = DateTime.UtcNow;
-
-        try
-        {
-            await context.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            // Si falla por cambios "fantasma" de otras operaciones fallidas, intentamos limpiar el tracker
-            // y guardar solo lo que nos interesa (la sesión).
-            SpectreUi.MarkupLineOrPlain($"[yellow]Aviso: Error al guardar cambios globales durante logout: {ex.Message}[/]", "Error al guardar cambios en logout.");
-            
-            // Detach everything except the session to try saving again
-            foreach (var entry in context.ChangeTracker.Entries().ToList())
-            {
-                if (entry.Entity != session)
-                {
-                    entry.State = EntityState.Detached;
-                }
-            }
-            
-            try 
-            {
-                await context.SaveChangesAsync(cancellationToken);
-            }
-            catch
-            {
-                // Si aún falla, ignoramos para permitir que el usuario salga
-            }
-        }
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     private static bool VerifyPassword(string password, string storedHash)
@@ -389,6 +361,16 @@ public static class LoginShell
                 cancellationToken
             );
 
+            var personAlreadyHasUser = await context.Set<UserEntity>()
+                .AsNoTracking()
+                .AnyAsync(u => u.PersonId == personId, cancellationToken);
+            if (personAlreadyHasUser)
+            {
+                throw new InvalidOperationException(
+                    "Ya existe una cuenta con este documento. Inicia sesión con ese usuario."
+                );
+            }
+
             await PromptEmailsAndPhonesAsync(context, personId, cancellationToken);
 
             var roleId = await EnsureClientRoleIdAsync(context, cancellationToken);
@@ -406,17 +388,8 @@ public static class LoginShell
                 UpdatedAt = now
             };
 
-            try
-            {
-                context.Set<UserEntity>().Add(user);
-                await context.SaveChangesAsync(cancellationToken);
-            }
-            catch
-            {
-                // Si falla, lo quitamos del tracker para no romper futuras llamadas a SaveChanges
-                context.Entry(user).State = EntityState.Detached;
-                throw;
-            }
+            context.Set<UserEntity>().Add(user);
+            await context.SaveChangesAsync(cancellationToken);
 
             await EnsureClientForPersonAsync(context, personId, cancellationToken);
 
@@ -477,23 +450,27 @@ public static class LoginShell
             return existing;
 
         var now = DateTime.UtcNow;
-        var person = new PersonEntity
-        {
-            DocumentTypeId = documentTypeId,
-            DocumentNumber = documentNumber,
-            FirstName = firstName,
-            LastName = lastName,
-            BirthDate = null,
-            Gender = null,
-            AddressId = null,
-            CreatedAt = now,
-            UpdatedAt = now
-        };
+        var inserted = await context.Database.ExecuteSqlRawAsync(
+            """
+            INSERT INTO persons
+              (document_type_id, document_number, first_name, last_name, birth_date, gender, address_id, created_at, updated_at)
+            VALUES
+              ({0}, {1}, {2}, {3}, NULL, NULL, NULL, {4}, {5})
+            """,
+            [documentTypeId, documentNumber, firstName, lastName, now, now],
+            cancellationToken
+        );
 
-        context.Set<PersonEntity>().Add(person);
-        await context.SaveChangesAsync(cancellationToken);
+        if (inserted != 1)
+            throw new InvalidOperationException("No se pudo crear la persona.");
 
-        return person.Id;
+        var ids = await context.Database.SqlQueryRaw<int>("SELECT LAST_INSERT_ID() AS Value")
+            .ToListAsync(cancellationToken);
+        var id = ids.FirstOrDefault();
+        if (id < 1)
+            throw new InvalidOperationException("No se pudo obtener el id de la persona creada.");
+
+        return id;
     }
 
     private static async Task PromptEmailsAndPhonesAsync(

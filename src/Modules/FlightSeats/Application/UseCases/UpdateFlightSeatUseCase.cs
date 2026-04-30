@@ -19,7 +19,7 @@ public sealed class UpdateFlightSeatUseCase
         string? seatCode = null,
         int? cabinTypeId = null,
         int? locationTypeId = null,
-        string? status = null,
+        bool? isOccupied = null,
         CancellationToken cancellationToken = default)
     {
         var flightSeat = await _repository.GetByIdAsync(new FlightSeatId(id), cancellationToken);
@@ -39,12 +39,10 @@ public sealed class UpdateFlightSeatUseCase
         if (locationTypeId.HasValue)
             flightSeat.UpdateLocationTypeId(new LocationTypeId(locationTypeId.Value));
 
-        if (!string.IsNullOrWhiteSpace(status))
+        if (isOccupied.HasValue)
         {
-            if (status.Equals("Ocupado", StringComparison.OrdinalIgnoreCase))
+            if (isOccupied.Value)
                 flightSeat.MarkAsOccupied();
-            else if (status.Equals("Reservado", StringComparison.OrdinalIgnoreCase))
-                flightSeat.MarkAsReserved();
             else
                 flightSeat.MarkAsAvailable();
         }

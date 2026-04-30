@@ -117,8 +117,6 @@ local.settings.json
 
 # === Config de app (buenas prácticas) ===
 # No versionar archivos de configuración locales o sensibles:
-appsettings.json
-appsettings.*.json
 
 # === Certificados / claves locales ===
 *.pfx
@@ -153,6 +151,4 @@ Thumbs.db
 # build/
 # .next/
 # .nuxt/
-# *.map
-# Archivos AppSettings
-AppSettings.json
+# *.map

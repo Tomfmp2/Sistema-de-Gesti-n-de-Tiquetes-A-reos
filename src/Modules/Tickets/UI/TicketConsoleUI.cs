@@ -2,15 +2,6 @@ using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Application.Dtos;
 using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Application.UseCases;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Helpers;
 using sistema_gestor_de_tiquetes_aereos.Src.Shared.Ui;
-using sistema_gestor_de_tiquetes_aereos.Src.Shared.Context;
-using Microsoft.EntityFrameworkCore;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationPassengers.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.FlightSeats.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Flights.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Passengers.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.Persons.Infrastructure.Entity;
-using sistema_gestor_de_tiquetes_aereos.Src.Modules.ReservationFlights.Infrastructure.Entity;
 
 namespace sistema_gestor_de_tiquetes_aereos.Src.Modules.Tickets.UI;
 
@@ -21,15 +12,13 @@ public sealed class TicketConsoleUI : IModuleUI
     private readonly GetAllTicketsUseCase _getAll;
     private readonly UpdateTicketUseCase _update;
     private readonly DeleteTicketUseCase _delete;
-    private readonly AppDbContext _ctx;
 
     public TicketConsoleUI(
         CreateTicketUseCase create,
         GetTicketByIdUseCase getById,
         GetAllTicketsUseCase getAll,
         UpdateTicketUseCase update,
-        DeleteTicketUseCase delete,
-        AppDbContext ctx
+        DeleteTicketUseCase delete
     )
     {
         _create = create;
@@ -37,7 +26,6 @@ public sealed class TicketConsoleUI : IModuleUI
         _getAll = getAll;
         _update = update;
         _delete = delete;
-        _ctx = ctx;
     }
 
     public async Task RunAsync()
@@ -137,54 +125,29 @@ public sealed class TicketConsoleUI : IModuleUI
     {
         try
         {
-            SpectreUi.ModuleHeader("Consultar tiquete", null);
+            SpectreUi.ModuleHeader("Consultar ticket", null);
+            SpectreUi.MarkupLineOrPlain(
+                "[grey]Tip: escriba 0 / c / cancelar para volver.[/]",
+                "Tip: escriba 0 / c / cancelar para volver."
+            );
             var id = SpectreUi.PromptIntRequiredCancelable("ID", min: 1);
-            
-            var ticket = await _ctx.Set<TicketEntity>()
-                .AsNoTracking()
-                .Include(t => t.ReservationPassenger)
-                    .ThenInclude(rp => rp!.Passenger)
-                        .ThenInclude(p => p!.Person)
-                .Include(t => t.ReservationPassenger)
-                    .ThenInclude(rp => rp!.FlightSeat)
-                        .ThenInclude(s => s!.CabinType)
-                .Include(t => t.TicketStatus)
-                .FirstOrDefaultAsync(t => t.Id == id);
-
-            if (ticket is null)
+            var x = await _getById.ExecuteAsync(id);
+            if (x is null)
             {
                 SpectreUi.MarkupLineOrPlain("[grey]No encontrado.[/]", "No encontrado.");
                 SpectreUi.Pause();
                 return;
             }
 
-            var rp = ticket.ReservationPassenger;
-            var person = rp?.Passenger?.Person;
-            var seat = rp?.FlightSeat;
-
-            // Buscar el vuelo y la tarifa parcial
-            var flightInfo = await _ctx.Set<ReservationFlightEntity>()
-                .AsNoTracking()
-                .Include(rf => rf.Flight)
-                .Where(rf => rf.Id == (rp != null ? rp.ReservationFlightId : 0))
-                .Select(rf => new { rf.Flight!.FlightCode, rf.PartialValue })
-                .FirstOrDefaultAsync();
-
             SpectreUi.ShowTable(
-                "Detalles del Tiquete",
+                "Ticket",
                 ["Campo", "Valor"],
                 [
-                    ["ID Interno", ticket.Id.ToString()],
-                    ["Código Tiquete", $"[bold cyan]{ticket.Code}[/]"],
-                    ["Estado", ticket.TicketStatus?.Name ?? ticket.TicketStatusId.ToString()],
-                    ["Fecha Emisión", ticket.IssueDate.ToString("yyyy-MM-dd HH:mm")],
-                    ["─── Pasajero ───", ""],
-                    ["Nombre", $"{person?.FirstName} {person?.LastName}"],
-                    ["Documento", $"{person?.DocumentNumber}"],
-                    ["─── Vuelo y Asiento ───", ""],
-                    ["Vuelo", flightInfo?.FlightCode ?? "N/A"],
-                    ["Asiento", seat != null ? $"[bold yellow]{seat.SeatCode}[/] ({seat.CabinType?.Name})" : "[grey]No asignado[/]"],
-                    ["Tarifa Pagada", flightInfo != null ? $"[green]${flightInfo.PartialValue:0.00}[/]" : "N/A"],
+                    ["ID", x.Id.Value.ToString()],
+                    ["ReservationPassengerId", x.ReservationPassengerId.Value.ToString()],
+                    ["Code", x.Code.Value],
+                    ["IssueDate", x.IssueDate.Value.ToString("yyyy-MM-dd HH:mm")],
+                    ["TicketStatusId", x.TicketStatusId.Value.ToString()],
                 ]
             );
         }

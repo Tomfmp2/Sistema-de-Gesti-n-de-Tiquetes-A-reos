@@ -153,6 +153,8 @@ public sealed class MyReservationsConsoleUI : IModuleUI
                     ReservationDate: utcNow,
                     ReservationStatusId: pendingStatusId,
                     TotalValue: total,
+                    DiscountPercentage: 0m,
+                    OriginalTotalValue: total,
                     ExpiresAt: expiresAt,
                     CreatedAt: utcNow,
                     UpdatedAt: utcNow

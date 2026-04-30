@@ -14,6 +14,10 @@ public static class CabinConfigurationDefaultData
         new() { Id = 6, AircraftId = 5, CabinTypeId = 3, StartRow = 1, EndRow = 5, SeatsPerRow = 4, SeatLetters = "ACDF" },
         new() { Id = 7, AircraftId = 5, CabinTypeId = 1, StartRow = 6, EndRow = 42, SeatsPerRow = 8, SeatLetters = "ABCDEFGH" },
         new() { Id = 8, AircraftId = 6, CabinTypeId = 3, StartRow = 1, EndRow = 5, SeatsPerRow = 4, SeatLetters = "ACDF" },
-        new() { Id = 9, AircraftId = 6, CabinTypeId = 1, StartRow = 6, EndRow = 42, SeatsPerRow = 8, SeatLetters = "ABCDEFGH" }
+        new() { Id = 9, AircraftId = 6, CabinTypeId = 1, StartRow = 6, EndRow = 42, SeatsPerRow = 8, SeatLetters = "ABCDEFGH" },
+        // Aircraft 7: Económica 20×5=100, Ejecutiva 4×5=20, Primera 2×5=10
+        new() { Id = 10, AircraftId = 7, CabinTypeId = 1, StartRow = 1, EndRow = 20, SeatsPerRow = 5, SeatLetters = "ABCDE" },
+        new() { Id = 11, AircraftId = 7, CabinTypeId = 3, StartRow = 21, EndRow = 24, SeatsPerRow = 5, SeatLetters = "ABCDE" },
+        new() { Id = 12, AircraftId = 7, CabinTypeId = 4, StartRow = 25, EndRow = 26, SeatsPerRow = 5, SeatLetters = "ABCDE" }
     ];
 }

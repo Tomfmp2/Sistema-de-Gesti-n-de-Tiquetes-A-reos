@@ -13,9 +13,9 @@ public class CreateRouteUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(OriginAirportId originAirportId, DestinationAirportId destinationAirportId, DistanceKm distanceKm, EstimatedDurationMin estimatedDurationMin)
+    public async Task ExecuteAsync(OriginAirportId originAirportId, DestinationAirportId destinationAirportId, DistanceKm distanceKm, EstimatedDurationMin estimatedDurationMin, RouteMiles miles)
     {
-        var route = Route.Create(originAirportId, destinationAirportId, distanceKm, estimatedDurationMin);
+        var route = Route.Create(originAirportId, destinationAirportId, distanceKm, estimatedDurationMin, miles);
         await _repository.AddAsync(route);
     }
 }

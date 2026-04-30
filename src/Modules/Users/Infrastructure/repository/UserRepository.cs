@@ -44,6 +44,17 @@ public sealed class UserRepository : IUserRepository
             throw new InvalidOperationException("Use User.CreateNew para insertar.");
         }
 
+        if (entity.PersonId is { } pid)
+        {
+            var personTaken = await _context.Set<UserEntity>()
+                .AsNoTracking()
+                .AnyAsync(u => u.PersonId == pid, cancellationToken);
+            if (personTaken)
+            {
+                throw new InvalidOperationException("Ya existe un usuario asociado a esta persona (person_id único).");
+            }
+        }
+
         var now = DateTime.UtcNow;
         var e = new UserEntity
         {

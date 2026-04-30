@@ -41,10 +41,9 @@ public class FlightSeatEntityConfiguration : IEntityTypeConfiguration<FlightSeat
             .HasColumnType("int")
             .IsRequired();
 
-        builder.Property(x => x.Status)
-            .HasColumnName("status")
-            .HasColumnType("varchar(20)")
-            .HasDefaultValue("Disponible")
+        builder.Property(x => x.IsOccupied)
+            .HasColumnName("is_occupied")
+            .HasColumnType("tinyint(1)")
             .IsRequired();
 
         builder.HasIndex(x => new { x.FlightId, x.SeatCode })

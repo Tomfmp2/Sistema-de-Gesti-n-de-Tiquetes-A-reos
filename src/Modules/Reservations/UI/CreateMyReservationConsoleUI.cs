@@ -53,32 +53,21 @@ public sealed class CreateMyReservationConsoleUI : IModuleUI
 
             SpectreUi.ModuleHeader("Crear reservación", "Datos de la reservación");
 
-            decimal total;
-            while (true)
-            {
-                var totalRaw = SpectreUi.PromptRequiredCancelable("Total", "decimal (0/c/cancelar para salir)").Trim();
-                if (decimal.TryParse(totalRaw, out total) && total >= 0)
-                    break;
-                SpectreUi.MarkupLineOrPlain("[red]Total inválido.[/]", "Total inválido.");
-            }
+            var totalRaw = SpectreUi.PromptRequiredCancelable("Total", "decimal (0/c/cancelar para salir)").Trim();
+            if (!decimal.TryParse(totalRaw, out var total) || total < 0)
+                throw new InvalidOperationException("Total inválido.");
+
+            var minutesRaw = (SpectreUi.PromptOptionalCancelable(
+                "Expira en (minutos)",
+                "Enter = sin expiración (0/c/cancelar para salir)"
+            ) ?? string.Empty).Trim();
 
             DateTime? expiresAt = null;
-            while (true)
+            if (!string.IsNullOrWhiteSpace(minutesRaw))
             {
-                var minutesRaw = (SpectreUi.PromptOptionalCancelable(
-                    "Expira en (minutos)",
-                    "Enter = sin expiración (0/c/cancelar para salir)"
-                ) ?? string.Empty).Trim();
-
-                if (string.IsNullOrWhiteSpace(minutesRaw))
-                    break;
-
-                if (int.TryParse(minutesRaw, out var minutes) && minutes >= 1)
-                {
-                    expiresAt = utcNow.AddMinutes(minutes);
-                    break;
-                }
-                SpectreUi.MarkupLineOrPlain("[red]Minutos inválidos.[/]", "Minutos inválidos.");
+                if (!int.TryParse(minutesRaw, out var minutes) || minutes < 1)
+                    throw new InvalidOperationException("Minutos inválidos.");
+                expiresAt = utcNow.AddMinutes(minutes);
             }
 
             var created = await _createUseCase.ExecuteAsync(
@@ -87,6 +76,8 @@ public sealed class CreateMyReservationConsoleUI : IModuleUI
                     ReservationDate: utcNow,
                     ReservationStatusId: pendingStatusId,
                     TotalValue: total,
+                    DiscountPercentage: 0m,
+                    OriginalTotalValue: total,
                     ExpiresAt: expiresAt,
                     CreatedAt: utcNow,
                     UpdatedAt: utcNow
