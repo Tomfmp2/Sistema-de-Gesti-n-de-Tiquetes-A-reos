@@ -151,13 +151,13 @@ El sistema pre-carga usuarios de prueba para que explores todas las característ
 > **Contraseña universal de todas las cuentas por defecto: `12345`**
 
 ### 🔑 Administradores
-| Usuario | Rol | Descripción |
+| Nombre de Usuario (Username) | Rol | Descripción |
 | :--- | :--- | :--- |
 | `ROOT` | Administrador total | Acceso total a todos los módulos y opciones. |
 
 ### ✈️ Clientes de Demostración
 Clientes con millas cargadas y reservas activas para validar el sistema de fidelización:
-| Usuario | Nombre | Millas Acumuladas |
+| Nombre de Usuario (Username) | Nombre Completo | Millas Acumuladas |
 | :--- | :--- | :--- |
 | `valentina.rios` | Valentina Ríos | `95,000` |
 | `carlos.mendoza` | Carlos Mendoza | `230,000` |
